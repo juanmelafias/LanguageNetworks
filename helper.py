@@ -106,8 +106,18 @@ def computeNodesStatistics(net):
 
 	nodesStatistics["normalizedDegree"] = nodesStatistics["degree"]*2/sum(nodesStatistics["degree"]); 
 
+	includedStatistics = []; 
+	excludedStatistics = []; 
+	for statistic in nodesStatistics.keys(): 
+		thisMean = np.mean(nodesStatistics["normalizedDegree"]); 
+		thisStd = np.std(nodesStatistics["normalizedDegree"]); 
+		if ((thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
+			excludedStatistics += [statistic]; 
+		else: 
+			includedStatistics += [statistic]; 
 
-	return (nodeList, nodesStatistics); 
+
+	return (nodeList, nodesStatistics, includedStatistics, excludedStatistics); 
 
 
 def convertPC2RGB(thisArray): 

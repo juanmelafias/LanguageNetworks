@@ -158,11 +158,11 @@ otherNNodes = len(otherNetwork.nodes());
 
 
 # Measure stuff from nodes: 
-(nodeList, nodesStatistics) = h.computeNodesStatistics(thisNetwork); 
-nStatistics = len(nodesStatistics.keys()); 
+(nodeList, nodesStatistics, includedStatistics, excludedStatistics) = h.computeNodesStatistics(thisNetwork); 
+nStatistics = len(includedStatistics); 
 allStatisticsArray = np.zeros([nStatistics, nNodes]); 
 dictIStat = {}; 
-for (iStat, statistic) in enumerate(nodesStatistics.keys()): 
+for (iStat, statistic) in enumerate(includedStatistics): 
 	allStatisticsArray[iStat,:] = nodesStatistics[statistic]; 
 	dictIStat[statistic] = iStat; 
 	print(statistic); 
@@ -170,11 +170,11 @@ for (iStat, statistic) in enumerate(nodesStatistics.keys()):
 
 
 # Measure stuff from nodes: 
-(otherNodeList, otherNodesStatistics) = h.computeNodesStatistics(otherNetwork); 
-otherNStatistics = len(otherNodesStatistics.keys()); 
+(otherNodeList, otherNodesStatistics, includedStatistics, excludedStatistics) = h.computeNodesStatistics(otherNetwork); 
+otherNStatistics = len(includedStatistics); 
 otherAllStatisticsArray = np.zeros([otherNStatistics, otherNNodes]); 
 otherDictIStat = {}; 
-for (iStat, statistic) in enumerate(otherNodesStatistics.keys()): 
+for (iStat, statistic) in enumerate(includedStatistics): 
 	otherAllStatisticsArray[iStat,:] = otherNodesStatistics[statistic]; 
 	otherDictIStat[statistic] = iStat; 
 	print(statistic); 
@@ -331,3 +331,4 @@ ax.set_ylabel("PC2");
 
 plt.show(); 
 # sys.exit(0); 
+
