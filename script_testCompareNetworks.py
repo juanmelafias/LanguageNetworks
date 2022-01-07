@@ -43,12 +43,11 @@ import numpy as np;
 import scipy.linalg as la; 
 import matplotlib.pyplot as plt; 
 import matplotlib as mplt; 
-import random as rand; 
 import os, sys; 
 import networkx as nx; 
 import helper as h; 
+import loadHelper as lh; 
 from copy import copy; 
-from scipy.stats import entropy; 
 
 # For 3D scatter: 
 from mpl_toolkits.mplot3d import Axes3D; 
@@ -56,53 +55,49 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 
 ## Loading all available networks: 
-
 location = "home"; 
-# location = "IFISC"; 
+
+########################################################################################################################
+## Uncomment for syntax network: 
+
+# Metadata to load networks: 
+if (location=="home"): 
+	dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
+if (location=="IFISC"): 
+	dataPathMaster = "/home/luis/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
+dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
+dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
+# dataNames = ["DataDown"]; 
+# dataFormats = ["txt"]; 
+
+# Looping over folders, loading nets: 
+allNetworksDict = {}; 
+allNetworksNamesDict = {}; 
+for (dataName, dataFormat) in zip(dataNames, dataFormats): 
+	dataPath = os.path.join(dataPathMaster, dataName); 
+	if (dataFormat=="txt"): 
+		(synNetDict, synNetNameList) = lh.loadAllTXTNetsFromPath(dataPath, False); 
+	if (dataFormat=="sif"): 
+		(synNetDict, synNetNameList) = lh.loadAllSIFNetsFromPath(dataPath); 
+	allNetworksDict[dataName] = synNetDict; 
+	allNetworksNamesDict[dataName] = synNetNameList; 
+
+# Choose a single network: 
+thisKey = "DataTD3"; 
+iNetwork = 5; 
+thisNetwork = allNetworksDict[thisKey][allNetworksNamesDict[thisKey][iNetwork]]; 
+
+# sys.exit(); 
 
 
 
-# ########################################################################################################################
-# ## Uncomment for syntax network: 
+#######################################################################################################################
+# Uncomment for randomly generated networks: 
 
-# # Metadata to load networks: 
-# if (location=="home"): 
-# 	dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
-# if (location=="IFISC"): 
-# 	dataPathMaster = "/home/luis/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
-# dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
-# dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
-# # dataNames = ["DataDown"]; 
-# # dataFormats = ["txt"]; 
-
-# # Looping over folders, loading nets: 
-# allNetworksDict = {}; 
-# allNetworksNamesDict = {}; 
-# for (dataName, dataFormat) in zip(dataNames, dataFormats): 
-# 	dataPath = os.path.join(dataPathMaster, dataName); 
-# 	if (dataFormat=="txt"): 
-# 		(synNetDict, synNetNameList) = h.loadAllTXTNetsFromPath(dataPath, False); 
-# 	if (dataFormat=="sif"): 
-# 		(synNetDict, synNetNameList) = h.loadAllSIFNetsFromPath(dataPath); 
-# 	allNetworksDict[dataName] = synNetDict; 
-# 	allNetworksNamesDict[dataName] = synNetNameList; 
-
-# # Choose a single network: 
-# thisKey = "DataTD3"; 
-# iNetwork = 5; 
-# thisNetwork = allNetworksDict[thisKey][allNetworksNamesDict[thisKey][iNetwork]]; 
-
-# # sys.exit(); 
-
-
-
-# #######################################################################################################################
-# # Uncomment for randomly generated networks: 
-
-# thisKey = "None"; 
-# otherNetwork = nx.erdos_renyi_graph(400, 0.1); 
+thisKey = "None"; 
+otherNetwork = nx.erdos_renyi_graph(400, 0.1); 
 # thisNetwork = nx.watts_strogatz_graph(400, 4, 0.15); 
-# # thisNetwork = nx.barabasi_albert_graph(200, 2); 
+# thisNetwork = nx.barabasi_albert_graph(200, 2); 
 
 
 
@@ -121,23 +116,35 @@ location = "home";
 # 	edges += [(thisEdge[0], thisEdge[1])]; 
 
 # # Building network from edges: 
-# thisNetwork = nx.Graph(); 
-# thisNetwork.add_edges_from(edges); 
+# otherNetwork = nx.Graph(); 
+# otherNetwork.add_edges_from(edges); 
+
+
+
+# ########################################################################################################################
+# ## Uncomment for connectome network: 
+
+# thisKey = "None"; 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Connectome/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# # otherNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+
+
+
 
 
 
 ########################################################################################################################
-## Uncomment for connectome network: 
-
-thisKey = "None"; 
-connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Connectome/"; 
-thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-otherNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 
 
 
-######################################################################################################
+
+########################################################################################################################
 ## Perform analysis on nodes: 
 ## 
 
@@ -288,20 +295,34 @@ allStatisticsCov = np.cov(allStatisticsArray);
 otherAllStatisticsCov = np.cov(otherAllStatisticsArray); 
 A = np.matrix(allStatisticsCov); 
 B = np.matrix(otherAllStatisticsCov); 
-(eigVals, eigVects) = la.eig(A, A+B); 
+(eigVals, lEigVectors, rEigVectors) = la.eig(B, A+B, left=True, right=True); 
+eigVals = [eigVals[ii] for ii in range(eigVals.size)]; 
+eigVects = rEigVectors; 
 eigVals = np.real(eigVals); 
 eigVects = np.real(eigVects); 
+
+print(eigVects); 
+
+
 
 
 # Projecting data into eigenspace: 
 allStatisticsArray_ = np.dot(np.transpose(eigVects), allStatisticsArray); 
 otherAllStatisticsArray_ = np.dot(np.transpose(eigVects), otherAllStatisticsArray); 
 
-# PC1-PC2-PC3: 
+# Plotting eigenvalues and eigenvectors: 
+plt.figure(); 
+plt.plot(eigVals); 
+
+plt.figure(); 
+plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
+plt.colorbar(); 
+
+# PC1-PClast: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); #, projection='3d'); 
-ax.scatter(allStatisticsArray_[0,:], allStatisticsArray_[-1,:], c="black"); 
-ax.scatter(otherAllStatisticsArray_[0,:], otherAllStatisticsArray_[-1,:], c="red"); 
+ax.scatter(allStatisticsArray_[1,:], allStatisticsArray_[-1,:], c="black"); 
+ax.scatter(otherAllStatisticsArray_[1,:], otherAllStatisticsArray_[-1,:], c="red"); 
 ax.set_xlabel("PC1"); 
 ax.set_ylabel("PC2"); 
 # ax.set_zlabel("PC3"); 
