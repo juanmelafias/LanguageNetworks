@@ -26,15 +26,6 @@
 			>> Measuring now: 
 				> 
 
-
-			>> There is some coming and going related to networkx versions: 
-				> Somehow, software @IFISC is not up to date... or whatever happens. 
-				> I decided to keep two versions of the functions that compute stuff: 
-					- One is executed in my laptop, the other one at IFISC. 
-					- computeNetworksStatistics() --> computeNetworksStatistics_IFISC(). 
-					- computeNetworksStatistics() --> computeNetworksStatistics_home(). 
-				> But none of this is an issue because I'm not in the IFISC anymore. 
-
 """
 
 
@@ -63,8 +54,6 @@ location = "home";
 # Metadata to load networks: 
 if (location=="home"): 
 	dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
-if (location=="IFISC"): 
-	dataPathMaster = "/home/luis/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
 dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
 dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
 # dataNames = ["DataDown"]; 
