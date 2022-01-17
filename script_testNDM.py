@@ -40,14 +40,14 @@
 
 # Importing relevant libraries: 
 import numpy as np; 
+import scipy.linalg as la; 
 import matplotlib.pyplot as plt; 
 import matplotlib as mplt; 
-import random as rand; 
 import os, sys; 
 import networkx as nx; 
 import helper as h; 
+import loadHelper as lh; 
 from copy import copy; 
-from scipy.stats import entropy; 
 
 # For 3D scatter: 
 from mpl_toolkits.mplot3d import Axes3D; 
@@ -57,8 +57,6 @@ from mpl_toolkits.mplot3d import Axes3D;
 ## Loading all available networks: 
 
 location = "home"; 
-# location = "IFISC"; 
-
 
 
 # ########################################################################################################################
@@ -67,8 +65,6 @@ location = "home";
 # # Metadata to load networks: 
 # if (location=="home"): 
 # 	dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
-# if (location=="IFISC"): 
-# 	dataPathMaster = "/home/luis/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
 # dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
 # dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
 # # dataNames = ["DataDown"]; 
@@ -80,9 +76,9 @@ location = "home";
 # for (dataName, dataFormat) in zip(dataNames, dataFormats): 
 # 	dataPath = os.path.join(dataPathMaster, dataName); 
 # 	if (dataFormat=="txt"): 
-# 		(synNetDict, synNetNameList) = h.loadAllTXTNetsFromPath(dataPath, False); 
+# 		(synNetDict, synNetNameList) = lh.loadAllTXTNetsFromPath(dataPath, False); 
 # 	if (dataFormat=="sif"): 
-# 		(synNetDict, synNetNameList) = h.loadAllSIFNetsFromPath(dataPath); 
+# 		(synNetDict, synNetNameList) = lh.loadAllSIFNetsFromPath(dataPath); 
 # 	allNetworksDict[dataName] = synNetDict; 
 # 	allNetworksNamesDict[dataName] = synNetNameList; 
 
@@ -91,34 +87,16 @@ location = "home";
 
 # iNetwork = 5; 
 # thisNetwork = allNetworksDict[thisKey][allNetworksNamesDict[thisKey][iNetwork]]; 
-# Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-# thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-# nNodes = len(thisNetwork.nodes()); 
-# print(iNetwork); 
-# print(allNetworksNamesDict[thisKey][iNetwork]); 
-# print(nNodes); 
-
-# # sys.exit(); 
 
 
+#######################################################################################################################
+# Uncomment for randomly generated networks: 
 
-# #######################################################################################################################
-# # Uncomment for randomly generated networks: 
-
-# thisKey = "None"; 
-# # thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
-# # thisNetwork = nx.watts_strogatz_graph(200, 4, 0.15); 
+thisKey = "None"; 
+# thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
+# thisNetwork = nx.watts_strogatz_graph(100, 4, 0.05); 
 # thisNetwork = nx.barabasi_albert_graph(200, 2); 
-
-# Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-# thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-# nNodes = len(thisNetwork.nodes()); 
-
-# plt.figure(); 
-# nx.draw(thisNetwork, with_labels=True, pos=nx.circular_layout(thisNetwork)); 
-# # plt.show(); 
-
-# # sys.exit(0); 
+thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
 
 
 # #######################################################################################################################
@@ -137,25 +115,10 @@ location = "home";
 # for line in allLines: 
 # 	thisEdge = line.split(', '); 
 # 	edges += [(thisEdge[0], thisEdge[1])]; 
-# 	nodes += thisEdge; 
-# 	if (thisEdge[0]==thisEdge[1]): 
-# 		if thisEdge[0] in nPapers.keys(): 
-# 			nPapers[thisEdge[0]] += 1; 
-# 		else: 
-# 			nPapers[thisEdge[0]] = 1; 
-# 	else: 
-# 		# Each edge appears twice, thus we record it in the forward direction, 
-# 		# knowing that it will be recorded in the opposite direction later. 
-# 		if (thisEdge[0]+'-'+thisEdge[1] in nCollaborations.keys()): 
-# 			nCollaborations[thisEdge[0]] += 1; 
-# 		else: 
-# 			nCollaborations[thisEdge[0]] = 1; 
 
+# # Building network from edges: 
 # thisNetwork = nx.Graph(); 
 # thisNetwork.add_edges_from(edges); 
-# Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-# thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-# nNodes = len(thisNetwork.nodes()); 
 
 
 
@@ -165,17 +128,8 @@ location = "home";
 # thisKey = "None"; 
 # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Connectome/"; 
 # # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-# thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-# nNodes = len(thisNetwork.nodes()); 
-
-# # nx.draw(thisNetwork); 
-# # plt.show(); 
-
-# # sys,exit(0); 
-
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
 
 
 
@@ -187,16 +141,22 @@ location = "home";
 ## Perform analysis on nodes: 
 ## 
 
+
+# Loading largest connected component and number of nodes: 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+nNodes = len(thisNetwork.nodes()); 
+
+
 # Measure stuff from nodes: 
-(nodeList, nodesStatistics) = h.computeNodesStatistics(thisNetwork); 
-nStatistics = len(nodesStatistics.keys()); 
+(nodeList, nodesStatistics, includedStatistics, excludedStatistics) = h.computeNodesStatistics(thisNetwork); 
+
+nStatistics = len(includedStatistics); 
 allStatisticsArray = np.zeros([nStatistics, nNodes]); 
 dictIStat = {}; 
-for (iStat, statistic) in enumerate(nodesStatistics.keys()): 
+for (iStat, statistic) in enumerate(includedStatistics): 
 	allStatisticsArray[iStat,:] = nodesStatistics[statistic]; 
 	dictIStat[statistic] = iStat; 
-	print(statistic); 
-	print(allStatisticsArray[iStat,:]); 
 
 
 
@@ -210,14 +170,21 @@ allStatisticsArray = np.divide(allStatisticsArray, np.transpose(np.repeat(np.arr
 
 # Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(allStatisticsArray); 
-print(allStatisticsCov); 
+# (eigVals, eigVects) = la.eig(allStatisticsCov); 	# ACHTUNG!! This seems to produce more imaginary component when it shouldn't... 
 (eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
 # eigVals = np.real(eigVals); 
 # eigVects = np.real(eigVects); 
-if ((thisKey=="DataDown" and iNetwork==17) or (thisKey=="DataSLI" and iNetwork==16)): 
-	eigVals = np.real(eigVals); 
-	eigVects = np.real(eigVects); 
 
+(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
+plt.figure(); 
+plt.plot(varianceExplained); 
+
+plt.figure(); 
+plt.plot(varianceExplained_cumul); 
+
+
+# plt.show(); 
+# sys.exit(0); 
 
 
 plt.figure(); 
@@ -273,23 +240,6 @@ ax.set_xlabel("PC1");
 ax.set_ylabel("PC2"); 
 ax.set_zlabel("PC3"); 
 
-
-
-## Uncomment if we want to select specific nodes: 
-# nodeColor = []; 
-# for (iNode, node) in enumerate(nodeList): 
-# 	# ## Next lines highlight specific groups of nodes: 
-# 	# # if ((abs(allStatisticsArray_[2,iNode]) > 0) and (allStatisticsArray_[0,iNode]<-2.5)): 
-# 	# if (allStatisticsArray_[1,iNode] < -2): 
-# 	# 	nodeColor += ["red"]; 
-# 	# elif ((allStatisticsArray_[0, iNode]<0) and (allStatisticsArray_[1, iNode]<1) and (allStatisticsArray_[2, iNode]<-1)): 
-# 	# 	nodeColor += ["green"]; 
-# 	# elif ((allStatisticsArray_[0, iNode]<0) and 
-# 	# 		(allStatisticsArray_[1, iNode]<2.5 and allStatisticsArray_[1, iNode]>-0.5) and 
-# 	# 		(allStatisticsArray_[2, iNode]>-2)): 
-# 	# 	nodeColor += ["blue"]; 
-# 	# else: 
-# 	# 	nodeColor += ["black"]; 
 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
