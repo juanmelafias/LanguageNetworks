@@ -34,7 +34,7 @@ from copy import copy;
 from scipy.stats import entropy; 
 
 
-def computeNodesStatistics(net): 
+def computeNodesStatistics(net, fVerbose=False): 
 	"""	computeNodesStatistics function: 
 
 			This function computes statistics for all the nodes of the network provided. 
@@ -44,6 +44,7 @@ def computeNodesStatistics(net):
 
 			Inputs: 
 				>> net: Upon whose nodes we wish to measure stuff. 
+				>> fVerbose=False: To indicate whether we want to read what is being computed at each moment. 
 
 			Returns: 
 				<< nodesStatistics: stuff measured on each and every node. 
@@ -53,14 +54,14 @@ def computeNodesStatistics(net):
 	nodeList = net.nodes(); 
 	nNodes = len(nodeList); 
 	allStatistics = ["averageNeighborDegree", "degreeCentrality", "eigenvectorCentrality", "betweennessCentrality"]; 
-	# allStatistics += ["clustering", "componentSize", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
+	allStatistics += ["clustering", "componentSize", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
 	## ACH! The next line is the one currently used for syntax network. This should be reviewed. 
 	## 	The problem comes with "componentSize", which is the same for all if all are connected. 
 	# allStatistics += ["componentSize", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
 	## Component size is substituted by "clustering", which is troublesome for some sintex networks. 
 	## Other kinds of networks have issues with coreNumber, because all nodes belong to the same largest k-core. 
 	## We have to solve the invariant dimension issue. 
-	allStatistics += ["clustering", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
+	# allStatistics += ["clustering", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
 	# allStatistics += ["clustering", "pagerank", "degree", "normalizedDegree"]; 
 	nodesStatistics = {}; 
 	for statistic in allStatistics: 
@@ -70,27 +71,27 @@ def computeNodesStatistics(net):
 	netWOSL = copy(net); 
 	netWOSL.remove_edges_from(nx.selfloop_edges(netWOSL)); 
 
-	print("Average neighbor degree"); 
+	# print("Average neighbor degree"); 
 	thisAND = nx.average_neighbor_degree(net); 
-	print("Degree centrality"); 
+	# print("Degree centrality"); 
 	thisDC = nx.degree_centrality(net); 
-	print("Eigenvector centrality"); 
+	# print("Eigenvector centrality"); 
 	try: 
 		thisEC = nx.eigenvector_centrality(net); 
 	except: 
-		thisEC = nx.eigenvector_centrality(net, max_iter=1000); 
-	print("Betweenness centrality"); 
+		thisEC = nx.eigenvector_centrality(net, max_iter=10000); 
+	# print("Betweenness centrality"); 
 	thisBC = nx.betweenness_centrality(net); 
-	print("Clustering"); 
+	# print("Clustering"); 
 	thisClustering = nx.clustering(net); 
-	print("Largest connected component"); 
+	# print("Largest connected component"); 
 	thisGCC = max(nx.connected_components(net), key=len); 
-	print("Core number"); 
+	# print("Core number"); 
 	thisKN = nx.core_number(netWOSL); 
 	# thisEccentricity = nx.eccentricity(net); 
-	print("Page rank"); 
+	# print("Page rank"); 
 	thisPR = nx.pagerank(net); 
-	print("Degree"); 
+	# print("Degree"); 
 	thisDegree = net.degree(); 
 
 	for (iNode, node) in enumerate(nodeList): 
@@ -99,23 +100,25 @@ def computeNodesStatistics(net):
 		nodesStatistics["eigenvectorCentrality"][iNode] = thisEC[node]; 
 		nodesStatistics["betweennessCentrality"][iNode] = thisBC[node]; 
 		nodesStatistics["clustering"][iNode] = thisClustering[node]; 
-		# nodesStatistics["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
+		nodesStatistics["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
 		nodesStatistics["coreNumber"][iNode] = thisKN[node]; 
 		nodesStatistics["pagerank"][iNode] = thisPR[node]; 
 		nodesStatistics["degree"][iNode] = thisDegree[node]; 
 
 	nodesStatistics["normalizedDegree"] = nodesStatistics["degree"]*2/sum(nodesStatistics["degree"]); 
 
+	# Reporting which statistics are problematic. 
+	# These can be problematic, e.g., because there is no variation. Then, they do not contribute to any PC. 
+	# These would just have a zero on the eigenvectors, but algebra cannot handle these cases properly. 
 	includedStatistics = []; 
 	excludedStatistics = []; 
 	for statistic in nodesStatistics.keys(): 
-		thisMean = np.mean(nodesStatistics["normalizedDegree"]); 
-		thisStd = np.std(nodesStatistics["normalizedDegree"]); 
-		if ((thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
+		thisMean = np.mean(nodesStatistics[statistic]); 
+		thisStd = np.std(nodesStatistics[statistic]); 
+		if ((np.isnan(thisMean)) or (thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
 			excludedStatistics += [statistic]; 
 		else: 
 			includedStatistics += [statistic]; 
-
 
 	return (nodeList, nodesStatistics, includedStatistics, excludedStatistics); 
 
@@ -139,4 +142,26 @@ def convertPC2RGB(thisArray):
 	normalizedArray = [(elem - thisMin)/(thisMax-thisMin) for elem in thisArray]; 
 
 	return normalizedArray; 
+
+
+def varianceExplained(eigVals): 
+	"""	varianceExplained function: 
+
+			This function computes the percentage of variance explained by each component, as well as the cumulated
+			percentage of variance. 
+
+			Inputs: 
+				>> eigVals: Eigenvalues under research. 
+
+			Returns: 
+				<< varianceExplained: Percentage of variance explained by each eigenvalue. 
+				<< varianceExplained_cumul: Cumulative percentage of explained variance. 
+
+	"""
+
+	Z = np.sum(eigVals); 
+	varianceExplained = eigVals/Z; 
+	varianceExplained_cumul = np.cumsum(varianceExplained); 
+
+	return (varianceExplained, varianceExplained_cumul); 
 
