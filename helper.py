@@ -83,19 +83,23 @@ def computeNodesProperties(net, fVerbose=False):
 	# A list of primary properties: 
 	primaryProperties = ["degreeCentrality", "eigenvectorCentrality", "betweennessCentrality"]; 
 	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
-	primaryProperties += ["clustering", "componentSize", "coreNumber", "pagerank", "degree", "normalizedDegree"]; 
+	primaryProperties += ["clustering", "componentSize", "coreNumber", "pagerank", "degree"]; 
 	measuredProperties = copy(primaryProperties); 
 
-	# # These are complemented by average properties of the neighbors to measure if similar nodes connect (as in
-	# # assortativity) and standard deviation of properties of neighbors to measure whether connection is specific or
-	# # heterogeneous. 
-	# for thisProperty in primaryProperties: 
-	# 	measuredProperties += [thisProperty+"_neighborMean", thisProperty+"_neighborStd"]; 
+	# These are complemented by average properties of the neighbors to measure if similar nodes connect (as in
+	# assortativity) and standard deviation of properties of neighbors to measure whether connection is specific or
+	# heterogeneous. 
+	for thisProperty in primaryProperties: 
+		measuredProperties += [thisProperty+"_neighborMean"]; 
+	for thisProperty in primaryProperties: 
+		measuredProperties += [thisProperty+"_neighborStd"]; 
 
 
 	## Initializing the dictionary that will contain all properties: 
+	nodesPropertiesDict = {}; 
 	nodesProperties = {}; 
 	for thisProperty in measuredProperties: 
+		nodesPropertiesDict[thisProperty] = {}; 
 		nodesProperties[thisProperty] = np.zeros([nNodes, 1]).squeeze(); 
 
 
@@ -105,82 +109,88 @@ def computeNodesProperties(net, fVerbose=False):
 	# 	Degree centrality: 
 	# 	This is redundant as it is just the node degree normalized by the number of nodes in the network. 
 	# 	Should be removed. Kept for the moment. 
-	thisDegreeCentrality = nx.degree_centrality(net); 
+	nodesPropertiesDict["degreeCentrality"] = nx.degree_centrality(net); 
 
 	# Eigenvector centrality: 
 	# 	ACH! Remind why this exception! 
 	try: 
-		thisEigenvectorCentrality = nx.eigenvector_centrality(net); 
+		nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net); 
 	except: 
-		thisEigenvectorCentrality = nx.eigenvector_centrality(net, max_iter=10000); 
+		nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net, max_iter=10000); 
 
 	# Betweenness centrality: 
-	thisBetweennessCentrality = nx.betweenness_centrality(net); 
+	nodesPropertiesDict["betweennessCentrality"] = nx.betweenness_centrality(net); 
 
 	# Closeness centrality: 
-	thisClosenessCentrality = nx.closeness_centrality(net); 
+	nodesPropertiesDict["closenessCentrality"] = nx.closeness_centrality(net); 
 
 	# Harmonic centrality: 
-	thisHarmonicCentrality = nx.harmonic_centrality(net); 
+	nodesPropertiesDict["harmonicCentrality"] = nx.harmonic_centrality(net); 
 
 	# # ACHTUNG!! Excluded. It does not converge! 
 	# # Katz centrality: 
 	# try: 
-	# 	thisKatzCentrality = nx.katz_centrality(net); 
+	# 	nodesPropertiesDict["katzCentrality"] = nx.katz_centrality(net); 
 	# except: 
-	# 	thisKatzCentrality = nx.katz_centrality(net, max_iter=10000); 
+	# 	nodesPropertiesDict["katzCentrality"] = nx.katz_centrality(net, max_iter=10000); 
 
 	# Clustering coefficient: 
-	thisClustering = nx.clustering(net); 
+	nodesPropertiesDict["clustering"] = nx.clustering(net); 
 
 	# Size of largest k-core to which each node belongs: 
-	thisLargestKCore = nx.core_number(netWOSL); 
+	nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
 
 	# thisEccentricity = nx.eccentricity(net); 
 	
 	# Page rank: 
-	thisPagerank = nx.pagerank(net); 
+	nodesPropertiesDict["pagerank"] = nx.pagerank(net); 
 
 	# Node degree: 
-	thisDegree = net.degree(); 
+	nodesPropertiesDict["degree"] = net.degree(); 
 
 
 	# print("Average neighbor degree"); 
 	thisAND = nx.average_neighbor_degree(net); 
 
+	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
 	for (iNode, node) in enumerate(nodeList): 
-		nodesProperties["degreeCentrality"][iNode] = thisDegreeCentrality[node]; 
-		nodesProperties["eigenvectorCentrality"][iNode] = thisEigenvectorCentrality[node]; 
-		nodesProperties["betweennessCentrality"][iNode] = thisBetweennessCentrality[node]; 
-		nodesProperties["closenessCentrality"][iNode] = thisClosenessCentrality[node]; 
-		nodesProperties["harmonicCentrality"][iNode] = thisHarmonicCentrality[node]; 
-		nodesProperties["clustering"][iNode] = thisClustering[node]; 
+		nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
+		nodesProperties["eigenvectorCentrality"][iNode] = nodesPropertiesDict["eigenvectorCentrality"][node]; 
+		nodesProperties["betweennessCentrality"][iNode] = nodesPropertiesDict["betweennessCentrality"][node]; 
+		nodesProperties["closenessCentrality"][iNode] = nodesPropertiesDict["closenessCentrality"][node]; 
+		nodesProperties["harmonicCentrality"][iNode] = nodesPropertiesDict["harmonicCentrality"][node]; 
+		nodesProperties["clustering"][iNode] = nodesPropertiesDict["clustering"][node]; 
 		nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
-		nodesProperties["coreNumber"][iNode] = thisLargestKCore[node]; 
-		nodesProperties["pagerank"][iNode] = thisPagerank[node]; 
-		nodesProperties["degree"][iNode] = thisDegree[node]; 
+		nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
+		nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
+		nodesProperties["pagerank"][iNode] = nodesPropertiesDict["pagerank"][node]; 
+		nodesProperties["degree"][iNode] = nodesPropertiesDict["degree"][node]; 
 		# nodesProperties["averageNeighborDegree"][iNode] = thisAND[node]; 
 
-	nodesProperties["normalizedDegree"] = nodesProperties["degree"]*2/sum(nodesProperties["degree"]); 
+	# Finding out mean and standard deviation of properties over each node's neighbors: 
+	for (iNode, node) in enumerate(nodeList): 
+		nodeNeighbors = [elem for elem in net.neighbors(node)]; 
+		for thisProperty in primaryProperties: 
+			neighborProperty = [nodesPropertiesDict[thisProperty][thisNeighbor] for thisNeighbor in nodeNeighbors]; 
+			nodesProperties[thisProperty+"_neighborMean"][iNode] = np.mean(neighborProperty); 
+			if (nodesPropertiesDict["degree"][node]>1): 
+				nodesProperties[thisProperty+"_neighborStd"][iNode] = np.std(neighborProperty); 
+			else: 
+				nodesProperties[thisProperty+"_neighborStd"][iNode] = 0.; 
 
-	# for (iNode, node) in enumerate(nodeList): 
-	# 	nodeNeighbors = net.neighbors(node); 
-	# 	for thisProperty in primaryProperties: 
-	# 		neighborProperty = nodesProperties[]
 
-
-	# Reporting which statistics are problematic. 
-	# These can be problematic, e.g., because there is no variation. Then, they do not contribute to any PC. 
-	# These would just have a zero on the eigenvectors, but algebra cannot handle these cases properly. 
+	# Reporting which properties are problematic: 
+	# 	They can be problematic, e.g., because there is no variation. Then, they do not contribute to any PC. 
+	# 	These would just have a zero on the eigenvectors, but algebra cannot handle these cases properly. 
 	includedProperties = []; 
 	excludedProperties = []; 
-	for statistic in nodesProperties.keys(): 
-		thisMean = np.mean(nodesProperties[statistic]); 
-		thisStd = np.std(nodesProperties[statistic]); 
+	for thisProperty in nodesProperties.keys(): 
+		thisMean = np.mean(nodesProperties[thisProperty]); 
+		thisStd = np.std(nodesProperties[thisProperty]); 
 		if ((np.isnan(thisMean)) or (thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
-			excludedProperties += [statistic]; 
+			excludedProperties += [thisProperty]; 
 		else: 
-			includedProperties += [statistic]; 
+			includedProperties += [thisProperty]; 
 
 	return (nodeList, nodesProperties, includedProperties, excludedProperties); 
 

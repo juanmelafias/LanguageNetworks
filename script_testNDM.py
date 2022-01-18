@@ -92,10 +92,10 @@ location = "home";
 # #######################################################################################################################
 # # Uncomment for randomly generated networks: 
 
-# # thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
-# # thisNetwork = nx.watts_strogatz_graph(100, 4, 0.05); 
+# thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
+# # thisNetwork = nx.watts_strogatz_graph(200, 4, 0.05); 
 # # thisNetwork = nx.barabasi_albert_graph(200, 2); 
-# thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
+# # thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
 
 
 #######################################################################################################################
@@ -124,9 +124,9 @@ thisNetwork.add_edges_from(edges);
 # ## Uncomment for connectome network: 
 
 # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Connectome/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
 # # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
 
 
 
