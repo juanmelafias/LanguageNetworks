@@ -34,7 +34,7 @@ from copy import copy;
 from scipy.stats import entropy; 
 
 
-def computeNodesProperties(net, fVerbose=False): 
+def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True): 
 	"""	computeNodesProperties function: 
 
 			This function computes a series of properties of all the nodes of the network provided. Some of these
@@ -46,8 +46,8 @@ def computeNodesProperties(net, fVerbose=False):
 
 			Inputs: 
 				>> net: Upon whose nodes we wish to measure stuff. 
-				>> fVerbose=False: To indicate whether we want to read what is being computed at each moment. 
-					> Not used at the moment. Decided to skip verbosity altogether. 
+				>> fNeighborMean: Flag to indicate whether we want to incorporate average neighbor properties to the analysis. 
+				>> fNeighborStd: Flag to indicate whether we want to incorporate std of neighbor properties to the analysis. 
 
 			Returns: 
 				<< nodeList: List of nodes as listed when called from the Graph() object. 
@@ -83,16 +83,18 @@ def computeNodesProperties(net, fVerbose=False):
 	# A list of primary properties: 
 	primaryProperties = ["degreeCentrality", "eigenvectorCentrality", "betweennessCentrality"]; 
 	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
-	primaryProperties += ["clustering", "componentSize", "coreNumber", "pagerank", "degree"]; 
+	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
 	measuredProperties = copy(primaryProperties); 
 
 	# These are complemented by average properties of the neighbors to measure if similar nodes connect (as in
 	# assortativity) and standard deviation of properties of neighbors to measure whether connection is specific or
 	# heterogeneous. 
-	for thisProperty in primaryProperties: 
-		measuredProperties += [thisProperty+"_neighborMean"]; 
-	for thisProperty in primaryProperties: 
-		measuredProperties += [thisProperty+"_neighborStd"]; 
+	if (fNeighborMean): 
+		for thisProperty in primaryProperties: 
+			measuredProperties += [thisProperty+"_neighborMean"]; 
+	if (fNeighborStd): 
+		for thisProperty in primaryProperties: 
+			measuredProperties += [thisProperty+"_neighborStd"]; 
 
 
 	## Initializing the dictionary that will contain all properties: 
@@ -137,9 +139,6 @@ def computeNodesProperties(net, fVerbose=False):
 	# Clustering coefficient: 
 	nodesPropertiesDict["clustering"] = nx.clustering(net); 
 
-	# Size of largest k-core to which each node belongs: 
-	nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
-
 	# thisEccentricity = nx.eccentricity(net); 
 	
 	# Page rank: 
@@ -148,9 +147,15 @@ def computeNodesProperties(net, fVerbose=False):
 	# Node degree: 
 	nodesPropertiesDict["degree"] = net.degree(); 
 
+	# Size of largest k-core to which each node belongs: 
+	nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
 
-	# print("Average neighbor degree"); 
-	thisAND = nx.average_neighbor_degree(net); 
+	# Onion layer: order in which each node is removed when computing k-cores: 
+	nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
+
+
+	# # print("Average neighbor degree"); 
+	# thisAND = nx.average_neighbor_degree(net); 
 
 	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
 	for (iNode, node) in enumerate(nodeList): 
@@ -162,21 +167,26 @@ def computeNodesProperties(net, fVerbose=False):
 		nodesProperties["clustering"][iNode] = nodesPropertiesDict["clustering"][node]; 
 		nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
 		nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
-		nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
 		nodesProperties["pagerank"][iNode] = nodesPropertiesDict["pagerank"][node]; 
 		nodesProperties["degree"][iNode] = nodesPropertiesDict["degree"][node]; 
+		nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
+		nodesProperties["onionLayer"][iNode] = nodesPropertiesDict["onionLayer"][node]; 
 		# nodesProperties["averageNeighborDegree"][iNode] = thisAND[node]; 
 
+
 	# Finding out mean and standard deviation of properties over each node's neighbors: 
-	for (iNode, node) in enumerate(nodeList): 
-		nodeNeighbors = [elem for elem in net.neighbors(node)]; 
-		for thisProperty in primaryProperties: 
-			neighborProperty = [nodesPropertiesDict[thisProperty][thisNeighbor] for thisNeighbor in nodeNeighbors]; 
-			nodesProperties[thisProperty+"_neighborMean"][iNode] = np.mean(neighborProperty); 
-			if (nodesPropertiesDict["degree"][node]>1): 
-				nodesProperties[thisProperty+"_neighborStd"][iNode] = np.std(neighborProperty); 
-			else: 
-				nodesProperties[thisProperty+"_neighborStd"][iNode] = 0.; 
+	if (fNeighborMean or fNeighborStd): 
+		for (iNode, node) in enumerate(nodeList): 
+			nodeNeighbors = [elem for elem in net.neighbors(node)]; 
+			for thisProperty in primaryProperties: 
+				neighborProperty = [nodesPropertiesDict[thisProperty][thisNeighbor] for thisNeighbor in nodeNeighbors]; 
+				if (fNeighborMean): 
+					nodesProperties[thisProperty+"_neighborMean"][iNode] = np.mean(neighborProperty); 
+				if (fNeighborStd): 
+					if (nodesPropertiesDict["degree"][node]>1): 
+						nodesProperties[thisProperty+"_neighborStd"][iNode] = np.std(neighborProperty); 
+					else: 
+						nodesProperties[thisProperty+"_neighborStd"][iNode] = 0.; 
 
 
 	# Reporting which properties are problematic: 
