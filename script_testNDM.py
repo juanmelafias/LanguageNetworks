@@ -40,7 +40,6 @@
 
 # Importing relevant libraries: 
 import numpy as np; 
-import scipy.linalg as la; 
 import matplotlib.pyplot as plt; 
 import matplotlib as mplt; 
 import os, sys; 
@@ -54,11 +53,6 @@ import scipy.io; # To read .mat files!
 # For 3D scatter: 
 from mpl_toolkits.mplot3d import Axes3D; 
 
-
-
-## Loading all available networks: 
-
-location = "home"; 
 
 
 # ########################################################################################################################
@@ -305,20 +299,29 @@ for (iStat, statistic) in enumerate(includedProperties):
 
 
 
-# # Standardizing distro: 
-allStatisticsMean = np.mean(allPropertiesArray, 1); 
-allStatisticsStd = np.std(allPropertiesArray, 1); 
-allPropertiesArray = allPropertiesArray - np.transpose(np.repeat(np.array([allStatisticsMean]), nNodes, 0)); 
-allPropertiesArray = np.divide(allPropertiesArray, np.transpose(np.repeat(np.array([allStatisticsStd]), nNodes, 0))); 
+## Standardizing distro: 
+allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
 
-# Computing correlation matrix and diagonalizing: 
+## Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(allPropertiesArray); 
-# (eigVals, eigVects) = la.eig(allStatisticsCov); 	# ACHTUNG!! This seems to produce more imaginary component when it shouldn't... 
 (eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
 # eigVals = np.real(eigVals); 
 # eigVects = np.real(eigVects); 
 
+# Plotting covariance matrix: 
+plt.figure(); 
+plt.imshow(allStatisticsCov, interpolation="none"); 
+plt.colorbar(); 
+
+# Plotting eigenvectors: 
+plt.figure(); 
+plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
+plt.colorbar(); 
+
+
+# Computing and plotting variance explained: 
 (varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
+
 plt.figure(); 
 plt.plot(varianceExplained); 
 
@@ -326,27 +329,12 @@ plt.figure();
 plt.plot(varianceExplained_cumul); 
 
 
-# plt.show(); 
-# sys.exit(0); 
 
-
-plt.figure(); 
-plt.imshow(allStatisticsCov, interpolation="none"); 
-plt.colorbar(); 
-
-plt.figure(); 
-plt.plot(eigVals); 
-
-plt.figure(); 
-plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
-plt.colorbar(); 
-
-
-# Projecting data into eigenspace: 
+## Projecting data into eigenspace: 
 allPropertiesArray_ = np.dot(np.transpose(eigVects), allPropertiesArray); 
 
-## Using first three PCs as color coding: 
-# Normalize components to [0,1]; 
+# Using first three PCs as color coding: 
+# 	Normalize components to [0,1]; 
 valuesRGB0 = h.convertPC2RGB(allPropertiesArray_[0,:]); 
 valuesRGB1 = h.convertPC2RGB(allPropertiesArray_[1,:]); 
 valuesRGB2 = h.convertPC2RGB(allPropertiesArray_[2,:]); 
@@ -355,18 +343,13 @@ nodeColor = [];
 for (iNode, node) in enumerate(nodeList): 
 	nodeColor += [mplt.colors.to_hex([valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]])]; 
 
- 
 
 # PC1-PC2: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
 plt.scatter(allPropertiesArray_[0,:], allPropertiesArray_[1,:], c=nodeColor); 
-# for (iWord, word) in enumerate(nodeList): 
-# 	ax.annotate(word, (allPropertiesArray_[0,iWord], allPropertiesArray_[1,iWord])); 
-	# plt.text(allPropertiesArray_[0,iWord], allPropertiesArray_[1,iWord], word); 
 plt.xlabel("PC1"); 
 plt.ylabel("PC2"); 
-
 
 # PC1-PC3: 
 fig = plt.figure(); 
@@ -394,7 +377,6 @@ if "nativePositions" in locals():
 	ax = fig.add_subplot(111); 
 	nx.draw(thisNetwork, with_labels=False, node_color=nodeColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
 	ax.set_aspect("equal"); 
-
 
 # Plotting in network space in 3D if they have such native coordinates: 
 if "nativePositions_3D" in locals(): 
@@ -435,7 +417,7 @@ else:
 	ax.set_aspect("equal"); 
 
 
-# Smae, but in 3D if coordinates are provided: 
+# Same, but in 3D if coordinates are provided: 
 if "nativePositions_3D" in locals(): 
 
 	# Proper plot: 
