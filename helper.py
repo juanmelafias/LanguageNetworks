@@ -205,6 +205,66 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	return (nodeList, nodesProperties, includedProperties, excludedProperties); 
 
 
+# def normalizeProperties(netProperties, normalizeToStd=True): 
+# 	"""	normalizeProperties function: 
+
+# 	"""
+
+
+def computeNetworkComplexity(net): 
+	"""	computeNetworkComplexity function: 
+
+			This function runs all steps needed to compute a network's complexity. This is: 
+				(1) Computing network properties. 
+				(2) Extracting useful properties (non-pathological ones). 
+				(3) Standardizing distro of properties. 
+				(4) Computing correlation matrices and diagonalizing. 
+				(5) Computing index based on cumulative explained variance. 
+				(6) Computing correcting factor as well. 
+
+			Inputs: 
+				>> net: From which we wish to measure the complexity. 
+
+			Returns: 
+				<< networkComplexity: Complexity index for this network based on accumulated explained variance. 
+				<< correctionFactor: Trace of the covariance matrix before normalizing to std=1. 
+
+	"""
+
+	# Computing network properties: 
+	nNodes = len(net.nodes()); 
+	(nodeList, nodesProperties, includedProperties, excludedProperties) = computeNodesProperties(net); 
+	nAllProperties = len(nodesProperties); 
+	nProperties = len(includedProperties); 
+	allPropertiesArray = np.zeros([nProperties, nNodes]); 
+	dictIStat = {}; 
+	for (iProperty, thisProperty) in enumerate(includedProperties): 
+		allPropertiesArray[iProperty,:] = nodesProperties[thisProperty]; 
+
+	# Standardizing distro of properties: 
+	allPropertiesMean = np.mean(allPropertiesArray, 1); 
+	allPropertiesStd = np.std(allPropertiesArray, 1); 
+	allPropertiesArray_noStandard = copy(allPropertiesArray); 
+	allPropertiesArray = allPropertiesArray - np.transpose(np.repeat(np.array([allPropertiesMean]), nNodes, 0)); 
+	allPropertiesArray = np.divide(allPropertiesArray, np.transpose(np.repeat(np.array([allPropertiesStd]), nNodes, 0))); 
+
+	# Computing correlation matrix and diagonalizing: 
+	allPropertiesCov = np.cov(allPropertiesArray); 
+	allPropertiesCov_noStandard = np.cov(allPropertiesArray_noStandard); 
+	correctionFactor = np.trace(allPropertiesCov_noStandard)
+	(eigVals, eigVects) = np.linalg.eig(allPropertiesCov); 
+	# eigVals = np.real(eigVals); 
+	# eigVects = np.real(eigVects); 
+
+	# Computing complexity index: 
+	(netVarianceExplained, netVarianceExplained_cumul) = varianceExplained(eigVals); 
+	networkComplexity = 1.-sum(netVarianceExplained_cumul)/nAllProperties; 
+	if (len(netVarianceExplained_cumul)==0): 
+		networkComplexity = 0.; 
+
+	return (networkComplexity, correctionFactor); 
+
+
 def convertPC2RGB(thisArray): 
 	"""	convertPC2RGB function: 
 
@@ -247,3 +307,26 @@ def varianceExplained(eigVals):
 
 	return (varianceExplained, varianceExplained_cumul); 
 
+
+def distanceToTargetNode(allPropertiesArray_, iTargetNode): 
+	"""	distanceToTargetNode function: 
+
+			This function computes the distance of all nodes to a target node in eigenspace coordinates. This can be
+			used to plot which nodes are more similar to a given one. 
+
+			Inputs: 
+				>> allPropertiesArray_: Node properties projected in eigenspace. 
+				>> iTargetNode: Index of the node with respect to which we wish to measure the distance. 
+
+			Returns: 
+				<< distanceToTarget: Array containing the distances to the target node in eigenspace. 
+				<< distanceToTarget_: Same, but normalized to [0,1]; 
+	
+	"""
+
+	nNodes = allPropertiesArray_.shape[1]; 
+	distanceToTargetNode = [np.sum(np.abs(allPropertiesArray_[:,iNode] - allPropertiesArray_[:,iTargetNode])) for iNode in range(nNodes)]; 
+	distanceToTargetNode = np.array(distanceToTargetNode).astype(float); 
+	distanceToTargetNode_ = np.divide(distanceToTargetNode, max(distanceToTargetNode)); 
+
+	return (distanceToTargetNode, distanceToTargetNode_); 
