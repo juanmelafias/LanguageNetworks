@@ -205,10 +205,29 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	return (nodeList, nodesProperties, includedProperties, excludedProperties); 
 
 
-# def normalizeProperties(netProperties, normalizeToStd=True): 
-# 	"""	normalizeProperties function: 
+def normalizeProperties(netProperties, fNormalizeToStd=True): 
+	"""	normalizeProperties function: 
 
-# 	"""
+			This function normalizes the list of network properties to have mean 0 and standard deviation 1. An option
+			is provided to not to normalize to std=1. 
+
+			Inputs: 
+				>> netProperties: List of properties measured from a network. 
+				>> normalizeToStd=True: Option to set standard deviation of properties to 1. 
+
+			Returns: 
+				<< netProperties: Properly normalized network properties. 
+
+	"""
+
+	nNodes = netProperties.shape[1]; 
+	netPropertiesMean = np.mean(netProperties, 1); 
+	netPropertiesStd = np.std(netProperties, 1); 
+	netProperties = netProperties - np.transpose(np.repeat(np.array([netPropertiesMean]), nNodes, 0)); 
+	if (fNormalizeToStd): 
+		netProperties = np.divide(netProperties, np.transpose(np.repeat(np.array([netPropertiesStd]), nNodes, 0))); 
+
+	return netProperties; 
 
 
 def computeNetworkComplexity(net): 
@@ -242,19 +261,16 @@ def computeNetworkComplexity(net):
 		allPropertiesArray[iProperty,:] = nodesProperties[thisProperty]; 
 
 	# Standardizing distro of properties: 
-	allPropertiesMean = np.mean(allPropertiesArray, 1); 
-	allPropertiesStd = np.std(allPropertiesArray, 1); 
 	allPropertiesArray_noStandard = copy(allPropertiesArray); 
-	allPropertiesArray = allPropertiesArray - np.transpose(np.repeat(np.array([allPropertiesMean]), nNodes, 0)); 
-	allPropertiesArray = np.divide(allPropertiesArray, np.transpose(np.repeat(np.array([allPropertiesStd]), nNodes, 0))); 
+	allPropertiesArray = normalizeProperties(allPropertiesArray); 
 
 	# Computing correlation matrix and diagonalizing: 
 	allPropertiesCov = np.cov(allPropertiesArray); 
 	allPropertiesCov_noStandard = np.cov(allPropertiesArray_noStandard); 
 	correctionFactor = np.trace(allPropertiesCov_noStandard)
 	(eigVals, eigVects) = np.linalg.eig(allPropertiesCov); 
-	# eigVals = np.real(eigVals); 
-	# eigVects = np.real(eigVects); 
+	eigVals = np.real(eigVals); 
+	eigVects = np.real(eigVects); 
 
 	# Computing complexity index: 
 	(netVarianceExplained, netVarianceExplained_cumul) = varianceExplained(eigVals); 
