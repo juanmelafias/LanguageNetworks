@@ -42,13 +42,12 @@ location = "home";
 # # thisNetwork = nx.barabasi_albert_graph(200, 2); 
 
 
-nRepeats = 100; 
+nRepeats = 50; 
 nNodesTarget = 100; 
 
 # pList = np.arange(0.01, 0.2, 0.005); 
-pList = np.arange(0.001, 0.05, 0.0005); 
-pList = np.arange(0.99, 1.001, 0.001); 
-# pList = np.arange(0.98, 1.0005, 0.0005); 
+# pList = np.arange(0.001, 0.051, 0.001); # Nice for Watts-Strogatz transition. 
+pList = np.arange(0.001, 1, 0.05); # Over a longer range. 
 networkComplexity = []; 
 networkComplexityStd = []; 
 allNetworkComplexities = []; 
@@ -85,7 +84,7 @@ for pRewire in pList:
 				nC = 0; 
 			else: 
 				# Measuring stuff from network nodes: 
-				(nodeList, nodesStatistics, includedStatistics, excludedStatistics) = h.computeNodesStatistics(thisNetwork); 
+				(nodeList, nodesStatistics, includedStatistics, excludedStatistics) = h.computeNodesProperties(thisNetwork); 
 				nAllStatistics = len(nodesStatistics); 
 				nStatistics = len(includedStatistics); 
 				# Loading measurements to matrix to compute covariances and diagonalize: 
@@ -99,12 +98,15 @@ for pRewire in pList:
 				# Standardizing distro: 
 				allStatisticsMean = np.mean(allStatisticsArray, 1); 
 				allStatisticsStd = np.std(allStatisticsArray, 1); 
+				allStatisticsArray_noStandard = copy(allStatisticsArray); 
 				allStatisticsArray = allStatisticsArray - np.transpose(np.repeat(np.array([allStatisticsMean]), nNodes, 0)); 
 				allStatisticsArray = np.divide(allStatisticsArray, np.transpose(np.repeat(np.array([allStatisticsStd]), nNodes, 0))); 
 
 
 				# Computing correlation matrix and diagonalizing: 
 				allStatisticsCov = np.cov(allStatisticsArray); 
+				allStatisticsCov_noStandard = np.cov(allStatisticsArray_noStandard); 
+				correctionFactor = sum(np.diag(allStatisticsCov_noStandard)); 
 				(eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
 				eigVals = np.real(eigVals); 
 				eigVects = np.real(eigVects); 
@@ -112,6 +114,7 @@ for pRewire in pList:
 				# Computing complexity index: 
 				(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
 				nC = 1.-sum(varianceExplained_cumul)/nAllStatistics; 
+				nC = (1.-sum(varianceExplained_cumul)/nAllStatistics)*correctionFactor; 
 				if (len(varianceExplained_cumul)==0): 
 					nC = 0.; 
 
