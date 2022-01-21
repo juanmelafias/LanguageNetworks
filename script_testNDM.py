@@ -48,6 +48,8 @@ import networkx as nx;
 import helper as h; 
 import loadHelper as lh; 
 from copy import copy; 
+import scipy.io; # To read .mat files! 
+
 
 # For 3D scatter: 
 from mpl_toolkits.mplot3d import Axes3D; 
@@ -98,35 +100,169 @@ location = "home";
 # # thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
 
 
-#######################################################################################################################
-# Uncomment for CNB network: 
+# #######################################################################################################################
+# # Uncomment for CNB network: 
 
-dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+# dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
 
-# Reading edges: 
-fIn	= open(dataPath + "edges.csv", 'r'); 
-edges = []; 
-nodes = []; 
-allLines = fIn.read().splitlines(); 
-nPapers = {}; 
-nCollaborations = {}; 
-for line in allLines: 
-	thisEdge = line.split(', '); 
-	edges += [(thisEdge[0], thisEdge[1])]; 
+# # Reading edges: 
+# fIn	= open(dataPath + "edges.csv", 'r'); 
+# edges = []; 
+# nodes = []; 
+# allLines = fIn.read().splitlines(); 
+# nPapers = {}; 
+# nCollaborations = {}; 
+# for line in allLines: 
+# 	thisEdge = line.split(', '); 
+# 	edges += [(thisEdge[0], thisEdge[1])]; 
 
-# Building network from edges: 
-thisNetwork = nx.Graph(); 
-thisNetwork.add_edges_from(edges); 
+# # Building network from edges: 
+# thisNetwork = nx.Graph(); 
+# thisNetwork.add_edges_from(edges); 
 
 
 
 # ########################################################################################################################
-# ## Uncomment for connectome network: 
+# ## Uncomment for MRI connectome network (I have a lof of such connectomes): 
 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Connectome/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+
+# # # Next networks are in MRI_234: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
 # # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+
+# # # Next networks are in MRI_1015: 
+# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+# # # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+
+# # ## Next networks are in MRI_Lobes: 
+# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+
+# nativePositions = {}; 
+# nativePositions_3D = {}; 
+# for node in thisNetwork.nodes(): 
+# 	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+# 								thisNetwork.nodes()[node]["dn_position_y"]]; 
+# 	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+# 								thisNetwork.nodes()[node]["dn_position_y"], 
+# 								thisNetwork.nodes()[node]["dn_position_z"]]; 
+
+
+
+
+########################################################################################################################
+## Uncomment for Macaque brain: 
+
+connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
+thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
+thisNetwork = thisNetwork.to_undirected(); 
+
+
+# # ########################################################################################################################
+# # ## Uncomment for Drosophila: 
+
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Drosophila/"; 
+# mat = scipy.io.loadmat(connectomeDataPath + "mac95.mat"); 
+# for elem in mat.keys(): 
+# 	print(elem); 
+# 	print(mat[elem]); 
+
+
+# sys.exit(0); 
+
+# thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
+# thisNetwork = thisNetwork.to_undirected(); 
+
+
+# ########################################################################################################################
+# ## Uncomment for Mouse Visual Cortex: 
+
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Mouse/VisualCortex/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "mouse_visual.cortex_2.graphml"); 
+# thisNetwork = thisNetwork.to_undirected(); 
+
+
+# ########################################################################################################################
+# ## Uncomment for C elegans: 
+
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Celegans/Celegans131/"; 
+
+# # # Simple-to-load C elegans network: 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "c.elegans_neural.male_1.graphml"); 
+# # thisNetwork = thisNetwork.to_undirected(); 
+
+# # # Complex-to-load C elegans network, but with positions! 
+# # thisNetwork = nx.read_edgelist(connectomeDataPath + "C-elegans-frontal.txt", create_using=nx.Graph(), nodetype=int); 
+# # nodePositions = np.genfromtxt(connectomeDataPath + "C-elegans-frontal-meta.csv", delimiter=',', skip_header=1, usecols=[2, 3]); 
+# # nNodes = len(thisNetwork.nodes()); 
+# # nativePositions = {}; 
+# # for iNode in range(nNodes): 
+# # 	nativePositions[iNode] = nodePositions[iNode,:]; 
+
+# mat = scipy.io.loadmat(connectomeDataPath + "celegans131.mat"); 
+# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans131matrix"]); 
+# nativePositions = {}; 
+# for node in thisNetwork.nodes(): 
+# 	nativePositions[node] = mat["celegans131positions"][node,:]; 
+
+
+
+
+# ########################################################################################################################
+# ## Uncomment for Deutsche Autobahn: 
+
+# dieAutobahnDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Autobahn/"; 
+
+
+# mat = scipy.io.loadmat(dieAutobahnDataPath + "autobahn.mat"); 
+# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["auto1168"]); 
+# # for key in mat.keys(): 
+# # 	print(key); 
+# # 	print(mat[key]); 
+
+# labeledCities = []; 
+# for elem in np.squeeze(mat["auto1168labels"]): 
+# 	labeledCities += [elem[0]]; 
+
+# # # nativePositions = {}; 
+# # # for node in thisNetwork.nodes(): 
+# # # 	nativePositions[node] = mat["celegans131positions"][node,:]; 
+
+
+
+# # sys.exit(); 
+
+
+
+# ########################################################################################################################
+# ## Uncomment for airport connections: 
+
+# # Data was extracted from: https://www.dynamic-connectome.org/resources/
+
+# airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
+
+# # Loading network: 
+# mat = scipy.io.loadmat(airportDataPath + "air500.mat"); 
+# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
+# nodeNames = np.squeeze(mat["air500labels"]); 
+# # Reasigining node names to actual labels: 
+# mapping = {}; 
+# for (iName, name) in enumerate(nodeNames): 
+# 	mapping[iName] = name[0]; 
+# thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
+
+
+# # Loading huge airpot metadata: 
+# fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
+# airportMeta = fIn.read().splitlines(); 
+# fIn.close(); 
+# nativePositions = {}; 
+# for line in airportMeta: 
+# 	splitLine = line.split(','); 
+# 	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
 
 
 
@@ -134,19 +270,28 @@ thisNetwork.add_edges_from(edges);
 
 
 
-######################################################################################################
-## Perform analysis on nodes: 
-## 
+
+########################################################################################################################
+########################################################################################################################
+#### Perform analysis on nodes: 
+#### 
 
 
-# Loading largest connected component and number of nodes: 
+# # Loading largest connected component and number of nodes: 
 Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
 thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
 nNodes = len(thisNetwork.nodes()); 
 
+# print(nNodes); 
+# sys.exit(); 
+
 
 # Measure stuff from nodes: 
 (nodeList, nodesProperties, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
+# (nodeList, nodesProperties, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
+print("Analysis includes the following properties: "); 
+for (iP, thisProperty) in enumerate(includedProperties): 
+	print('\t' + str(iP+1) + ": " + thisProperty); 
 
 
 nProperties = len(includedProperties); 
@@ -200,7 +345,6 @@ plt.colorbar();
 # Projecting data into eigenspace: 
 allPropertiesArray_ = np.dot(np.transpose(eigVects), allPropertiesArray); 
 
-
 ## Using first three PCs as color coding: 
 # Normalize components to [0,1]; 
 valuesRGB0 = h.convertPC2RGB(allPropertiesArray_[0,:]); 
@@ -238,26 +382,70 @@ ax.set_xlabel("PC1");
 ax.set_ylabel("PC2"); 
 ax.set_zlabel("PC3"); 
 
-
+# Plotting in network space: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
-# nx.draw(thisNetwork, with_labels=True, pos=nx.circular_layout(thisNetwork), node_color=nodeColor); 
-nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor); 
+nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
 ax.set_aspect("equal"); 
 
+# Plotting in network space in 2D if they have native coordinates: 
+if "nativePositions" in locals(): 
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111); 
+	nx.draw(thisNetwork, with_labels=False, node_color=nodeColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+	ax.set_aspect("equal"); 
+
+
+# Plotting in network space in 3D if they have such native coordinates: 
+if "nativePositions_3D" in locals(): 
+
+	# Position cannot be given as a dictionary: 
+	sortedPositions = []; 
+	for node in thisNetwork.nodes(): 
+		sortedPositions += [nativePositions_3D[node]]; 
+	sortedPositions = np.array(sortedPositions); 
+
+	# We aldo need to add edges manually: 
+	edgeCoords = np.array([(nativePositions_3D[node1], nativePositions_3D[node2]) for (node1, node2) in thisNetwork.edges()]); 
+
+	# Proper plot: 
+	fig = plt.figure(); 
+	ax = fig.gca(projection='3d'); 
+	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeColor); 
+
+	# # Plot the edges (commented by now -- it takes too much RAM). 
+	# for edge in thisNetwork.edges():
+	# 	xCoor = (nativePositions_3D[edge[0]][0], nativePositions_3D[edge[1]][0]); 
+	# 	yCoor = (nativePositions_3D[edge[0]][1], nativePositions_3D[edge[1]][1]); 
+	# 	zCoor = (nativePositions_3D[edge[0]][2], nativePositions_3D[edge[1]][2]); 
+	# 	plt.plot(xCoor, yCoor, zCoor, color="tab:gray"); 
+
+
+# Plotting nodes most similar to a target node: 
+iTarget = 155; 
+(distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(allPropertiesArray_, iTarget); 
+colorDistance = [[elem, elem, elem] for elem in distanceToTarget_]; 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
-# nx.draw(thisNetwork, with_labels=True, pos=nx.circular_layout(thisNetwork), node_color=nodeColor); 
-nx.draw(thisNetwork, with_labels=False, node_color=nodeColor); 
-ax.set_aspect("equal"); 
+if "nativePositions" in locals(): 
+	nx.draw(thisNetwork, with_labels=False, node_color=colorDistance, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+	ax.set_aspect("equal"); 
+else: 
+	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=colorDistance, edge_color="tab:gray"); 
+	ax.set_aspect("equal"); 
 
 
+# Smae, but in 3D if coordinates are provided: 
+if "nativePositions_3D" in locals(): 
 
-
+	# Proper plot: 
+	fig = plt.figure(); 
+	ax = fig.gca(projection='3d'); 
+	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
 
 
 plt.show(); 
-# sys.exit(0); 
+sys.exit(0); 
 
 # # Saving data in eigenspace: 
 # np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/dataEigenSpace.csv"), allPropertiesArray_, delimiter=", "); 
@@ -284,3 +472,10 @@ plt.show();
 
 
 
+
+
+# # Example for equal ratio: 
+# fig = plt.figure(); 
+# ax = fig.add_subplot(111); 
+# nx.draw(thisNetwork, pos=nativePositions); 
+# ax.set_aspect("equal"); 
