@@ -154,9 +154,6 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
 
 
-	# # print("Average neighbor degree"); 
-	# thisAND = nx.average_neighbor_degree(net); 
-
 	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
 	for (iNode, node) in enumerate(nodeList): 
 		nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
@@ -346,3 +343,95 @@ def distanceToTargetNode(allPropertiesArray_, iTargetNode):
 	distanceToTargetNode_ = np.divide(distanceToTargetNode, max(distanceToTargetNode)); 
 
 	return (distanceToTargetNode, distanceToTargetNode_); 
+
+
+
+
+
+
+########################################################################################################################
+########################################################################################################################
+## Functions for neuroscience analysis -- might move them to a different library in the future: 
+##
+
+def findCounterhemisphericNode(nodePositions, targetNode, fCentered=False): 
+	"""	findCounterhemisphericNode function: 
+
+			This function computes the node most likely to be the counterpart of the target in the opposite hemisphere. 
+
+			Inputs: 
+				>> nodePositions: Array with the position of each node in xyz-space. 
+					- x-coordinate marks left-right. 
+				>> iTargetNode: Node of which we wish to find the mirror counterpart. 
+				>> fCentered=False: This indicates whether the 0 of the x-coordinate is at the brain's central sagittal plane. 
+
+			Returns: 
+				<< iCounterNode: Index of the most proximate mirror counterpart (counter node). 
+				<< counterNode: Name of the counter node in the network. 
+				<< counterDistance: Distance of the counter node to the actual mirror counterpart position. 
+				<< allDistances: All distances along the x-axis (in case we wish to study other near neighbors). 
+
+	"""
+
+	allNodesNames = [nodeName for nodeName in nodePositions.keys()]; 
+	iNodes = []; 
+	for (iNode, node) in enumerate(allNodesNames): 
+		iNodes += [iNode]; 
+		if (node==targetNode): 
+			iTarget = iNode; 
+
+	# If x-coordinate is not centered, we need to do it: 
+	center = 0.; 
+	if (not(fCentered)): 
+		x = [nodePositions[node][0] for node in allNodesNames]; 
+		center = np.mean(x); 
+
+	allDistances = [np.abs(nodePositions[candidateNode][0] + nodePositions[targetNode][0] - 2*center) + 
+					np.abs(nodePositions[candidateNode][1] - nodePositions[targetNode][1]) +
+					np.abs(nodePositions[candidateNode][2] - nodePositions[targetNode][2]) for candidateNode in allNodesNames]; 
+	iCounterNode = np.argmin(allDistances); 
+	counterNode = allNodesNames[iCounterNode]; 
+	counterDistance = sum(abs(np.subtract(nodePositions[counterNode], nodePositions[targetNode]))); 
+
+	return (iCounterNode, counterNode, counterDistance, allDistances); 
+
+
+# def findAllCounterhemisphericNodes(nodePositions, fCentered=False); 
+# 	"""	findAllCounterhemisphericNodes function: 
+
+# 			This function finds the most likely counter-hemispheric (counter node) node for all nodes. 
+
+# 			Inputs: 
+# 				>> nodePositions: Array with the position of each node in xyz-space. 
+# 					- x-coordinate marks left-right. 
+# 				>> fCentered=False: This indicates whether the 0 of the x-coordinate is at the brain's central sagittal plane. 
+
+# 			Returns: 
+# 				<< iCounterNodeDict: Dictionary with the indexes of each node's counter node. 
+# 				<< counterNodeDict: Dictionary with the names of each node's counter node. 
+# 				<< counterDistanceDict: Dictionary with the distances of each node's counter node. 
+# 				<< allXDistancesDict: Dictionary with each node's distance to all other nodes along the x-coordinate. 
+
+# 	"""
+
+# 	allNodesNames = [nodeName for nodeName in nodePositions.keys()]; 
+# 	iNodes = []; 
+# 	for (iNode, node) in enumerate(allNodesNames): 
+# 		iNodes += [iNode]; 
+# 		if (node==targetNode): 
+# 			iTarget = iNode; 
+
+# 	x = [nodePositions[node][0] for node in allNodesNames]; 
+
+# 	# If x-coordinate is not centered, we need to do it: 
+# 	if (not(fCentered)): 
+# 		maxX = max(x); 
+# 		minX = min(x); 
+# 		center = maxX - minX; 
+# 		x = np.subtract(x, center); 
+
+
+
+
+
+
