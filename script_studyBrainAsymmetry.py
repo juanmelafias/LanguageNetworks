@@ -107,32 +107,32 @@ print(counterDistanceDict);
 
 # Computing symmetry and asymmetry indexes: 
 nodeSymmetryList = []; 
-nodeAntysymmetryList = []; 
+nodeAntisymmetryList = []; 
 for (iNode, node) in enumerate(thisNetwork.nodes()): 
 	targetNodeProperties = allPropertiesArray_[:,iNode]; 
 	counterNodeProperties = allPropertiesArray_[:,iCounterNodeDict[node]]; 
 	nodeSymmetry = np.sum(np.abs(np.subtract(targetNodeProperties, counterNodeProperties))); 
 	nodeSymmetryList += [nodeSymmetry]; 
-	nodeAntysymmetry = np.sum(np.abs(np.add(targetNodeProperties, counterNodeProperties))); 
-	nodeAntysymmetryList += [nodeAntysymmetry]; 
+	nodeAntisymmetry = np.sum(np.abs(np.add(targetNodeProperties, counterNodeProperties))); 
+	nodeAntisymmetryList += [nodeAntisymmetry]; 
 
 Z_symmetry = max(nodeSymmetryList); 
-Z_antysymmetry = max(nodeAntysymmetryList); 
+Z_antisymmetry = max(nodeAntisymmetryList); 
 nodeSymmetryColor = []; 
-nodeAntysymmetryColor = []; 
+nodeAntisymmetryColor = []; 
 nodeSymmetryList_ = []; 
-nodeAntysymmetryList_ = []; 
+nodeAntisymmetryList_ = []; 
 for (iNode, node) in enumerate(thisNetwork.nodes()): 
 	if (counterDistanceDict[node]<2.): 
 		nodeSymmetryList_ += [nodeSymmetryList[iNode]]; 
 		thisNodeSymmetryColor = nodeSymmetryList[iNode]/Z_symmetry; 
 		nodeSymmetryColor += [[thisNodeSymmetryColor, thisNodeSymmetryColor, thisNodeSymmetryColor]]; 
-		nodeAntysymmetryList_ += [nodeAntysymmetryList[iNode]]; 
-		thisNodeAntysymmetryColor = nodeAntysymmetryList[iNode]/Z_antysymmetry; 
-		nodeAntysymmetryColor += [[thisNodeAntysymmetryColor, thisNodeAntysymmetryColor, thisNodeAntysymmetryColor]]; 
+		nodeAntisymmetryList_ += [nodeAntisymmetryList[iNode]]; 
+		thisNodeAntisymmetryColor = nodeAntisymmetryList[iNode]/Z_antisymmetry; 
+		nodeAntisymmetryColor += [[thisNodeAntisymmetryColor, thisNodeAntisymmetryColor, thisNodeAntisymmetryColor]]; 
 	else: 
 		nodeSymmetryColor += [[0., 0., 0.]]; 
-		nodeAntysymmetryColor += [[0., 0., 0.]]; 
+		nodeAntisymmetryColor += [[0., 0., 0.]]; 
 
 
 
@@ -180,21 +180,21 @@ if "nativePositions_3D" in locals():
 		plt.plot(xCoor, yCoor, zCoor, color="tab:gray"); 
 
 
-# Plotting antysymmetry histogram: 
+# Plotting antisymmetry histogram: 
 plt.figure(); 
-plt.hist(nodeAntysymmetryList_, 100); 
-plt.xlabel("Node antysymmetry"); 
+plt.hist(nodeAntisymmetryList_, 100); 
+plt.xlabel("Node antisymmetry"); 
 plt.ylabel("Frequency"); 
 
 # Plotting in network space in 2D if they have native coordinates: 
 if "nativePositions" in locals(): 
 	fig = plt.figure(); 
 	ax = fig.add_subplot(111); 
-	nx.draw(thisNetwork, with_labels=False, node_color=nodeAntysymmetryColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+	nx.draw(thisNetwork, with_labels=False, node_color=nodeAntisymmetryColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
 	ax.set_aspect("equal"); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
-	plt.title("Node antysymmetry"); 
+	plt.title("Node antisymmetry"); 
 
 
 # Plotting in network space in 3D if they have such native coordinates: 
@@ -209,11 +209,11 @@ if "nativePositions_3D" in locals():
 	# Proper plot: 
 	fig = plt.figure(); 
 	ax = fig.gca(projection='3d'); 
-	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeAntysymmetryColor); 
+	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeAntisymmetryColor); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
 	ax.set_zlabel("z-coordinate"); 
-	plt.title("Node antysymmetry"); 
+	plt.title("Node antisymmetry"); 
 
 
 
