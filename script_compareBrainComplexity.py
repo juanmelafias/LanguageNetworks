@@ -49,71 +49,73 @@ networks2 = [nx.read_graphml(connectomeDataPath + netName) for netName in networ
 
 
 
-## Computing network complexities: 
+# ## Computing network complexities: 
 
-allComplexities = []; 
-allCorrections = []; 
+# allComplexities = []; 
+# allCorrections = []; 
 
-# For macaque: 
-(netComplexity_mac, correctionFactor_mac) = h.computeNetworkComplexity(network1); 
-allComplexities += [netComplexity_mac]; 
-allCorrections += [correctionFactor_mac]; 
-
-
-# For humans: 
-netComplexity_hum = []; 
-correctionFactor_hum = []; 
-for (iNet, net) in enumerate(networks2): 
-	print(iNet); 
-	(thisNetComplexity_hum, thisCorrectionFactor_hum) = h.computeNetworkComplexity(net); 
-	allComplexities += [thisNetComplexity_hum]; 
-	allCorrections += [thisCorrectionFactor_hum]; 
+# # For macaque: 
+# (netComplexity_mac, correctionFactor_mac) = h.computeNetworkComplexity(network1); 
+# allComplexities += [netComplexity_mac]; 
+# allCorrections += [correctionFactor_mac]; 
 
 
-# Plotting results: 
-plt.figure(); 
-plt.plot(allComplexities, 'o'); 
-
-plt.figure(); 
-plt.plot(allCorrections, 'o'); 
-
-plt.figure(); 
-plt.plot(allCorrections, allComplexities, 'o'); 
-
-plt.figure(); 
-plt.plot(np.multiply(allCorrections, allComplexities), 'o'); 
-
-plt.show(); 
-
-
-
-
-
-# ## Measuring complexity for a lot of human connectomes: 
-
-# allNames_MRI_234 = os.listdir(connectomeDataPath); 
-
-# # Loading nets and computing complexity: 
+# # For humans: 
 # netComplexity_hum = []; 
 # correctionFactor_hum = []; 
-# for (iNet, netName) in enumerate(allNames_MRI_234): 
-# 	print("Processing network " + str(iNet) + ": \n"); 
-# 	net = nx.read_graphml(connectomeDataPath + netName); 
+# for (iNet, net) in enumerate(networks2): 
+# 	print(iNet); 
 # 	(thisNetComplexity_hum, thisCorrectionFactor_hum) = h.computeNetworkComplexity(net); 
-# 	netComplexity_hum += [thisNetComplexity_hum]; 
-# 	correctionFactor_hum += [thisCorrectionFactor_hum]; 
+# 	allComplexities += [thisNetComplexity_hum]; 
+# 	allCorrections += [thisCorrectionFactor_hum]; 
+
 
 # # Plotting results: 
 # plt.figure(); 
-# plt.plot(netComplexity_hum, 'o'); 
+# plt.plot(allComplexities, 'o'); 
 
 # plt.figure(); 
-# plt.plot(correctionFactor_hum, 'o'); 
+# plt.plot(allCorrections, 'o'); 
 
 # plt.figure(); 
-# plt.plot(correctionFactor_hum, netComplexity_hum, 'o'); 
+# plt.plot(allCorrections, allComplexities, 'o'); 
 
+# plt.figure(); 
+# plt.plot(np.multiply(allCorrections, allComplexities), 'o'); 
 
 # plt.show(); 
+
+
+
+
+
+## Measuring complexity for a lot of human connectomes: 
+
+allNames_MRI_234 = os.listdir(connectomeDataPath); 
+
+# Loading nets and computing complexity: 
+netComplexity_hum = []; 
+correctionFactor_hum = []; 
+for (iNet, netName) in enumerate(allNames_MRI_234[0:100]): 
+	print("Processing network " + str(iNet) + ". "); 
+	net = nx.read_graphml(connectomeDataPath + netName); 
+	Gcc = sorted(nx.connected_components(net), key=len, reverse=True); 
+	net = nx.Graph(net.subgraph(Gcc[0])); 
+	(thisNetComplexity_hum, thisCorrectionFactor_hum) = h.computeNetworkComplexity(net); 
+	netComplexity_hum += [thisNetComplexity_hum]; 
+	correctionFactor_hum += [thisCorrectionFactor_hum]; 
+
+# Plotting results: 
+plt.figure(); 
+plt.plot(netComplexity_hum, 'o'); 
+
+plt.figure(); 
+plt.plot(correctionFactor_hum, 'o'); 
+
+plt.figure(); 
+plt.plot(correctionFactor_hum, netComplexity_hum, 'o'); 
+
+
+plt.show(); 
 
 
