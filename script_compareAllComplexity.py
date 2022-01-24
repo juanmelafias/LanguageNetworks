@@ -184,7 +184,7 @@ print("Processing MRI_234 networks: ");
 # Loading nets and computing complexity: 
 connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
 allNames_MRI_234 = os.listdir(connectomeDataPath); 
-nChoose = 100; 
+nChoose = 10; 
 toStudy = np.random.choice(allNames_MRI_234, nChoose); 
 
 networkComplexitiesDict["MRI_234"] = []; 
@@ -195,6 +195,9 @@ correctionPerNodeDict["MRI_234"] = [];
 for (iNet, netName) in enumerate(toStudy): 
 	# print("Processing network " + str(iNet) + ": \n"); 
 	thisNetwork = nx.read_graphml(connectomeDataPath + netName); 
+	Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); # Apparently, these networks are *not* connected! 
+	thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 	(netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 	networkComplexitiesDict["MRI_234"] += [netComplexity]; 
 	correctionFactorsDict["MRI_234"] += [correctionFactor]; 
@@ -223,6 +226,9 @@ correctionPerNodeDict["MRI_1015"] = [];
 for (iNet, netName) in enumerate(toStudy): 
 	# print("Processing network " + str(iNet) + ": \n"); 
 	thisNetwork = nx.read_graphml(connectomeDataPath + netName); 
+	Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+	thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 	(netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 	networkComplexitiesDict["MRI_1015"] += [netComplexity]; 
 	correctionFactorsDict["MRI_1015"] += [correctionFactor]; 
@@ -241,6 +247,9 @@ print("Processing Macaque networks: ");
 connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
 thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
 thisNetwork = thisNetwork.to_undirected(); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 networkComplexitiesDict["macaque"] = [netComplexity]; 
 correctionFactorsDict["macaque"] = [correctionFactor]; 
@@ -260,6 +269,9 @@ print("Processing C elegans networks: ");
 connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Celegans/"; 
 thisNetwork = nx.read_graphml(connectomeDataPath + "c.elegans_neural.male_1.graphml"); 
 thisNetwork = thisNetwork.to_undirected(); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 networkComplexitiesDict["celegans"] = [netComplexity]; 
 correctionFactorsDict["celegans"] = [correctionFactor]; 
@@ -272,6 +284,9 @@ correctionPerNodeDict["celegans"] = [correctionFactor/(nNodes**(1.5))];
 mat = scipy.io.loadmat(connectomeDataPath + "Celegans131/celegans131.mat"); 
 thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans131matrix"]); 
 thisNetwork = thisNetwork.to_undirected(); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 networkComplexitiesDict["celegans"] += [netComplexity]; 
 correctionFactorsDict["celegans"] += [correctionFactor]; 
@@ -284,6 +299,9 @@ correctionPerNodeDict["celegans"] += [correctionFactor/(nNodes**(1.5))];
 mat = scipy.io.loadmat(connectomeDataPath + "Celegans277/celegans277.mat"); 
 thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans277matrix"]); 
 thisNetwork = thisNetwork.to_undirected(); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
 networkComplexitiesDict["celegans"] += [netComplexity]; 
 correctionFactorsDict["celegans"] += [correctionFactor]; 
@@ -302,6 +320,9 @@ dieAutobahnDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Autob
 mat = scipy.io.loadmat(dieAutobahnDataPath + "autobahn.mat"); 
 thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["auto1168"]); 
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 networkComplexitiesDict["autobahn"] = [netComplexity]; 
 correctionFactorsDict["autobahn"] = [correctionFactor]; 
 correctedComplexitiesDict["autobahn"] = [netComplexity*correctionFactor]; 
@@ -320,6 +341,9 @@ airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"
 mat = scipy.io.loadmat(airportDataPath + "air500.mat"); 
 thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
 (netComplexity, correctionFactor) = h.computeNetworkComplexity(thisNetwork); 
+Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+
 networkComplexitiesDict["airports"] = [netComplexity]; 
 correctionFactorsDict["airports"] = [correctionFactor]; 
 correctedComplexitiesDict["airports"] = [netComplexity*correctionFactor]; 
@@ -376,7 +400,7 @@ plt.ylabel("Corrected complexity");
 fig = plt.figure(); 
 for case in studyCases: 
 	plt.plot(correctionFactorsDict[case], networkComplexitiesDict[case], 'o', label=case); 
-plt.legend(loc='lower right'); 
+plt.legend(loc='upper right'); 
 plt.xlabel("Correction factor"); 
 plt.ylabel("Uncorrected complexity"); 
 
@@ -388,7 +412,7 @@ for case in studyCases:
 	print(correctionPerNodeDict[case]); 
 	print(networkComplexitiesDict[case]); 
 	plt.plot(correctionPerNodeDict[case], networkComplexitiesDict[case], 'o', label=case); 
-plt.legend(loc='lower right'); 
+plt.legend(loc='upper right'); 
 plt.xlabel("Correction factor per node"); 
 plt.ylabel("Uncorrected complexity"); 
 
