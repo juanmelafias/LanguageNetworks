@@ -116,43 +116,43 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 
 
-# ########################################################################################################################
-# ## Uncomment for MRI connectome network (I have a lof of such connectomes): 
-
-
-# # # Next networks are in MRI_234: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-
-# # # Next networks are in MRI_1015: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
-# # # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-
-# # ## Next networks are in MRI_Lobes: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
-
-# nativePositions = {}; 
-# nativePositions_3D = {}; 
-# for node in thisNetwork.nodes(): 
-# 	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"]]; 
-# 	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"], 
-# 								thisNetwork.nodes()[node]["dn_position_z"]]; 
-
-
-
-
 ########################################################################################################################
-## Uncomment for Macaque brain: 
+## Uncomment for MRI connectome network (I have a lof of such connectomes): 
 
-connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
-thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
-thisNetwork = thisNetwork.to_undirected(); 
+
+# # Next networks are in MRI_234: 
+connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+
+# # Next networks are in MRI_1015: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+
+# ## Next networks are in MRI_Lobes: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+
+nativePositions = {}; 
+nativePositions_3D = {}; 
+for node in thisNetwork.nodes(): 
+	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"]]; 
+	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"], 
+								thisNetwork.nodes()[node]["dn_position_z"]]; 
+
+
+
+
+# ########################################################################################################################
+# ## Uncomment for Macaque brain: 
+
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
+# thisNetwork = thisNetwork.to_undirected(); 
 
 
 # # ########################################################################################################################
@@ -287,17 +287,10 @@ print("Analysis includes the following properties: ");
 for (iP, thisProperty) in enumerate(includedProperties): 
 	print('\t' + str(iP+1) + ": " + thisProperty); 
 
-
 nProperties = len(includedProperties); 
 allPropertiesArray = np.zeros([nProperties, nNodes]); 
-dictIStat = {}; 
 for (iStat, statistic) in enumerate(includedProperties): 
 	allPropertiesArray[iStat,:] = nodesProperties[statistic]; 
-	dictIStat[statistic] = iStat; 
-
-
-
-
 
 ## Standardizing distro: 
 allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
@@ -365,6 +358,7 @@ ax.set_xlabel("PC1");
 ax.set_ylabel("PC2"); 
 ax.set_zlabel("PC3"); 
 
+
 # Plotting in network space: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
@@ -377,6 +371,8 @@ if "nativePositions" in locals():
 	ax = fig.add_subplot(111); 
 	nx.draw(thisNetwork, with_labels=False, node_color=nodeColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
 	ax.set_aspect("equal"); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
 
 # Plotting in network space in 3D if they have such native coordinates: 
 if "nativePositions_3D" in locals(): 
@@ -387,13 +383,13 @@ if "nativePositions_3D" in locals():
 		sortedPositions += [nativePositions_3D[node]]; 
 	sortedPositions = np.array(sortedPositions); 
 
-	# We aldo need to add edges manually: 
-	edgeCoords = np.array([(nativePositions_3D[node1], nativePositions_3D[node2]) for (node1, node2) in thisNetwork.edges()]); 
-
 	# Proper plot: 
 	fig = plt.figure(); 
 	ax = fig.gca(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeColor); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
+	ax.set_zlabel("z-coordinate"); 
 
 	# # Plot the edges (commented by now -- it takes too much RAM). 
 	# for edge in thisNetwork.edges():
@@ -412,6 +408,8 @@ ax = fig.add_subplot(111);
 if "nativePositions" in locals(): 
 	nx.draw(thisNetwork, with_labels=False, node_color=colorDistance, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
 	ax.set_aspect("equal"); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
 else: 
 	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=colorDistance, edge_color="tab:gray"); 
 	ax.set_aspect("equal"); 
@@ -419,11 +417,13 @@ else:
 
 # Same, but in 3D if coordinates are provided: 
 if "nativePositions_3D" in locals(): 
-
-	# Proper plot: 
 	fig = plt.figure(); 
 	ax = fig.gca(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
+	ax.set_zlabel("z-coordinate"); 
+
 
 
 plt.show(); 
