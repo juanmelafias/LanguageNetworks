@@ -48,6 +48,7 @@ import helper as h;
 import loadHelper as lh; 
 from copy import copy; 
 import scipy.io; # To read .mat files! 
+from sklearn.cluster import KMeans; 
 
 
 # For 3D scatter: 
@@ -116,33 +117,33 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 
 
-########################################################################################################################
-## Uncomment for MRI connectome network (I have a lof of such connectomes): 
+# ########################################################################################################################
+# ## Uncomment for MRI connectome network (I have a lof of such connectomes): 
 
 
-# # Next networks are in MRI_234: 
-connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# # # Next networks are in MRI_234: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
 
-# # Next networks are in MRI_1015: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# # # Next networks are in MRI_1015: 
+# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+# # # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
 
-# ## Next networks are in MRI_Lobes: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+# # ## Next networks are in MRI_Lobes: 
+# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
 
-nativePositions = {}; 
-nativePositions_3D = {}; 
-for node in thisNetwork.nodes(): 
-	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-								thisNetwork.nodes()[node]["dn_position_y"]]; 
-	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-								thisNetwork.nodes()[node]["dn_position_y"], 
-								thisNetwork.nodes()[node]["dn_position_z"]]; 
+# nativePositions = {}; 
+# nativePositions_3D = {}; 
+# for node in thisNetwork.nodes(): 
+# 	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+# 								thisNetwork.nodes()[node]["dn_position_y"]]; 
+# 	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+# 								thisNetwork.nodes()[node]["dn_position_y"], 
+# 								thisNetwork.nodes()[node]["dn_position_z"]]; 
 
 
 
@@ -231,32 +232,32 @@ for node in thisNetwork.nodes():
 
 
 
-# ########################################################################################################################
-# ## Uncomment for airport connections: 
+########################################################################################################################
+## Uncomment for airport connections: 
 
-# # Data was extracted from: https://www.dynamic-connectome.org/resources/
+# Data was extracted from: https://www.dynamic-connectome.org/resources/
 
-# airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
+airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
 
-# # Loading network: 
-# mat = scipy.io.loadmat(airportDataPath + "air500.mat"); 
-# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
-# nodeNames = np.squeeze(mat["air500labels"]); 
-# # Reasigining node names to actual labels: 
-# mapping = {}; 
-# for (iName, name) in enumerate(nodeNames): 
-# 	mapping[iName] = name[0]; 
-# thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
+# Loading network: 
+mat = scipy.io.loadmat(airportDataPath + "air500.mat"); 
+thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
+nodeNames = np.squeeze(mat["air500labels"]); 
+# Reasigining node names to actual labels: 
+mapping = {}; 
+for (iName, name) in enumerate(nodeNames): 
+	mapping[iName] = name[0]; 
+thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
 
 
-# # Loading huge airpot metadata: 
-# fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
-# airportMeta = fIn.read().splitlines(); 
-# fIn.close(); 
-# nativePositions = {}; 
-# for line in airportMeta: 
-# 	splitLine = line.split(','); 
-# 	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
+# Loading airpot metadata: 
+fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
+airportMeta = fIn.read().splitlines(); 
+fIn.close(); 
+nativePositions = {}; 
+for line in airportMeta: 
+	splitLine = line.split(','); 
+	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
 
 
 
@@ -280,26 +281,21 @@ nNodes = len(thisNetwork.nodes());
 # sys.exit(); 
 
 
-# Measure stuff from nodes: 
-(nodeList, nodesProperties, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
-# (nodeList, nodesProperties, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
+# Measuring node properties, select relevant features, normalize distro: 
+(nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
+# (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
+allPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
+allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
+
 print("Analysis includes the following properties: "); 
 for (iP, thisProperty) in enumerate(includedProperties): 
 	print('\t' + str(iP+1) + ": " + thisProperty); 
 
-nProperties = len(includedProperties); 
-allPropertiesArray = np.zeros([nProperties, nNodes]); 
-for (iStat, statistic) in enumerate(includedProperties): 
-	allPropertiesArray[iStat,:] = nodesProperties[statistic]; 
-
-## Standardizing distro: 
-allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
-
 ## Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(allPropertiesArray); 
 (eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
-# eigVals = np.real(eigVals); 
-# eigVects = np.real(eigVects); 
+eigVals = np.real(eigVals); 
+eigVects = np.real(eigVects); 
 
 # Plotting covariance matrix: 
 plt.figure(); 
@@ -420,6 +416,61 @@ if "nativePositions_3D" in locals():
 	fig = plt.figure(); 
 	ax = fig.gca(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
+	ax.set_zlabel("z-coordinate"); 
+
+
+
+########################################################################################################################
+########################################################################################################################
+## k-means clustering: 
+## 
+
+nClusters = 8; 
+kmeans = KMeans(nClusters).fit(allPropertiesArray_.T); 
+
+# Coloring nodes according to their cluster: 
+clusterStyles = {}; 
+clusterStyles[0] = 'k'; 
+clusterStyles[1] = 'r'; 
+clusterStyles[2] = 'g'; 
+clusterStyles[3] = 'b'; 
+clusterStyles[4] = 'y'; 
+clusterStyles[5] = 'm'; 
+clusterStyles[6] = 'c'; 
+clusterStyles[7] = 'tab:gray'; 
+
+nodeClusterColor = []; 
+for (iNode, node) in enumerate(nodeList): 
+	nodeClusterColor += [clusterStyles[kmeans.labels_[iNode]]]; 
+
+
+# Plotting in eigenspace: 
+fig = plt.figure(); 
+ax = fig.add_subplot(111, projection='3d'); 
+ax.scatter(allPropertiesArray_[0,:], allPropertiesArray_[1,:], allPropertiesArray_[2,:], c=nodeClusterColor); 
+ax.set_xlabel("PC1"); 
+ax.set_ylabel("PC2"); 
+ax.set_zlabel("PC3"); 
+
+fig = plt.figure(); 
+ax = fig.add_subplot(111); 
+if "nativePositions" in locals(): 
+	nx.draw(thisNetwork, with_labels=False, node_color=nodeClusterColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+	ax.set_aspect("equal"); 
+	plt.xlabel("x-coordinate"); 
+	plt.ylabel("y-coordinate"); 
+else: 
+	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
+	ax.set_aspect("equal"); 
+
+
+# Same, but in 3D if coordinates are provided: 
+if "nativePositions_3D" in locals(): 
+	fig = plt.figure(); 
+	ax = fig.gca(projection='3d'); 
+	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
 	ax.set_zlabel("z-coordinate"); 
