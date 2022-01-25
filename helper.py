@@ -202,6 +202,34 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	return (nodeList, nodesProperties, includedProperties, excludedProperties); 
 
 
+def buildPropertiesArray(propertiesDict, includedProperties): 
+	""" buildPropertiesArray function: 
+
+			This function builds an array containing the relevant properties for the analysis. Node properties are
+			usually stored in a dictionary, but arrays are better suited for the PCA analysis -- thus the need for
+			this function. 
+
+			Inputs: 
+				>> propertiesDict: Dictionary containing the properties measured on the nodes. 
+				>> includedProperties: List of properties to be included in the analysis. 
+
+			Returns: 
+				<< propertiesArray: Numpy array containing the relevant properties for the analysis. Order of nodes is
+				carefully selected. 
+
+	"""
+
+	nProperties = len(includedProperties); 
+	nNodes = len(propertiesDict[includedProperties[0]]); 
+	propertiesArray = np.zeros([nProperties, nNodes]); 
+	for (iStat, statistic) in enumerate(includedProperties): 
+		propertiesArray[iStat,:] = propertiesDict[statistic]; 
+
+	return propertiesArray; 
+
+
+
+
 def normalizeProperties(netProperties, fNormalizeToStd=True): 
 	"""	normalizeProperties function: 
 
