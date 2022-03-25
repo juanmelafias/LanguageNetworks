@@ -58,17 +58,30 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 
 	"""
 
+	fVerbose = True; 
+
 	## Pre-processing the network: 
+
+	if fVerbose: 
+		print("Preparing network"); 
 
 	# Extracting a list of nodes as they appear when called from the net object. 
 	nodeList = net.nodes(); 
 	nNodes = len(nodeList); 
+
+	if fVerbose: 
+		print("\tList of nodes extracted. "); 
+
+
 
 	# ACHTUNG!! 
 	# 	Extracting the largest connected component. 
 	# 	In the future, this should be avoided. Problematic properties (e.g. average path length to each node) should
 	# 	be automatically flagged and sorted out by this function. 
 	thisGCC = max(nx.connected_components(net), key=len); 
+
+	if fVerbose: 
+		print("\tLargest connected component extracted. "); 
 
 	# ACHTUNG!! 
 	# 	Some of the properties measured demand that networks have no self loops. 
@@ -77,14 +90,24 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	netWOSL = copy(net); 
 	netWOSL.remove_edges_from(nx.selfloop_edges(netWOSL)); 
 
+	if fVerbose: 
+		print("\tSelf loops removed. "); 
+
 
 	## Initializing properties measured upon nodes: 
 
 	# A list of primary properties: 
 	primaryProperties = ["degreeCentrality", "eigenvectorCentrality", "betweennessCentrality"]; 
+	## ACHTUNG!! 
+	#	closenessVitality is interesting, but it is very heavy on computations. It is removed for tests. 
+	# 	If removing one node breaks the network appart, closenessVitality results in an infinity... 
+	# primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
 	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
 	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
 	measuredProperties = copy(primaryProperties); 
+
+	if fVerbose: 
+		print("\tNetwork properties prepared. "); 
 
 	# These are complemented by average properties of the neighbors to measure if similar nodes connect (as in
 	# assortativity) and standard deviation of properties of neighbors to measure whether connection is specific or
@@ -96,6 +119,9 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 		for thisProperty in primaryProperties: 
 			measuredProperties += [thisProperty+"_neighborStd"]; 
 
+	if fVerbose: 
+		print("\tNeighbor mean and std added or excluded. "); 
+
 
 	## Initializing the dictionary that will contain all properties: 
 	nodesPropertiesDict = {}; 
@@ -104,30 +130,56 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 		nodesPropertiesDict[thisProperty] = {}; 
 		nodesProperties[thisProperty] = np.zeros([nNodes, 1]).squeeze(); 
 
+	if fVerbose: 
+		print("\tDictionary initialized. "); 
+
 
 	## Performing the actual computations: 
+
+	if fVerbose: 
+		print("Computing network stuff. "); 
 
 	# ACHTUNG!! 
 	# 	Degree centrality: 
 	# 	This is redundant as it is just the node degree normalized by the number of nodes in the network. 
 	# 	Should be removed. Kept for the moment. 
-	nodesPropertiesDict["degreeCentrality"] = nx.degree_centrality(net); 
+	if "degreeCentrality" in measuredProperties: 
+		nodesPropertiesDict["degreeCentrality"] = nx.degree_centrality(net); 
+
+		if fVerbose: 
+			print("\tDegree centrality computed. "); 
 
 	# Eigenvector centrality: 
 	# 	ACH! Remind why this exception! 
-	try: 
-		nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net); 
-	except: 
-		nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net, max_iter=10000); 
+	if "eigenvectorCentrality" in measuredProperties: 
+		try: 
+			nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net); 
+		except: 
+			nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net, max_iter=10000); 
+
+		if fVerbose: 
+			print("\tEigenvector centrality computed. "); 
 
 	# Betweenness centrality: 
-	nodesPropertiesDict["betweennessCentrality"] = nx.betweenness_centrality(net); 
+	if "betweennessCentrality" in measuredProperties: 
+		nodesPropertiesDict["betweennessCentrality"] = nx.betweenness_centrality(net); 
+
+		if fVerbose: 
+			print("\tBetweenness centrality computed. "); 
 
 	# Closeness centrality: 
-	nodesPropertiesDict["closenessCentrality"] = nx.closeness_centrality(net); 
+	if "closenessCentrality" in measuredProperties: 
+		nodesPropertiesDict["closenessCentrality"] = nx.closeness_centrality(net); 
+
+		if fVerbose: 
+			print("\tCloseness centrality computed. "); 
 
 	# Harmonic centrality: 
-	nodesPropertiesDict["harmonicCentrality"] = nx.harmonic_centrality(net); 
+	if "harmonicCentrality" in measuredProperties: 
+		nodesPropertiesDict["harmonicCentrality"] = nx.harmonic_centrality(net); 
+
+		if fVerbose: 
+			print("\tHarmonic centrality computed. "); 
 
 	# # ACHTUNG!! Excluded. It does not converge! 
 	# # Katz centrality: 
@@ -136,40 +188,82 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# except: 
 	# 	nodesPropertiesDict["katzCentrality"] = nx.katz_centrality(net, max_iter=10000); 
 
+	# Closeness vitality -- increase in distance between nodes when a node is removed: 
+	if "closenessVitality" in measuredProperties: 
+		nodesPropertiesDict["closenessVitality"] = nx.closeness_vitality(net); 
+
+		if fVerbose: 
+			print("\tCloseness vitality computed. "); 
+
 	# Clustering coefficient: 
-	nodesPropertiesDict["clustering"] = nx.clustering(net); 
+	if "clustering" in measuredProperties: 
+		nodesPropertiesDict["clustering"] = nx.clustering(net); 
+
+		if fVerbose: 
+			print("\tClustering computed. "); 
+
 
 	# thisEccentricity = nx.eccentricity(net); 
 	
 	# Page rank: 
-	nodesPropertiesDict["pagerank"] = nx.pagerank(net); 
+	if "pagerank" in measuredProperties: 
+		nodesPropertiesDict["pagerank"] = nx.pagerank(net); 
+
+		if fVerbose: 
+			print("\tPagerank centrality computed. "); 
 
 	# Node degree: 
-	nodesPropertiesDict["degree"] = net.degree(); 
+	if "degree" in measuredProperties: 
+		nodesPropertiesDict["degree"] = net.degree(); 
+
+		if fVerbose: 
+			print("\tDegree computed. "); 
 
 	# Size of largest k-core to which each node belongs: 
-	nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
+	if "coreNumber" in measuredProperties: 
+		nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
+
+		if fVerbose: 
+			print("\tLargest k-core computed. "); 
 
 	# Onion layer: order in which each node is removed when computing k-cores: 
-	nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
+	if "onionLayer" in measuredProperties: 
+		nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
 
+		if fVerbose: 
+			print("\tOnion layer computed. "); 
+
+
+	if fVerbose: 
+		print("Post-processing: "); 
 
 	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
+	
 	for (iNode, node) in enumerate(nodeList): 
-		nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
-		nodesProperties["eigenvectorCentrality"][iNode] = nodesPropertiesDict["eigenvectorCentrality"][node]; 
-		nodesProperties["betweennessCentrality"][iNode] = nodesPropertiesDict["betweennessCentrality"][node]; 
-		nodesProperties["closenessCentrality"][iNode] = nodesPropertiesDict["closenessCentrality"][node]; 
-		nodesProperties["harmonicCentrality"][iNode] = nodesPropertiesDict["harmonicCentrality"][node]; 
-		nodesProperties["clustering"][iNode] = nodesPropertiesDict["clustering"][node]; 
-		nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
-		nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
-		nodesProperties["pagerank"][iNode] = nodesPropertiesDict["pagerank"][node]; 
-		nodesProperties["degree"][iNode] = nodesPropertiesDict["degree"][node]; 
-		nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
-		nodesProperties["onionLayer"][iNode] = nodesPropertiesDict["onionLayer"][node]; 
-		# nodesProperties["averageNeighborDegree"][iNode] = thisAND[node]; 
+		print(node + ": " + str(iNode)); 
+		for thisProperty in primaryProperties: 
+			if (thisProperty != "componentSize"): 
+				nodesProperties[thisProperty][iNode] = nodesPropertiesDict[thisProperty][node]; 
+			if (thisProperty == "componentSize"): 
+				nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
+				nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
 
+		# nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
+		# nodesProperties["eigenvectorCentrality"][iNode] = nodesPropertiesDict["eigenvectorCentrality"][node]; 
+		# nodesProperties["betweennessCentrality"][iNode] = nodesPropertiesDict["betweennessCentrality"][node]; 
+		# nodesProperties["closenessCentrality"][iNode] = nodesPropertiesDict["closenessCentrality"][node]; 
+		# nodesProperties["harmonicCentrality"][iNode] = nodesPropertiesDict["harmonicCentrality"][node]; 
+		# nodesProperties["closenessVitality"][iNode] = nodesPropertiesDict["closenessVitality"][node]; 
+		# nodesProperties["clustering"][iNode] = nodesPropertiesDict["clustering"][node]; 
+		# nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
+		# nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
+		# nodesProperties["pagerank"][iNode] = nodesPropertiesDict["pagerank"][node]; 
+		# nodesProperties["degree"][iNode] = nodesPropertiesDict["degree"][node]; 
+		# nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
+		# nodesProperties["onionLayer"][iNode] = nodesPropertiesDict["onionLayer"][node]; 
+
+	if fVerbose: 
+		print("\tProperties sorted in lists. "); 
 
 	# Finding out mean and standard deviation of properties over each node's neighbors: 
 	if (fNeighborMean or fNeighborStd): 
@@ -185,6 +279,9 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 					else: 
 						nodesProperties[thisProperty+"_neighborStd"][iNode] = 0.; 
 
+	if fVerbose: 
+		print("\tProperties for neighbors computed. "); 
+
 
 	# Reporting which properties are problematic: 
 	# 	They can be problematic, e.g., because there is no variation. Then, they do not contribute to any PC. 
@@ -198,6 +295,9 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 			excludedProperties += [thisProperty]; 
 		else: 
 			includedProperties += [thisProperty]; 
+
+	if fVerbose: 
+		print("\tProblematic properties reported. "); 
 
 	return (nodeList, nodesProperties, includedProperties, excludedProperties); 
 
