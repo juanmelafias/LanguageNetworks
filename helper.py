@@ -101,8 +101,9 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	## ACHTUNG!! 
 	#	closenessVitality is interesting, but it is very heavy on computations. It is removed for tests. 
 	# 	If removing one node breaks the network appart, closenessVitality results in an infinity... 
-	# primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
-	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
+	# 	Fixed using hyperbolic tangent! This property seems to contribute a lot for some networks :) 
+	primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
+	# primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
 	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
 	measuredProperties = copy(primaryProperties); 
 
@@ -191,6 +192,8 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# Closeness vitality -- increase in distance between nodes when a node is removed: 
 	if "closenessVitality" in measuredProperties: 
 		nodesPropertiesDict["closenessVitality"] = nx.closeness_vitality(net); 
+		for node in nodesPropertiesDict["closenessVitality"]: 
+			nodesPropertiesDict["closenessVitality"][node] = np.tanh(nodesPropertiesDict["closenessVitality"][node]); 
 
 		if fVerbose: 
 			print("\tCloseness vitality computed. "); 
@@ -247,6 +250,8 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 			if (thisProperty == "componentSize"): 
 				nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
 				nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
+
+
 
 		# nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
 		# nodesProperties["eigenvectorCentrality"][iNode] = nodesPropertiesDict["eigenvectorCentrality"][node]; 
