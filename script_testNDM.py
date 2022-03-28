@@ -57,6 +57,13 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 
 
+
+# Path to store properties -- common for all networks: 
+netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties/"; 
+
+
+
+
 # ########################################################################################################################
 # ## Uncomment for syntax network: 
 
@@ -95,27 +102,26 @@ from mpl_toolkits.mplot3d import Axes3D;
 # # thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
 
 
-#######################################################################################################################
-# Uncomment for CNB network: 
+# #######################################################################################################################
+# # Uncomment for CNB network: 
 
-dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
-netName = "CNB_net"; 
-netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties/"; 
+# dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+# netName = "CNB_net"; 
 
-# Reading edges: 
-fIn	= open(dataPath + "edges.csv", 'r'); 
-edges = []; 
-nodes = []; 
-allLines = fIn.read().splitlines(); 
-nPapers = {}; 
-nCollaborations = {}; 
-for line in allLines: 
-	thisEdge = line.split(', '); 
-	edges += [(thisEdge[0], thisEdge[1])]; 
+# # Reading edges: 
+# fIn	= open(dataPath + "edges.csv", 'r'); 
+# edges = []; 
+# nodes = []; 
+# allLines = fIn.read().splitlines(); 
+# nPapers = {}; 
+# nCollaborations = {}; 
+# for line in allLines: 
+# 	thisEdge = line.split(', '); 
+# 	edges += [(thisEdge[0], thisEdge[1])]; 
 
-# Building network from edges: 
-thisNetwork = nx.Graph(); 
-thisNetwork.add_edges_from(edges); 
+# # Building network from edges: 
+# thisNetwork = nx.Graph(); 
+# thisNetwork.add_edges_from(edges); 
 
 
 # #######################################################################################################################
@@ -162,33 +168,36 @@ thisNetwork.add_edges_from(edges);
 
 
 
-# ########################################################################################################################
-# ## Uncomment for MRI connectome network (I have a lof of such connectomes): 
+########################################################################################################################
+## Uncomment for MRI connectome network (I have a lof of such connectomes): 
 
 
-# # # Next networks are in MRI_234: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# # Next networks are in MRI_234: 
+connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# netName = "MRI_234_993675"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# netName = "MRI_234_958976"; 
+thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+netName = "MRI_234_959574"; 
 
-# # # Next networks are in MRI_1015: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
-# # # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# # Next networks are in MRI_1015: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
 
-# # ## Next networks are in MRI_Lobes: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+# ## Next networks are in MRI_Lobes: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
 
-# nativePositions = {}; 
-# nativePositions_3D = {}; 
-# for node in thisNetwork.nodes(): 
-# 	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"]]; 
-# 	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"], 
-# 								thisNetwork.nodes()[node]["dn_position_z"]]; 
+nativePositions = {}; 
+nativePositions_3D = {}; 
+for node in thisNetwork.nodes(): 
+	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"]]; 
+	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"], 
+								thisNetwork.nodes()[node]["dn_position_z"]]; 
 
 
 
@@ -334,6 +343,7 @@ nNodes = len(thisNetwork.nodes());
 if (os.path.isfile(netPath + netName + "_nodeList.csv") and os.path.isfile(netPath + netName + "_properties.pkl")): 
 	# Files already exist with properties that have been computed. We can proceed with these: 
 	(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
+	# (nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath, False, False); 
 	(includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
 else: 
 	# Properties have not been saved for this network and need to be computed: 

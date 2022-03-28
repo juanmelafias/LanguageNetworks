@@ -589,7 +589,7 @@ def writeNetworkProperties(netName, netPath, nodeList, propertiesDict):
 	saveNetworkProperties(netName, netPath, nodeList, propertiesDict); 
 	return; 
 
-def loadNetworkProperties(netName, netPath): 
+def loadNetworkProperties(netName, netPath, fNeighborMean=True, fNeighborStd=True): 
 	""" loadNetworkProperties function: 
 
 			This function loads an existing list of nodes and the corresponding dictionary of properties. 
@@ -597,6 +597,7 @@ def loadNetworkProperties(netName, netPath):
 			Inputs: 
 				>> netName: This is used to build the names of the files where the properties are stored. 
 				>> netPath: Where to store the properties. 
+				>> fNeighborMean=True, fNeighborStd=True: Flags indicating whether we load neighbor means and stds. 
 
 			Returns: 
 				<< nodeList: List of the network's nodes stored in the same order as properties have been saved. 
@@ -611,9 +612,20 @@ def loadNetworkProperties(netName, netPath):
 	with open(netPath + netName + "_properties.pkl", 'rb') as fIn:
 		propertiesDict = pkl.load(fIn); 
 
+	if (not(fNeighborMean) or not(fNeighborStd)): 
+		allPropertiesArray = [key for key in propertiesDict.keys()]
+		if (not(fNeighborMean)): 
+			allPropertiesArray = [key for key in allPropertiesArray if "_neighborMean" not in key]; 
+		if (not(fNeighborStd)): 
+			allPropertiesArray = [key for key in allPropertiesArray if "_neighborStd" not in key]; 
+		propertiesDict_ = copy(propertiesDict); 
+		propertiesDict = {}; 
+		for key in allPropertiesArray: 
+			propertiesDict[key] = propertiesDict_[key]; 
+
 	return (nodeList, propertiesDict); 
 
-def readNetworkProperties(netName, netPath): 
+def readNetworkProperties(netName, netPath, fNeighborMean=True, fNeighborStd=True): 
 	""" readNetworkProperties function: 
 
 			This function calls loadNetworkProperties(). This is so we can call either indistinctly and we don't need to
@@ -621,7 +633,7 @@ def readNetworkProperties(netName, netPath):
 
 	"""
 
-	(nodeList, propertiesDict) = loadNetworkProperties(netName, netPath); 
+	(nodeList, propertiesDict) = loadNetworkProperties(netName, netPath, fNeighborMean, fNeighborStd); 
 	return (nodeList, propertiesDict); 
 
 
