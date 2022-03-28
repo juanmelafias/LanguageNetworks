@@ -102,8 +102,8 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	#	closenessVitality is interesting, but it is very heavy on computations. It is removed for tests. 
 	# 	If removing one node breaks the network appart, closenessVitality results in an infinity... 
 	# 	Fixed using hyperbolic tangent! This property seems to contribute a lot for some networks :) 
-	primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
-	# primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
+	# primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
+	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
 	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
 	measuredProperties = copy(primaryProperties); 
 
@@ -243,29 +243,13 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
 	
 	for (iNode, node) in enumerate(nodeList): 
-		print(node + ": " + str(iNode)); 
+		print(str(node) + ": " + str(iNode)); 
 		for thisProperty in primaryProperties: 
 			if (thisProperty != "componentSize"): 
 				nodesProperties[thisProperty][iNode] = nodesPropertiesDict[thisProperty][node]; 
 			if (thisProperty == "componentSize"): 
 				nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
 				nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
-
-
-
-		# nodesProperties["degreeCentrality"][iNode] = nodesPropertiesDict["degreeCentrality"][node]; 
-		# nodesProperties["eigenvectorCentrality"][iNode] = nodesPropertiesDict["eigenvectorCentrality"][node]; 
-		# nodesProperties["betweennessCentrality"][iNode] = nodesPropertiesDict["betweennessCentrality"][node]; 
-		# nodesProperties["closenessCentrality"][iNode] = nodesPropertiesDict["closenessCentrality"][node]; 
-		# nodesProperties["harmonicCentrality"][iNode] = nodesPropertiesDict["harmonicCentrality"][node]; 
-		# nodesProperties["closenessVitality"][iNode] = nodesPropertiesDict["closenessVitality"][node]; 
-		# nodesProperties["clustering"][iNode] = nodesPropertiesDict["clustering"][node]; 
-		# nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
-		# nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
-		# nodesProperties["pagerank"][iNode] = nodesPropertiesDict["pagerank"][node]; 
-		# nodesProperties["degree"][iNode] = nodesPropertiesDict["degree"][node]; 
-		# nodesProperties["coreNumber"][iNode] = nodesPropertiesDict["coreNumber"][node]; 
-		# nodesProperties["onionLayer"][iNode] = nodesPropertiesDict["onionLayer"][node]; 
 
 	if fVerbose: 
 		print("\tProperties sorted in lists. "); 
@@ -331,8 +315,6 @@ def buildPropertiesArray(propertiesDict, includedProperties):
 		propertiesArray[iStat,:] = propertiesDict[statistic]; 
 
 	return propertiesArray; 
-
-
 
 
 def normalizeProperties(netProperties, fNormalizeToStd=True): 
@@ -529,41 +511,14 @@ def findCounterhemisphericNode(nodePositions, targetNode, fCentered=False):
 	return (iCounterNode, counterNode, counterDistance, allDistances); 
 
 
-# def findAllCounterhemisphericNodes(nodePositions, fCentered=False); 
-# 	"""	findAllCounterhemisphericNodes function: 
+# def saveNetworkProperties(netName, netPath): 
+# 	""" 
 
-# 			This function finds the most likely counter-hemispheric (counter node) node for all nodes. 
+# 		saveNetworkProperties function: 
 
-# 			Inputs: 
-# 				>> nodePositions: Array with the position of each node in xyz-space. 
-# 					- x-coordinate marks left-right. 
-# 				>> fCentered=False: This indicates whether the 0 of the x-coordinate is at the brain's central sagittal plane. 
-
-# 			Returns: 
-# 				<< iCounterNodeDict: Dictionary with the indexes of each node's counter node. 
-# 				<< counterNodeDict: Dictionary with the names of each node's counter node. 
-# 				<< counterDistanceDict: Dictionary with the distances of each node's counter node. 
-# 				<< allXDistancesDict: Dictionary with each node's distance to all other nodes along the x-coordinate. 
+# 			This function saves all the information needed to recreate the analysis for a given network. 
 
 # 	"""
-
-# 	allNodesNames = [nodeName for nodeName in nodePositions.keys()]; 
-# 	iNodes = []; 
-# 	for (iNode, node) in enumerate(allNodesNames): 
-# 		iNodes += [iNode]; 
-# 		if (node==targetNode): 
-# 			iTarget = iNode; 
-
-# 	x = [nodePositions[node][0] for node in allNodesNames]; 
-
-# 	# If x-coordinate is not centered, we need to do it: 
-# 	if (not(fCentered)): 
-# 		maxX = max(x); 
-# 		minX = min(x); 
-# 		center = maxX - minX; 
-# 		x = np.subtract(x, center); 
-
-
 
 
 

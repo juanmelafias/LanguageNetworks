@@ -47,7 +47,7 @@ import networkx as nx;
 import helper as h; 
 import loadHelper as lh; 
 from copy import copy; 
-import scipy.io; # To read .mat files! 
+import scipy.io as sio; # To read .mat files! and .mnx files! 
 from sklearn.cluster import KMeans; 
 
 
@@ -60,8 +60,7 @@ from mpl_toolkits.mplot3d import Axes3D;
 # ## Uncomment for syntax network: 
 
 # # Metadata to load networks: 
-# if (location=="home"): 
-# 	dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
+# dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
 # dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
 # dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
 # # dataNames = ["DataDown"]; 
@@ -89,27 +88,70 @@ from mpl_toolkits.mplot3d import Axes3D;
 # #######################################################################################################################
 # # Uncomment for randomly generated networks: 
 
-# thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
-# # thisNetwork = nx.watts_strogatz_graph(200, 4, 0.05); 
+# # thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
+# thisNetwork = nx.watts_strogatz_graph(200, 4, 0.05); 
 # # thisNetwork = nx.barabasi_albert_graph(200, 2); 
 # # thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
 
 
+#######################################################################################################################
+# Uncomment for CNB network: 
+
+dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+
+# Reading edges: 
+fIn	= open(dataPath + "edges.csv", 'r'); 
+edges = []; 
+nodes = []; 
+allLines = fIn.read().splitlines(); 
+nPapers = {}; 
+nCollaborations = {}; 
+for line in allLines: 
+	thisEdge = line.split(', '); 
+	edges += [(thisEdge[0], thisEdge[1])]; 
+
+# Building network from edges: 
+thisNetwork = nx.Graph(); 
+thisNetwork.add_edges_from(edges); 
+
+
 # #######################################################################################################################
-# # Uncomment for CNB network: 
+# # Uncomment for Collaboration networks: 
 
-# dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+# dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Collaborations/"; 
+# networkFileName = "ca-CSphd.mtx"; 
 
-# # Reading edges: 
-# fIn	= open(dataPath + "edges.csv", 'r'); 
+# fIn = open(dataPath + networkFileName, 'r'); 
+# dL = fIn.read().splitlines(); 
+# fIn.close(); 
+
+# dL = dL[3::]; 
 # edges = []; 
-# nodes = []; 
-# allLines = fIn.read().splitlines(); 
-# nPapers = {}; 
-# nCollaborations = {}; 
-# for line in allLines: 
-# 	thisEdge = line.split(', '); 
-# 	edges += [(thisEdge[0], thisEdge[1])]; 
+# for ll in dL: 
+# 	thisSplitLine = ll.split(' '); 
+# 	edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
+
+# # Building network from edges: 
+# thisNetwork = nx.Graph(); 
+# thisNetwork.add_edges_from(edges); 
+
+
+
+# #######################################################################################################################
+# # Uncomment for Ecology networks: 
+
+# dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Ecology/"; 
+# networkFileName = "eco-foodweb-baywet.edges"; 
+
+# fIn = open(dataPath + networkFileName, 'r'); 
+# dL = fIn.read().splitlines(); 
+# fIn.close(); 
+
+# dL = dL[2::]; 
+# edges = []; 
+# for ll in dL: 
+# 	thisSplitLine = ll.split(' '); 
+# 	edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
 
 # # Building network from edges: 
 # thisNetwork = nx.Graph(); 
@@ -197,7 +239,7 @@ from mpl_toolkits.mplot3d import Axes3D;
 # # for iNode in range(nNodes): 
 # # 	nativePositions[iNode] = nodePositions[iNode,:]; 
 
-# mat = scipy.io.loadmat(connectomeDataPath + "celegans131.mat"); 
+# mat = sio.loadmat(connectomeDataPath + "celegans131.mat"); 
 # thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans131matrix"]); 
 # nativePositions = {}; 
 # for node in thisNetwork.nodes(): 
@@ -232,32 +274,32 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 
 
-########################################################################################################################
-## Uncomment for airport connections: 
+# ########################################################################################################################
+# ## Uncomment for airport connections: 
 
-# Data was extracted from: https://www.dynamic-connectome.org/resources/
+# # Data was extracted from: https://www.dynamic-connectome.org/resources/
 
-airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
+# airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
 
-# Loading network: 
-mat = scipy.io.loadmat(airportDataPath + "air500.mat"); 
-thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
-nodeNames = np.squeeze(mat["air500labels"]); 
-# Reasigining node names to actual labels: 
-mapping = {}; 
-for (iName, name) in enumerate(nodeNames): 
-	mapping[iName] = name[0]; 
-thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
+# # Loading network: 
+# mat = sio.loadmat(airportDataPath + "air500.mat"); 
+# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
+# nodeNames = np.squeeze(mat["air500labels"]); 
+# # Reasigining node names to actual labels: 
+# mapping = {}; 
+# for (iName, name) in enumerate(nodeNames): 
+# 	mapping[iName] = name[0]; 
+# thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
 
 
-# Loading airpot metadata: 
-fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
-airportMeta = fIn.read().splitlines(); 
-fIn.close(); 
-nativePositions = {}; 
-for line in airportMeta: 
-	splitLine = line.split(','); 
-	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
+# # Loading airpot metadata: 
+# fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
+# airportMeta = fIn.read().splitlines(); 
+# fIn.close(); 
+# nativePositions = {}; 
+# for line in airportMeta: 
+# 	splitLine = line.split(','); 
+# 	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
 
 
 
@@ -290,6 +332,10 @@ allPropertiesArray = h.normalizeProperties(allPropertiesArray);
 print("Analysis includes the following properties: "); 
 for (iP, thisProperty) in enumerate(includedProperties): 
 	print('\t' + str(iP+1) + ": " + thisProperty); 
+
+for (iP, thisProperty) in enumerate(includedProperties): 
+	print('\t' + str(iP+1) + ": " + thisProperty); 
+	print("\t\t" + str(allPropertiesArray[iP])); 
 
 ## Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(allPropertiesArray); 
@@ -381,7 +427,7 @@ if "nativePositions_3D" in locals():
 
 	# Proper plot: 
 	fig = plt.figure(); 
-	ax = fig.gca(projection='3d'); 
+	ax = plt.axes(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeColor); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
@@ -396,7 +442,8 @@ if "nativePositions_3D" in locals():
 
 
 # Plotting nodes most similar to a target node: 
-iTarget = 155; 
+# iTarget = 155; 
+iTarget = 100; 
 (distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(allPropertiesArray_, iTarget); 
 colorDistance = [[elem, elem, elem] for elem in distanceToTarget_]; 
 fig = plt.figure(); 
@@ -414,7 +461,7 @@ else:
 # Same, but in 3D if coordinates are provided: 
 if "nativePositions_3D" in locals(): 
 	fig = plt.figure(); 
-	ax = fig.gca(projection='3d'); 
+	ax = plt.axes(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
@@ -427,7 +474,8 @@ if "nativePositions_3D" in locals():
 ## k-means clustering: 
 ## 
 
-nClusters = 8; 
+nClusters = 5; 
+# nClusters = 8; 
 kmeans = KMeans(nClusters).fit(allPropertiesArray_.T); 
 
 # Coloring nodes according to their cluster: 
@@ -469,7 +517,7 @@ else:
 # Same, but in 3D if coordinates are provided: 
 if "nativePositions_3D" in locals(): 
 	fig = plt.figure(); 
-	ax = fig.gca(projection='3d'); 
+	ax = plt.axes(projection='3d'); 
 	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
 	plt.xlabel("x-coordinate"); 
 	plt.ylabel("y-coordinate"); 
