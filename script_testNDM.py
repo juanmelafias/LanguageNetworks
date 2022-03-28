@@ -44,12 +44,13 @@ import matplotlib.pyplot as plt;
 import matplotlib as mplt; 
 import os, sys; 
 import networkx as nx; 
-import helper as h; 
-import loadHelper as lh; 
+import pickle as pkl; 
 from copy import copy; 
 import scipy.io as sio; # To read .mat files! and .mnx files! 
 from sklearn.cluster import KMeans; 
 
+import helper as h; 
+import loadHelper as lh; 
 
 # For 3D scatter: 
 from mpl_toolkits.mplot3d import Axes3D; 
@@ -98,6 +99,8 @@ from mpl_toolkits.mplot3d import Axes3D;
 # Uncomment for CNB network: 
 
 dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+netName = "CNB_net"; 
+netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties/"; 
 
 # Reading edges: 
 fIn	= open(dataPath + "edges.csv", 'r'); 
@@ -329,13 +332,18 @@ nNodes = len(thisNetwork.nodes());
 allPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
 allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
 
-print("Analysis includes the following properties: "); 
-for (iP, thisProperty) in enumerate(includedProperties): 
-	print('\t' + str(iP+1) + ": " + thisProperty); 
+# Saving properties: 
+h.saveNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+(nodeList, propertiesDict) = h.loadNetworkProperties(netName, netPath); 
 
-for (iP, thisProperty) in enumerate(includedProperties): 
-	print('\t' + str(iP+1) + ": " + thisProperty); 
-	print("\t\t" + str(allPropertiesArray[iP])); 
+
+# print("Analysis includes the following properties: "); 
+# for (iP, thisProperty) in enumerate(includedProperties): 
+# 	print('\t' + str(iP+1) + ": " + thisProperty); 
+
+# for (iP, thisProperty) in enumerate(includedProperties): 
+# 	print('\t' + str(iP+1) + ": " + thisProperty); 
+# 	print("\t\t" + str(allPropertiesArray[iP])); 
 
 ## Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(allPropertiesArray); 

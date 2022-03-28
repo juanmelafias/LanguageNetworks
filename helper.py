@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt;
 import random as rand; 
 import os, sys; 
 import networkx as nx; 
+import pickle as pkl; 
 from copy import copy; 
 from scipy.stats import entropy; 
 
@@ -243,7 +244,6 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# Sorting out properties in lists, which are more appropriate for building matrices and diagonalizing: 
 	
 	for (iNode, node) in enumerate(nodeList): 
-		print(str(node) + ": " + str(iNode)); 
 		for thisProperty in primaryProperties: 
 			if (thisProperty != "componentSize"): 
 				nodesProperties[thisProperty][iNode] = nodesPropertiesDict[thisProperty][node]; 
@@ -511,15 +511,72 @@ def findCounterhemisphericNode(nodePositions, targetNode, fCentered=False):
 	return (iCounterNode, counterNode, counterDistance, allDistances); 
 
 
-# def saveNetworkProperties(netName, netPath): 
-# 	""" 
+def saveNetworkProperties(netName, netPath, nodeList, propertiesDict): 
+	""" saveNetworkProperties function: 
 
-# 		saveNetworkProperties function: 
+			This function saves all the information needed to recreate the analysis for a given network. The information
+			saved includes: 
+				 - nodeList: To make sure that nodes are recalled in the right order. 
+				 - propertiesDict: Dictionary that stores all properties. Each property is accessed as a dictionary, but
+				   each property is actually a list. The indexes that correspond to each node are given by nodeList. 
 
-# 			This function saves all the information needed to recreate the analysis for a given network. 
+			Note that includedProperties and excludedProperties are not stored. The idea is to store all data that has
+			been computed so that it doesn't need to be computed again. Choices regarding which properties to use
+			should be made during each successive analysis. 
 
-# 	"""
+			Inputs: 
+				>> netName: This is used to build the names of the files where the properties are stored. 
+				>> netPath: Where to store the properties. 
+				>> nodeList: To be stored. 
+				>> propertiesDict: To be stored. 
 
+	"""
+
+	fOut = open(netPath + netName + "_nodeList.csv", 'w'); 
+	for node in nodeList: 
+		fOut.write(str(node) + '\n'); 
+	fOut.close(); 
+
+	with open(netPath + netName + "_properties.pkl", 'wb') as fOut:
+	    pkl.dump(propertiesDict, fOut); 
+
+	return; 
+
+
+def writeNetworkProperties(netName, netPath, nodeList, propertiesDict): 
+	""" writeNetworkProperties function: 
+
+			This function calls saveNetworkProperties(). This is so we can call either indistinctly and we don't need to
+			remember which of the two has been implemented. 
+
+	"""
+
+	saveNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+	return; 
+
+def loadNetworkProperties(netName, netPath): 
+	""" loadNetworkProperties function: 
+
+			This function loads an existing list of nodes and the corresponding dictionary of properties. 
+
+			Inputs: 
+				>> netName: This is used to build the names of the files where the properties are stored. 
+				>> netPath: Where to store the properties. 
+
+			Returns: 
+				<< nodeList: List of the network's nodes stored in the same order as properties have been saved. 
+				<< propertiesDict: Dictionary storing one list for each network property. 
+	"""
+
+	fIn = open(netPath + netName + "_nodeList.csv", 'r'); 
+	nodeList = fIn.readlines(); 
+	fIn.close(); 
+	nodeList = [node.split('\n')[0] for node in nodeList]; 
+
+	with open(netPath + netName + "_properties.pkl", 'rb') as fIn:
+		propertiesDict = pkl.load(fIn); 
+
+	return (nodeList, propertiesDict); 
 
 
 
