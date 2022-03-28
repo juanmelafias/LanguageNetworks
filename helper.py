@@ -578,5 +578,15 @@ def loadNetworkProperties(netName, netPath):
 
 	return (nodeList, propertiesDict); 
 
+def readNetworkProperties(netName, netPath): 
+	""" readNetworkProperties function: 
+
+			This function calls loadNetworkProperties(). This is so we can call either indistinctly and we don't need to
+			remember which of the two has been implemented. 
+
+	"""
+
+	(nodeList, propertiesDict) = loadNetworkProperties(netName, netPath); 
+	return (nodeList, propertiesDict); 
 
 

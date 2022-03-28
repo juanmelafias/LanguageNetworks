@@ -333,8 +333,8 @@ allPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties);
 allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
 
 # Saving properties: 
-h.saveNetworkProperties(netName, netPath, nodeList, propertiesDict); 
-(nodeList, propertiesDict) = h.loadNetworkProperties(netName, netPath); 
+h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
 
 
 # print("Analysis includes the following properties: "); 
