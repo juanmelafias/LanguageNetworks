@@ -103,8 +103,8 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	#	closenessVitality is interesting, but it is very heavy on computations. It is removed for tests. 
 	# 	If removing one node breaks the network appart, closenessVitality results in an infinity... 
 	# 	Fixed using hyperbolic tangent! This property seems to contribute a lot for some networks :) 
-	# primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
-	primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
+	primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
+	# primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
 	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
 	measuredProperties = copy(primaryProperties); 
 
@@ -272,18 +272,8 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 		print("\tProperties for neighbors computed. "); 
 
 
-	# Reporting which properties are problematic: 
-	# 	They can be problematic, e.g., because there is no variation. Then, they do not contribute to any PC. 
-	# 	These would just have a zero on the eigenvectors, but algebra cannot handle these cases properly. 
-	includedProperties = []; 
-	excludedProperties = []; 
-	for thisProperty in nodesProperties.keys(): 
-		thisMean = np.mean(nodesProperties[thisProperty]); 
-		thisStd = np.std(nodesProperties[thisProperty]); 
-		if ((np.isnan(thisMean)) or (thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
-			excludedProperties += [thisProperty]; 
-		else: 
-			includedProperties += [thisProperty]; 
+	# Finding out pathological properties: 
+	(includedProperties, excludedProperties) = findPathologicalProperties(nodesProperties); 
 
 	if fVerbose: 
 		print("\tProblematic properties reported. "); 
@@ -315,6 +305,44 @@ def buildPropertiesArray(propertiesDict, includedProperties):
 		propertiesArray[iStat,:] = propertiesDict[statistic]; 
 
 	return propertiesArray; 
+
+
+def findPathologicalProperties(nodesProperties): 
+	"""	findPathologicalProperties function: 
+
+			This function finds network properties that do not behave properly and must thus be removed from the analysis. 
+
+			Properties can be problematic, e.g., because there is no variation. Then, they do not contribute to any
+			Principal Component (PC). These would just have a zero on the eigenvectors, but python libraries do not
+			handle these cases automatically. 
+
+			Another possibility is that some of the properties are not defined for every node, or that they become
+			infinity. For example, closenessVitality is the variation in distances between nodes when each node is
+			removed. Some nodes split the network in 2, thus distance between nodes would be increased an infinite
+			amount. For that specific property, this has been solved by taking the hyperbolic tangent (which maps
+			[0, +inf] into [0, 1]). Other, similar cases should be addressed in a one-by-one manner. 
+
+			Inputs: 
+				>> nodesProperties: Dictionary with network properties stored as lists for each key. 
+
+			Returns: 
+				<< includedProperties: Non-pathological. To be included in the analysis. 
+				<< excludedProperties: Pathological. To be excluded from the analysis. 
+
+	"""
+
+	includedProperties = []; 
+	excludedProperties = []; 
+	for thisProperty in nodesProperties.keys(): 
+		thisMean = np.mean(nodesProperties[thisProperty]); 
+		thisStd = np.std(nodesProperties[thisProperty]); 
+		# Note that we exclude properties with very little variance to avoid numerical rounding errors. 
+		if ((np.isnan(thisMean)) or (thisStd == 0.) or (thisStd/thisMean < 10e-11)): 
+			excludedProperties += [thisProperty]; 
+		else: 
+			includedProperties += [thisProperty]; 
+
+	return (includedProperties, excludedProperties); 
 
 
 def normalizeProperties(netProperties, fNormalizeToStd=True): 
@@ -511,6 +539,14 @@ def findCounterhemisphericNode(nodePositions, targetNode, fCentered=False):
 	return (iCounterNode, counterNode, counterDistance, allDistances); 
 
 
+
+
+
+######################################################################################################################## 
+######################################################################################################################## 
+## I/O functions: 
+## 
+
 def saveNetworkProperties(netName, netPath, nodeList, propertiesDict): 
 	""" saveNetworkProperties function: 
 
@@ -541,7 +577,6 @@ def saveNetworkProperties(netName, netPath, nodeList, propertiesDict):
 	    pkl.dump(propertiesDict, fOut); 
 
 	return; 
-
 
 def writeNetworkProperties(netName, netPath, nodeList, propertiesDict): 
 	""" writeNetworkProperties function: 

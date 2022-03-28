@@ -326,27 +326,42 @@ nNodes = len(thisNetwork.nodes());
 # sys.exit(); 
 
 
-# Measuring node properties, select relevant features, normalize distro: 
-(nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
-# (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
-allPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
-allPropertiesArray = h.normalizeProperties(allPropertiesArray); 
+## Obtaining network propeties: 
+# 	To avoid re-computing all the time, we now save network properties in individual files that can be accessed. 
+# 	If computations have already been performed for some network, we read them from the files. 
+# 	Otherwise, we need to compute and store them. 
 
-# Saving properties: 
-h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
-(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
+if (os.path.isfile(netPath + netName + "_nodeList.csv") and os.path.isfile(netPath + netName + "_properties.pkl")): 
+	# Files already exist with properties that have been computed. We can proceed with these: 
+	(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
+	(includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
+else: 
+	# Properties have not been saved for this network and need to be computed: 
+	(nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
+	h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+
+# # Just in case, we keep these lines of code in case we wish to manually force the re-computation for some network: 
+# (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
+# # (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
+# h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
 
 
-# print("Analysis includes the following properties: "); 
+# In either case, we retain only those properties that are not pathological. 
+# We build a numpy array to work with them: 
+includedPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
+includedPropertiesArray = h.normalizeProperties(includedPropertiesArray); 
+
+
+print("Analysis includes the following properties: "); 
+for (iP, thisProperty) in enumerate(includedProperties): 
+	print('\t' + str(iP+1) + ": " + thisProperty); 
+
 # for (iP, thisProperty) in enumerate(includedProperties): 
 # 	print('\t' + str(iP+1) + ": " + thisProperty); 
-
-# for (iP, thisProperty) in enumerate(includedProperties): 
-# 	print('\t' + str(iP+1) + ": " + thisProperty); 
-# 	print("\t\t" + str(allPropertiesArray[iP])); 
+# 	print("\t\t" + str(includedPropertiesArray[iP])); 
 
 ## Computing correlation matrix and diagonalizing: 
-allStatisticsCov = np.cov(allPropertiesArray); 
+allStatisticsCov = np.cov(includedPropertiesArray); 
 (eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
 eigVals = np.real(eigVals); 
 eigVects = np.real(eigVects); 
@@ -374,13 +389,13 @@ plt.plot(varianceExplained_cumul);
 
 
 ## Projecting data into eigenspace: 
-allPropertiesArray_ = np.dot(np.transpose(eigVects), allPropertiesArray); 
+includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
 
 # Using first three PCs as color coding: 
 # 	Normalize components to [0,1]; 
-valuesRGB0 = h.convertPC2RGB(allPropertiesArray_[0,:]); 
-valuesRGB1 = h.convertPC2RGB(allPropertiesArray_[1,:]); 
-valuesRGB2 = h.convertPC2RGB(allPropertiesArray_[2,:]); 
+valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
+valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1,:]); 
+valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2,:]); 
 # Save hex color values to a list: 
 nodeColor = []; 
 for (iNode, node) in enumerate(nodeList): 
@@ -390,20 +405,20 @@ for (iNode, node) in enumerate(nodeList):
 # PC1-PC2: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
-plt.scatter(allPropertiesArray_[0,:], allPropertiesArray_[1,:], c=nodeColor); 
+plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], c=nodeColor); 
 plt.xlabel("PC1"); 
 plt.ylabel("PC2"); 
 
 # PC1-PC3: 
 fig = plt.figure(); 
-plt.scatter(allPropertiesArray_[0,:], allPropertiesArray_[2,:], c=nodeColor); 
+plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[2,:], c=nodeColor); 
 plt.xlabel("PC1"); 
 plt.ylabel("PC3"); 
 
 # PC1-PC2-PC3: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111, projection='3d'); 
-ax.scatter(allPropertiesArray_[0,:], allPropertiesArray_[1,:], allPropertiesArray_[2,:], c=nodeColor); 
+ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeColor); 
 ax.set_xlabel("PC1"); 
 ax.set_ylabel("PC2"); 
 ax.set_zlabel("PC3"); 
@@ -452,7 +467,7 @@ if "nativePositions_3D" in locals():
 # Plotting nodes most similar to a target node: 
 # iTarget = 155; 
 iTarget = 100; 
-(distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(allPropertiesArray_, iTarget); 
+(distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(includedPropertiesArray_, iTarget); 
 colorDistance = [[elem, elem, elem] for elem in distanceToTarget_]; 
 fig = plt.figure(); 
 ax = fig.add_subplot(111); 
@@ -484,7 +499,7 @@ if "nativePositions_3D" in locals():
 
 nClusters = 5; 
 # nClusters = 8; 
-kmeans = KMeans(nClusters).fit(allPropertiesArray_.T); 
+kmeans = KMeans(nClusters).fit(includedPropertiesArray_.T); 
 
 # Coloring nodes according to their cluster: 
 clusterStyles = {}; 
@@ -505,7 +520,7 @@ for (iNode, node) in enumerate(nodeList):
 # Plotting in eigenspace: 
 fig = plt.figure(); 
 ax = fig.add_subplot(111, projection='3d'); 
-ax.scatter(allPropertiesArray_[0,:], allPropertiesArray_[1,:], allPropertiesArray_[2,:], c=nodeClusterColor); 
+ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
 ax.set_xlabel("PC1"); 
 ax.set_ylabel("PC2"); 
 ax.set_zlabel("PC3"); 
@@ -537,13 +552,13 @@ plt.show();
 sys.exit(0); 
 
 # # Saving data in eigenspace: 
-# np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/dataEigenSpace.csv"), allPropertiesArray_, delimiter=", "); 
+# np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/dataEigenSpace.csv"), includedPropertiesArray_, delimiter=", "); 
 # np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/eigenValues.csv"), eigVals, delimiter=", "); 
 # np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/eigenVectors.csv"), eigVects, delimiter=", "); 
 # np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/covariance.csv"), allStatisticsCov, delimiter=", "); 
 
 # ## Saving data to files: 
-# np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/data.csv"), allPropertiesArray, delimiter=", "); 
+# np.savetxt(os.path.join(dataPathMaster, "Results/DataForPCA/data.csv"), includedPropertiesArray, delimiter=", "); 
 # for key in netIndexes.keys(): 
 # 	fOut = open(os.path.join(dataPathMaster, "Results/DataForPCA/labels"+key+".csv"), 'w'); 
 # 	for (iIndex, index) in enumerate(netIndexes[key]): 
