@@ -98,14 +98,15 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	## Initializing properties measured upon nodes: 
 
 	# A list of primary properties: 
-	primaryProperties = ["degreeCentrality", "eigenvectorCentrality", "betweennessCentrality"]; 
+	primaryProperties = ["degree", "eigenvectorCentrality", "betweennessCentrality"]; 
 	## ACHTUNG!! 
 	#	closenessVitality is interesting, but it is very heavy on computations. It is removed for tests. 
-	# 	If removing one node breaks the network appart, closenessVitality results in an infinity... 
+	# 	If removing one node breaks the network apart, closenessVitality results in an infinity... 
 	# 	Fixed using hyperbolic tangent! This property seems to contribute a lot for some networks :) 
-	primaryProperties += ["closenessCentrality", "harmonicCentrality", "closenessVitality"]; 
-	# primaryProperties += ["closenessCentrality", "harmonicCentrality"]; 
-	primaryProperties += ["clustering", "componentSize", "pagerank", "degree", "coreNumber", "onionLayer"]; 
+	primaryProperties += ["closenessCentrality", "harmonicCentrality", "componentSize", "pagerank", "coreNumber"]; 
+	primaryProperties += ["onionLayer", "effectiveSize", "nodeCliqueNumber", "numberOfCliques"]; 
+	primaryProperties += ["clustering", "squareClustering", "closenessVitality", "constraint"]; 
+	# primaryProperties += ["clustering", "squareClustering", "constraint"]; 
 	measuredProperties = copy(primaryProperties); 
 
 	if fVerbose: 
@@ -146,42 +147,43 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# 	This is redundant as it is just the node degree normalized by the number of nodes in the network. 
 	# 	Should be removed. Kept for the moment. 
 	if "degreeCentrality" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing degree centrality. "); 
 		nodesPropertiesDict["degreeCentrality"] = nx.degree_centrality(net); 
 
+	# Node degree: 
+	if "degree" in measuredProperties: 
 		if fVerbose: 
-			print("\tDegree centrality computed. "); 
+			print("\tComputing degree. "); 
+		nodesPropertiesDict["degree"] = net.degree(); 
 
 	# Eigenvector centrality: 
 	# 	ACH! Remind why this exception! 
 	if "eigenvectorCentrality" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing eigenvector centrality. "); 
 		try: 
 			nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net); 
 		except: 
 			nodesPropertiesDict["eigenvectorCentrality"] = nx.eigenvector_centrality(net, max_iter=10000); 
 
-		if fVerbose: 
-			print("\tEigenvector centrality computed. "); 
-
 	# Betweenness centrality: 
 	if "betweennessCentrality" in measuredProperties: 
-		nodesPropertiesDict["betweennessCentrality"] = nx.betweenness_centrality(net); 
-
 		if fVerbose: 
-			print("\tBetweenness centrality computed. "); 
+			print("\tComputing betweenness centrality. "); 
+		nodesPropertiesDict["betweennessCentrality"] = nx.betweenness_centrality(net); 
 
 	# Closeness centrality: 
 	if "closenessCentrality" in measuredProperties: 
-		nodesPropertiesDict["closenessCentrality"] = nx.closeness_centrality(net); 
-
 		if fVerbose: 
-			print("\tCloseness centrality computed. "); 
+			print("\tComputing closeness centrality. "); 
+		nodesPropertiesDict["closenessCentrality"] = nx.closeness_centrality(net); 
 
 	# Harmonic centrality: 
 	if "harmonicCentrality" in measuredProperties: 
-		nodesPropertiesDict["harmonicCentrality"] = nx.harmonic_centrality(net); 
-
 		if fVerbose: 
-			print("\tHarmonic centrality computed. "); 
+			print("\tComputing harmonic centrality. "); 
+		nodesPropertiesDict["harmonicCentrality"] = nx.harmonic_centrality(net); 
 
 	# # ACHTUNG!! Excluded. It does not converge! 
 	# # Katz centrality: 
@@ -190,52 +192,64 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	# except: 
 	# 	nodesPropertiesDict["katzCentrality"] = nx.katz_centrality(net, max_iter=10000); 
 
+	# Page rank: 
+	if "pagerank" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing pagerank centrality. "); 
+		nodesPropertiesDict["pagerank"] = nx.pagerank_numpy(net); 
+
+	# Size of largest k-core to which each node belongs: 
+	if "coreNumber" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing largest k-core. "); 
+		nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
+
+	# Onion layer: order in which each node is removed when computing k-cores: 
+	if "onionLayer" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing onion layer. "); 
+		nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
+
+	if "effectiveSize" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing effective size. "); 
+		nodesPropertiesDict["effectiveSize"] = nx.effective_size(net); 
+
+	if "nodeCliqueNumber" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing node clique number. "); 
+		nodesPropertiesDict["nodeCliqueNumber"] = nx.node_clique_number(net); 
+
+	if "numberOfCliques" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing number of maximal cliques. "); 
+		nodesPropertiesDict["numberOfCliques"] = nx.number_of_cliques(net); 
+
+	# Clustering coefficient: 
+	if "clustering" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing clustering. "); 
+		nodesPropertiesDict["clustering"] = nx.clustering(net); 
+
+	if "squareClustering" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing square clustering. "); 
+		nodesPropertiesDict["squareClustering"] = nx.square_clustering(net); 
+
 	# Closeness vitality -- increase in distance between nodes when a node is removed: 
 	if "closenessVitality" in measuredProperties: 
+		if fVerbose: 
+			print("\tComputing closeness vitality. "); 
 		nodesPropertiesDict["closenessVitality"] = nx.closeness_vitality(net); 
 		for node in nodesPropertiesDict["closenessVitality"]: 
 			nodesPropertiesDict["closenessVitality"][node] = np.tanh(nodesPropertiesDict["closenessVitality"][node]); 
 
+	if "constraint" in measuredProperties: 
 		if fVerbose: 
-			print("\tCloseness vitality computed. "); 
-
-	# Clustering coefficient: 
-	if "clustering" in measuredProperties: 
-		nodesPropertiesDict["clustering"] = nx.clustering(net); 
-
-		if fVerbose: 
-			print("\tClustering computed. "); 
-
+			print("\tComputing node constraint. "); 
+		nodesPropertiesDict["constraint"] = nx.constraint(net); 
 
 	# thisEccentricity = nx.eccentricity(net); 
-	
-	# Page rank: 
-	if "pagerank" in measuredProperties: 
-		nodesPropertiesDict["pagerank"] = nx.pagerank(net); 
-
-		if fVerbose: 
-			print("\tPagerank centrality computed. "); 
-
-	# Node degree: 
-	if "degree" in measuredProperties: 
-		nodesPropertiesDict["degree"] = net.degree(); 
-
-		if fVerbose: 
-			print("\tDegree computed. "); 
-
-	# Size of largest k-core to which each node belongs: 
-	if "coreNumber" in measuredProperties: 
-		nodesPropertiesDict["coreNumber"] = nx.core_number(netWOSL); 
-
-		if fVerbose: 
-			print("\tLargest k-core computed. "); 
-
-	# Onion layer: order in which each node is removed when computing k-cores: 
-	if "onionLayer" in measuredProperties: 
-		nodesPropertiesDict["onionLayer"] = nx.algorithms.core.onion_layers(net); 
-
-		if fVerbose: 
-			print("\tOnion layer computed. "); 
 
 
 	if fVerbose: 
@@ -246,10 +260,15 @@ def computeNodesProperties(net, fNeighborMean=True, fNeighborStd=True):
 	for (iNode, node) in enumerate(nodeList): 
 		for thisProperty in primaryProperties: 
 			if (thisProperty != "componentSize"): 
-				nodesProperties[thisProperty][iNode] = nodesPropertiesDict[thisProperty][node]; 
+				nodesProperties[thisProperty][iNode] = float(nodesPropertiesDict[thisProperty][node]); 
 			if (thisProperty == "componentSize"): 
 				nodesProperties["componentSize"][iNode] = float(len(nx.node_connected_component(net, node)))/len(thisGCC); 
 				nodesPropertiesDict["componentSize"][node] = nodesProperties["componentSize"][iNode]; 
+
+	# for thisProperty in primaryProperties: 
+	# 	print(type(nodesProperties[thisProperty])); 
+
+	# sys.exit(); 
 
 	if fVerbose: 
 		print("\tProperties sorted in lists. "); 
