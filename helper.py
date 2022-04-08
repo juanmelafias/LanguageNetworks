@@ -483,6 +483,33 @@ def varianceExplained(eigVals):
 	return (varianceExplained, varianceExplained_cumul); 
 
 
+def computeComponentsAboveNoise(eigVals): 
+	"""	computeComponentsAboveNoise function: 
+
+			This function uses the bound in [1] to estimate the number of components that are above noise, as well as
+			the amount of variance considered signal. To this end, following [1], the median eigenvalue is the
+			estimate of the noise across eigenvalues. Moving on, (4/√3) times this median marks the threshold below
+			which the eigenvalues are pure noise. All eigenvalues above this should be considered as containing a signal. 
+
+				[1] Donoho DL, Gavish M. The optimal hard threshold for singular values is 4/√3. arXiv preprint
+				arXiv:1305.5870, (2013).
+
+			Inputs: 
+				>> eigVals: Eigenvalues to be analized. 
+
+			Returns: 
+				<< noiseThreshold: Below which eigenvalues contain only noise. 
+				<< nKeep: Number of eigenvalues above noiseThreshold. 
+
+	"""
+
+	noiseThreshold = 4*np.median(eigVals)/np.sqrt(3); 
+	nKeep = len([vv for vv in eigVals if vv>noiseThreshold]); 
+
+	return (noiseThreshold, nKeep); 
+
+
+
 def distanceToTargetNode(allPropertiesArray_, iTargetNode): 
 	"""	distanceToTargetNode function: 
 

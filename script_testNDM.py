@@ -111,26 +111,26 @@ netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties
 # # netName = "randomBipartite"; 
 
 
-#######################################################################################################################
-# Uncomment for CNB network: 
+# #######################################################################################################################
+# # Uncomment for CNB network: 
 
-dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
-netName = "CNB_net"; 
+# dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+# netName = "CNB_net"; 
 
-# Reading edges: 
-fIn	= open(dataPath + "edges.csv", 'r'); 
-edges = []; 
-nodes = []; 
-allLines = fIn.read().splitlines(); 
-nPapers = {}; 
-nCollaborations = {}; 
-for line in allLines: 
-	thisEdge = line.split(', '); 
-	edges += [(thisEdge[0], thisEdge[1])]; 
+# # Reading edges: 
+# fIn	= open(dataPath + "edges.csv", 'r'); 
+# edges = []; 
+# nodes = []; 
+# allLines = fIn.read().splitlines(); 
+# nPapers = {}; 
+# nCollaborations = {}; 
+# for line in allLines: 
+# 	thisEdge = line.split(', '); 
+# 	edges += [(thisEdge[0], thisEdge[1])]; 
 
-# Building network from edges: 
-thisNetwork = nx.Graph(); 
-thisNetwork.add_edges_from(edges); 
+# # Building network from edges: 
+# thisNetwork = nx.Graph(); 
+# thisNetwork.add_edges_from(edges); 
 
 
 # #######################################################################################################################
@@ -177,36 +177,36 @@ thisNetwork.add_edges_from(edges);
 
 
 
-# ########################################################################################################################
-# ## Uncomment for MRI connectome network (I have a lof of such connectomes): 
+########################################################################################################################
+## Uncomment for MRI connectome network (I have a lof of such connectomes): 
 
 
-# # # Next networks are in MRI_234: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# # netName = "MRI_234_993675"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# # netName = "MRI_234_958976"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# netName = "MRI_234_959574"; 
+# # Next networks are in MRI_234: 
+connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
+# netName = "MRI_234_993675"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+# netName = "MRI_234_958976"; 
+thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
+netName = "MRI_234_959574"; 
 
-# # # Next networks are in MRI_1015: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
-# # # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# # Next networks are in MRI_1015: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
 
-# # ## Next networks are in MRI_Lobes: 
-# # connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+# ## Next networks are in MRI_Lobes: 
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
 
-# nativePositions = {}; 
-# nativePositions_3D = {}; 
-# for node in thisNetwork.nodes(): 
-# 	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"]]; 
-# 	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-# 								thisNetwork.nodes()[node]["dn_position_y"], 
-# 								thisNetwork.nodes()[node]["dn_position_z"]]; 
+nativePositions = {}; 
+nativePositions_3D = {}; 
+for node in thisNetwork.nodes(): 
+	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"]]; 
+	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+								thisNetwork.nodes()[node]["dn_position_y"], 
+								thisNetwork.nodes()[node]["dn_position_z"]]; 
 
 
 
@@ -350,8 +350,8 @@ nNodes = len(thisNetwork.nodes());
 # 	If computations have already been performed for some network, we read them from the files. 
 # 	Otherwise, we need to compute and store them. 
 
-fNeighborMean = False; 
-fNeighborStd = False; 
+fNeighborMean = True; 
+fNeighborStd = True; 
 if (("random" not in netName) and (os.path.isfile(netPath + netName + "_nodeList.csv")) 
 								and (os.path.isfile(netPath + netName + "_properties.pkl"))): 
 	# Files already exist with properties that have been computed. We can proceed with these: 
@@ -396,10 +396,10 @@ eigVects = np.real(eigVects);
 # 	Donoho DL, Gavish M. 
 # 	The optimal hard threshold for singular values is 4/√3. 
 # 	arXiv preprint arXiv:1305.5870, (2013).
-truncatingValue = 4*np.median(eigVals)/np.sqrt(3); 
-nKeep = len([vv for vv in eigVals if vv>truncatingValue]); 
-print("Noise-trucating PC value is: " + str(truncatingValue)); 
+(noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals); 
+print("Noise-trucating PC value is: " + str(noiseThreshold)); 
 print("According to this, optimal number of PCs kept is: " + str(nKeep)); 
+print("This is a fraction " + str(float(nKeep)/len(eigVals)) + " of eigenvalues. "); 
 
 # Plotting covariance matrix: 
 plt.figure(); 
@@ -606,7 +606,7 @@ plt.ylabel("Node properties");
 ## Dendograms for data: 
 nodesLinkage = spc.linkage(includedPropertiesArray_.T, 'ward'); 
 
-distanceThreshold = 20; 
+distanceThreshold = 45; 
 plt.figure(); 
 spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold); 
 plt.xlabel("Distance"); 
@@ -618,7 +618,7 @@ nClusters = 5;
 nodeClusters = spc.fcluster(nodesLinkage, nClusters, criterion="maxclust"); 
 nodeClusterColor = []; 
 for (iNode, node) in enumerate(nodeList): 
-	nodeClusterColor += [clusterStyles[nodeClusters[iNode]]]; 
+	nodeClusterColor += [clusterStyles[nodeClusters[iNode]-1]]; 
 
 
 # Plotting in eigenspace: 
