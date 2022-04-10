@@ -63,272 +63,32 @@ import loadHelper as lh;
 
 
 
+
+########################################################################################################################
+########################################################################################################################
+#### Loading network: 
+#### 
+
 # Path to store properties -- common for all networks: 
 netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties/"; 
 
-
-
-
-# ########################################################################################################################
-# ## Uncomment for syntax network: 
-
-# # Metadata to load networks: 
-# dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
-# dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
-# dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
-# # dataNames = ["DataDown"]; 
-# # dataFormats = ["txt"]; 
-
-# # Looping over folders, loading nets: 
-# allNetworksDict = {}; 
-# allNetworksNamesDict = {}; 
-# for (dataName, dataFormat) in zip(dataNames, dataFormats): 
-# 	dataPath = os.path.join(dataPathMaster, dataName); 
-# 	if (dataFormat=="txt"): 
-# 		(synNetDict, synNetNameList) = lh.loadAllTXTNetsFromPath(dataPath, False); 
-# 	if (dataFormat=="sif"): 
-# 		(synNetDict, synNetNameList) = lh.loadAllSIFNetsFromPath(dataPath); 
-# 	allNetworksDict[dataName] = synNetDict; 
-# 	allNetworksNamesDict[dataName] = synNetNameList; 
-
-# # Choose a single network: 
-# thisKey = "DataTD3"; 
-
-# iNetwork = 5; 
-# thisNetwork = allNetworksDict[thisKey][allNetworksNamesDict[thisKey][iNetwork]]; 
-
-
-# #######################################################################################################################
-# # Uncomment for randomly generated networks: 
-
-# # thisNetwork = nx.erdos_renyi_graph(200, 0.1); 
-# # netName = "randomER"; 
-# thisNetwork = nx.watts_strogatz_graph(200, 4, 0.05); 
-# netName = "randomWS"; 
-# # thisNetwork = nx.barabasi_albert_graph(200, 2); 
-# # netName = "randomBA"; 
-# # thisNetwork = nx.bipartite.gnmk_random_graph(50,50,200); 
-# # netName = "randomBipartite"; 
-
-
-# #######################################################################################################################
-# # Uncomment for CNB network: 
-
-# dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
-# netName = "CNB_net"; 
-
-# # Reading edges: 
-# fIn	= open(dataPath + "edges.csv", 'r'); 
-# edges = []; 
-# nodes = []; 
-# allLines = fIn.read().splitlines(); 
-# nPapers = {}; 
-# nCollaborations = {}; 
-# for line in allLines: 
-# 	thisEdge = line.split(', '); 
-# 	edges += [(thisEdge[0], thisEdge[1])]; 
-
-# # Building network from edges: 
-# thisNetwork = nx.Graph(); 
-# thisNetwork.add_edges_from(edges); 
-
-
-# #######################################################################################################################
-# # Uncomment for Collaboration networks: 
-
-# dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Collaborations/"; 
-# networkFileName = "ca-CSphd.mtx"; 
-
-# fIn = open(dataPath + networkFileName, 'r'); 
-# dL = fIn.read().splitlines(); 
-# fIn.close(); 
-
-# dL = dL[3::]; 
-# edges = []; 
-# for ll in dL: 
-# 	thisSplitLine = ll.split(' '); 
-# 	edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
-
-# # Building network from edges: 
-# thisNetwork = nx.Graph(); 
-# thisNetwork.add_edges_from(edges); 
-
-
-
-# #######################################################################################################################
-# # Uncomment for Ecology networks: 
-
-# dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Ecology/"; 
-# networkFileName = "eco-foodweb-baywet.edges"; 
-
-# fIn = open(dataPath + networkFileName, 'r'); 
-# dL = fIn.read().splitlines(); 
-# fIn.close(); 
-
-# dL = dL[2::]; 
-# edges = []; 
-# for ll in dL: 
-# 	thisSplitLine = ll.split(' '); 
-# 	edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
-
-# # Building network from edges: 
-# thisNetwork = nx.Graph(); 
-# thisNetwork.add_edges_from(edges); 
-
-
-
-########################################################################################################################
-## Uncomment for MRI connectome network (I have a lof of such connectomes): 
-
-
-# # Next networks are in MRI_234: 
-connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_234/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "993675_repeated10_scale250.graphml"); 
-# netName = "MRI_234_993675"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "958976_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-# netName = "MRI_234_958976"; 
-thisNetwork = nx.read_graphml(connectomeDataPath + "959574_repeated10_scale250.graphml"); # Check out this network!! Compare to others! 
-netName = "MRI_234_959574"; 
-
-# # Next networks are in MRI_1015: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
-
-# ## Next networks are in MRI_Lobes: 
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
-
-nativePositions = {}; 
-nativePositions_3D = {}; 
-for node in thisNetwork.nodes(): 
-	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-								thisNetwork.nodes()[node]["dn_position_y"]]; 
-	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-								thisNetwork.nodes()[node]["dn_position_y"], 
-								thisNetwork.nodes()[node]["dn_position_z"]]; 
-
-
-
-
-# ########################################################################################################################
-# ## Uncomment for Macaque brain: 
-
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
-# thisNetwork = thisNetwork.to_undirected(); 
-# netName = "macaqueBrain"; 
-
-
-# # ########################################################################################################################
-# # ## Uncomment for Drosophila: 
-
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Drosophila/"; 
-# mat = scipy.io.loadmat(connectomeDataPath + "mac95.mat"); 
-# for elem in mat.keys(): 
-# 	print(elem); 
-# 	print(mat[elem]); 
-
-
-# sys.exit(0); 
-
-# thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
-# thisNetwork = thisNetwork.to_undirected(); 
-
-
-# ########################################################################################################################
-# ## Uncomment for Mouse Visual Cortex: 
-
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Mouse/VisualCortex/"; 
-# thisNetwork = nx.read_graphml(connectomeDataPath + "mouse_visual.cortex_2.graphml"); 
-# thisNetwork = thisNetwork.to_undirected(); 
-
-
-# ########################################################################################################################
-# ## Uncomment for C elegans: 
-
-# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Celegans/Celegans131/"; 
-# netName = "netCElegans"; 
-
-# # # Simple-to-load C elegans network: 
-# # thisNetwork = nx.read_graphml(connectomeDataPath + "c.elegans_neural.male_1.graphml"); 
-# # thisNetwork = thisNetwork.to_undirected(); 
-
-# # # Complex-to-load C elegans network, but with positions! 
-# # thisNetwork = nx.read_edgelist(connectomeDataPath + "C-elegans-frontal.txt", create_using=nx.Graph(), nodetype=int); 
-# # nodePositions = np.genfromtxt(connectomeDataPath + "C-elegans-frontal-meta.csv", delimiter=',', skip_header=1, usecols=[2, 3]); 
-# # nNodes = len(thisNetwork.nodes()); 
-# # nativePositions = {}; 
-# # for iNode in range(nNodes): 
-# # 	nativePositions[iNode] = nodePositions[iNode,:]; 
-
-# mat = sio.loadmat(connectomeDataPath + "celegans131.mat"); 
-# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans131matrix"]); 
-# nativePositions = {}; 
-# for node in thisNetwork.nodes(): 
-# 	nativePositions[node] = mat["celegans131positions"][node,:]; 
-
-
-
-
-# ########################################################################################################################
-# ## Uncomment for Deutsche Autobahn: 
-
-# dieAutobahnDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Autobahn/"; 
-# netName = "netDeutscheAutobahn"; 
-
-# mat = sio.loadmat(dieAutobahnDataPath + "autobahn.mat"); 
-# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["auto1168"]); 
-# # for key in mat.keys(): 
-# # 	print(key); 
-# # 	print(mat[key]); 
-
-# labeledCities = []; 
-# for elem in np.squeeze(mat["auto1168labels"]): 
-# 	labeledCities += [elem[0]]; 
-
-# # # nativePositions = {}; 
-# # # for node in thisNetwork.nodes(): 
-# # # 	nativePositions[node] = mat["celegans131positions"][node,:]; 
-
-
-
-# # sys.exit(); 
-
-
-
-# ########################################################################################################################
-# ## Uncomment for airport connections: 
-
-# # Data was extracted from: https://www.dynamic-connectome.org/resources/
-
-# airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
-# netName = "airports"; 
-
-# # Loading network: 
-# mat = sio.loadmat(airportDataPath + "air500.mat"); 
-# thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
-# nodeNames = np.squeeze(mat["air500labels"]); 
-# # Reasigining node names to actual labels: 
-# mapping = {}; 
-# for (iName, name) in enumerate(nodeNames): 
-# 	mapping[iName] = name[0]; 
-# thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
-
-
-# # Loading airpot metadata: 
-# fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
-# airportMeta = fIn.read().splitlines(); 
-# fIn.close(); 
-# nativePositions = {}; 
-# for line in airportMeta: 
-# 	splitLine = line.split(','); 
-# 	nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
-
-
-
-
-
+netNames = ["syntaxNetwork", "CNB_net", "collabNet", "MRI_234_993675", "MRI_234_958976", "MRI_234_959574", "macaqueBrain"]; 
+netNames += ["macaqueInterCortex", "catTract", "mouseVisual2", "netCElegans", "netDeutscheAutobahn", "airports"]; 
+netName = "MRI_234_993675"; 
+(thisNetwork, metaDataDict) = lh.masterLoader(netName); 
+if ("nativePositions" in metaDataDict.keys()): 
+	nativePositions = metaDataDict["nativePositions"]; 
+if ("nativePositions_3D" in metaDataDict.keys()): 
+	nativePositions_3D = metaDataDict["nativePositions_3D"]; 
+
+# # Uncomment for quick network representation: 
+# fig = plt.figure(); 
+# ax = fig.add_subplot(111); 
+# nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork)); 
+# ax.set_aspect("equal"); 
+
+# plt.show(); 
+# sys.exit(0);
 
 
 
@@ -342,6 +102,10 @@ for node in thisNetwork.nodes():
 Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
 thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
 nNodes = len(thisNetwork.nodes()); 
+nEdges = thisNetwork.number_of_edges(); 
+print(nEdges); 
+
+sys.exit(); 
 
 
 
@@ -381,9 +145,9 @@ print("Analysis includes the following properties: ");
 for (iP, thisProperty) in enumerate(includedProperties): 
 	print('\t' + str(iP+1) + ": " + thisProperty); 
 
-# for (iP, thisProperty) in enumerate(includedProperties): 
-# 	print('\t' + str(iP+1) + ": " + thisProperty); 
-# 	print("\t\t" + str(includedPropertiesArray[iP])); 
+for (iP, thisProperty) in enumerate(includedProperties): 
+	print('\t' + str(iP+1) + ": " + thisProperty); 
+	print("\t\t" + str(includedPropertiesArray[iP])); 
 
 ## Computing correlation matrix and diagonalizing: 
 allStatisticsCov = np.cov(includedPropertiesArray); 

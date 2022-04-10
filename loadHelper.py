@@ -13,6 +13,243 @@ import numpy as np;
 import os, sys; 
 from copy import copy; 
 import networkx as nx; 
+import scipy.io as sio; # To read .mat files! and .mnx files! 
+
+
+
+def masterLoader(netName): 
+	"""	masterLoader function: 
+
+			This function is a master loader that handles all the cases and exceptions in loading networks. Now
+			everything is centralized here. 
+
+			Inputs: 
+				>> netName: Name of the network to be loaded. 
+
+	""" 
+
+	metaDataDict = {}; 
+
+	if (netName == "syntaxNetwork"): 
+		# Metadata to load networks: 
+		dataPathMaster = "/home/brigan/Desktop/Research_IFISC/LanguageMorphospaces/Data"; 
+		dataNames = ["DataDown", "DataHI", "DataSLI", "DataTD1", "DataTD2", "DataTD3", "DataTDLongDutch1_original"]; 
+		dataFormats = ["txt", "sif", "sif", "sif", "sif", "sif", "sif"]; 
+		# dataNames = ["DataDown"]; 
+		# dataFormats = ["txt"]; 
+
+		# Looping over folders, loading nets: 
+		allNetworksDict = {}; 
+		allNetworksNamesDict = {}; 
+		for (dataName, dataFormat) in zip(dataNames, dataFormats): 
+			dataPath = os.path.join(dataPathMaster, dataName); 
+			if (dataFormat=="txt"): 
+				(synNetDict, synNetNameList) = lh.loadAllTXTNetsFromPath(dataPath, False); 
+			if (dataFormat=="sif"): 
+				(synNetDict, synNetNameList) = lh.loadAllSIFNetsFromPath(dataPath); 
+			allNetworksDict[dataName] = synNetDict; 
+			allNetworksNamesDict[dataName] = synNetNameList; 
+
+		# Choose a single network: 
+		thisKey = "DataTD3"; 
+
+		iNetwork = 5; 
+		thisNetwork = allNetworksDict[thisKey][allNetworksNamesDict[thisKey][iNetwork]]; 
+
+	if (netName == "CNB_net"): 
+		dataPath = "/home/brigan/Desktop/Research_CNB/Misc/CNB_net/Code/Output/"; 
+
+		# Reading edges: 
+		fIn	= open(dataPath + "edges.csv", 'r'); 
+		edges = []; 
+		nodes = []; 
+		allLines = fIn.read().splitlines(); 
+		nPapers = {}; 
+		nCollaborations = {}; 
+		for line in allLines: 
+			thisEdge = line.split(', '); 
+			edges += [(thisEdge[0], thisEdge[1])]; 
+
+		# Building network from edges: 
+		thisNetwork = nx.Graph(); 
+		thisNetwork.add_edges_from(edges); 
+
+	if (netName == "collabNet"): 
+		dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Collaborations/"; 
+		networkFileName = "ca-CSphd.mtx"; 
+
+		fIn = open(dataPath + networkFileName, 'r'); 
+		dL = fIn.read().splitlines(); 
+		fIn.close(); 
+
+		dL = dL[3::]; 
+		edges = []; 
+		for ll in dL: 
+			thisSplitLine = ll.split(' '); 
+			edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
+
+		# Building network from edges: 
+		thisNetwork = nx.Graph(); 
+		thisNetwork.add_edges_from(edges); 
+
+
+
+# #######################################################################################################################
+# # Uncomment for Ecology networks: 
+
+# dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Ecology/"; 
+# networkFileName = "eco-foodweb-baywet.edges"; 
+
+# fIn = open(dataPath + networkFileName, 'r'); 
+# dL = fIn.read().splitlines(); 
+# fIn.close(); 
+
+# dL = dL[2::]; 
+# edges = []; 
+# for ll in dL: 
+# 	thisSplitLine = ll.split(' '); 
+# 	edges += [(int(thisSplitLine[0]), int(thisSplitLine[1]))]; 
+
+# # Building network from edges: 
+# thisNetwork = nx.Graph(); 
+# thisNetwork.add_edges_from(edges); 
+
+
+	if ("MRI" in netName): 
+		netNameWords = netName.split('_'); 
+
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_" + netNameWords[1] + "/"; 
+		thisNetwork = nx.read_graphml(connectomeDataPath + netNameWords[2] + "_repeated10_scale250.graphml"); 
+
+		# # Next networks are in MRI_1015: 
+		# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_1015/"; 
+		# # thisNetwork = nx.read_graphml(connectomeDataPath + "101915_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+		# thisNetwork = nx.read_graphml(connectomeDataPath + "987074_repeated10_scale500.graphml"); # Check out this network!! Compare to others! 
+
+		# ## Next networks are in MRI_Lobes: 
+		# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Human/MRI_Lobes/"; 
+		# thisNetwork = nx.read_graphml(connectomeDataPath + "occipital-113922_connectome_scale500.graphml"); # Check out this network!! Compare to others! 
+
+		nativePositions = {}; 
+		nativePositions_3D = {}; 
+		for node in thisNetwork.nodes(): 
+			nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+										thisNetwork.nodes()[node]["dn_position_y"]]; 
+			nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+										thisNetwork.nodes()[node]["dn_position_y"], 
+										thisNetwork.nodes()[node]["dn_position_z"]]; 
+
+		metaDataDict["nativePositions"] = nativePositions; 
+		metaDataDict["nativePositions_3D"] = nativePositions_3D; 
+
+	if (netName == "macaqueBrain"): 
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
+		thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_brain_1.graphml"); 
+		thisNetwork = thisNetwork.to_undirected(); 
+
+	if (netName == "macaqueInterCortex"): 
+		# Most boring network ever... 
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Macaque/"; 
+		thisNetwork = nx.read_graphml(connectomeDataPath + "rhesus_interareal.cortical.network_2.graphml"); 
+		thisNetwork = thisNetwork.to_undirected(); 
+
+	if (netName == "catTract"): 
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Cat/"; 
+		thisNetwork = nx.read_graphml(connectomeDataPath + "mixed.species_brain_1.graphml"); 
+		thisNetwork = thisNetwork.to_undirected(); 
+
+
+# # ########################################################################################################################
+# # ## Uncomment for Drosophila: 
+
+# connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Drosophila/"; 
+# mat = scipy.io.loadmat(connectomeDataPath + "mac95.mat"); 
+# for elem in mat.keys(): 
+# 	print(elem); 
+# 	print(mat[elem]); 
+
+
+	if (netName == "mouseVisual2"): 
+		# This is just a simple circuit. 
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Mouse/VisualCortex/"; 
+		thisNetwork = nx.read_graphml(connectomeDataPath + "mouse_visual.cortex_2.graphml"); 
+		thisNetwork = thisNetwork.to_undirected(); 
+
+
+	if (netName == "netCElegans"): 
+		connectomeDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Celegans/Celegans131/"; 
+		netName = "netCElegans"; 
+
+		# # Simple-to-load C elegans network: 
+		# thisNetwork = nx.read_graphml(connectomeDataPath + "c.elegans_neural.male_1.graphml"); 
+		# thisNetwork = thisNetwork.to_undirected(); 
+
+		# # Complex-to-load C elegans network, but with positions! 
+		# thisNetwork = nx.read_edgelist(connectomeDataPath + "C-elegans-frontal.txt", create_using=nx.Graph(), nodetype=int); 
+		# nodePositions = np.genfromtxt(connectomeDataPath + "C-elegans-frontal-meta.csv", delimiter=',', skip_header=1, usecols=[2, 3]); 
+		# nNodes = len(thisNetwork.nodes()); 
+		# nativePositions = {}; 
+		# for iNode in range(nNodes): 
+		# 	nativePositions[iNode] = nodePositions[iNode,:]; 
+
+		mat = sio.loadmat(connectomeDataPath + "celegans131.mat"); 
+		thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["celegans131matrix"]); 
+		nativePositions = {}; 
+		for node in thisNetwork.nodes(): 
+			nativePositions[node] = mat["celegans131positions"][node,:]; 
+
+		metaDataDict["nativePositions"] = nativePositions; 
+
+	if (netName == "netDeutscheAutobahn"): 
+		dieAutobahnDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Autobahn/"; 
+		netName = "netDeutscheAutobahn"; 
+
+		mat = sio.loadmat(dieAutobahnDataPath + "autobahn.mat"); 
+		thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["auto1168"]); 
+		# for key in mat.keys(): 
+		# 	print(key); 
+		# 	print(mat[key]); 
+
+		labeledCities = []; 
+		for elem in np.squeeze(mat["auto1168labels"]): 
+			labeledCities += [elem[0]]; 
+
+		# # nativePositions = {}; 
+		# # for node in thisNetwork.nodes(): 
+		# # 	nativePositions[node] = mat["celegans131positions"][node,:]; 
+
+	if (netName == "airports"): 
+		# Data was extracted from: https://www.dynamic-connectome.org/resources/
+
+		airportDataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Airport/"; 
+		netName = "airports"; 
+
+		# Loading network: 
+		mat = sio.loadmat(airportDataPath + "air500.mat"); 
+		thisNetwork = nx.convert_matrix.from_numpy_matrix(mat["air500matrix"]); 
+		nodeNames = np.squeeze(mat["air500labels"]); 
+		# Reasigining node names to actual labels: 
+		mapping = {}; 
+		for (iName, name) in enumerate(nodeNames): 
+			mapping[iName] = name[0]; 
+		thisNetwork = nx.relabel_nodes(thisNetwork, mapping); 
+
+
+		# Loading airpot metadata: 
+		fIn = open(airportDataPath + "shorterMeta.csv", 'r'); 
+		airportMeta = fIn.read().splitlines(); 
+		fIn.close(); 
+		nativePositions = {}; 
+		for line in airportMeta: 
+			splitLine = line.split(','); 
+			nativePositions[splitLine[2]] = [float(splitLine[1]), float(splitLine[0])]; 
+
+		metaDataDict["nativePositions"] = nativePositions; 
+
+
+	return (thisNetwork, metaDataDict); 
+
+
 
 
 
