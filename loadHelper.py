@@ -44,9 +44,9 @@ def masterLoader(netName):
 		for (dataName, dataFormat) in zip(dataNames, dataFormats): 
 			dataPath = os.path.join(dataPathMaster, dataName); 
 			if (dataFormat=="txt"): 
-				(synNetDict, synNetNameList) = lh.loadAllTXTNetsFromPath(dataPath, False); 
+				(synNetDict, synNetNameList) = loadAllTXTNetsFromPath(dataPath, False); 
 			if (dataFormat=="sif"): 
-				(synNetDict, synNetNameList) = lh.loadAllSIFNetsFromPath(dataPath); 
+				(synNetDict, synNetNameList) = loadAllSIFNetsFromPath(dataPath); 
 			allNetworksDict[dataName] = synNetDict; 
 			allNetworksNamesDict[dataName] = synNetNameList; 
 
