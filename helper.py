@@ -534,8 +534,138 @@ def distanceToTargetNode(allPropertiesArray_, iTargetNode):
 	return (distanceToTargetNode, distanceToTargetNode_); 
 
 
+def alignComponents(eigVects1, eigVects2, includedProperties1, includedProperties2): 
+	"""	alignComponents function: 
+
+			This function takes a set of two eigen-basis and searchers which components across sets aligns the most.
+			This will allow us to compare components from two different networks. The process consists in proyecting
+			components along each other, and each multiplied by -1. To make this properly, we need to take into
+			account that two networks might have different sets of properties, and that projections along absent
+			properties are 0. 
+
+			ACHTUNG!! 
+				- Still not implemented the case in which not all properties are the same! 
+
+			ACHTUNG!! 
+				- Review bestMatch12 and bestMatch21 carefully!! Some results indicate that I mixed these up. 
+
+			Inputs: 
+				>> eigVects1, eigVects2: Eigenvectors from each network. 
+				>> includedProperties1, includedProperties2: Properties included in each network's analysis. 
+
+			Returns: 
+				<< bestMatch12, bestMatch21: Component in basis 2 along which each component from axis 1 has a largest projection. 
+				<< bestMatch12, bestMatch21: Sign of that projection. 
+
+	"""
+
+	includedProperties1 = set(includedProperties1); 
+	includedProperties2 = set(includedProperties2); 
+	commonProperties = includedProperties2.intersection(includedProperties1); 
+	nComponents = len(commonProperties); 
+
+	# If both networks have the same set of properties included in the analysis, things are greatly facilitated: 
+	if ((len(commonProperties) == len(includedProperties1)) and (len(commonProperties) == len(includedProperties1))): 
+		bestMatch = []; 
+		eigVectsProjection = np.dot(eigVects1.T, eigVects2); 
+		eigVectsProjectionAbs = np.abs(eigVectsProjection); 
+		eigVectsProjectionSign = np.sign(eigVectsProjection).astype(int); 
+
+		bestMatch12 = np.argmax(eigVectsProjectionAbs, 0); 
+		bestMatchSign12 = [eigVectsProjectionSign[bestMatch12[ii],ii] for ii in range(nComponents)]; 
+		bestMatch21 = np.argmax(eigVectsProjectionAbs, 1); 
+		bestMatchSign21 = [eigVectsProjectionSign[jj, bestMatch21[jj]] for jj in range(nComponents)]; 
+
+	else: 
+		print("ACHTUNG!!"); 
+
+	# plt.figure(); 
+	# plt.imshow(eigVectsProjection, interpolation="none"); 
+	# plt.colorbar(); 
+
+	# plt.figure(); 
+	# plt.imshow(eigVectsProjectionSign, interpolation="none"); 
+	# plt.colorbar(); 
+
+	# plt.figure(); 
+	# plt.imshow(eigVectsProjectionAbs, interpolation="none"); 
+	# plt.colorbar(); 
+
+	return (bestMatch12, bestMatchSign12, bestMatch21, bestMatchSign21); 
 
 
+def plotEigenvectorProjections(referenceEigenbasis, otherEigenbases): 
+	"""	plotEigenvectorProjections function: 
+
+			This function plots the projection of the first 2 or 3 components of all otherEigenbases in the first 2 or 3
+			components of the referenceEigenbasis. 
+
+			ACHTUNG!! 
+				- We assume that all eigenbases have the same components, or that non-common components have been
+				  omitted. Otherwise, this will crash. 
+
+			Inputs: 
+				<< referenceEigenbasis: Upon which all other eigenbases will be plotted. 
+				<< otherEigenbases: Which will be plotted upon referenceEigenbasis. 
+
+	"""
+
+	eigVectsProjections = [np.dot(referenceEigenbasis.T, thisEigenbasis) for thisEigenbasis in otherEigenbases]; 
+
+	# Coloring by network: 
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111); 
+	ax.set_aspect("equal"); 
+	# Plotting original axes: 
+	plt.plot([0, 1], [0, 0], 'k'); 
+	plt.plot([0, 0], [0, 1], 'k'); 
+	# Plotting projected axes: 
+	for projection in eigVectsProjections: 
+		p = plt.plot([0, projection[1,1]], [0, projection[2,1]]); 
+		projectionColor = p[0].get_color(); 
+		plt.plot([0, projection[1,2]], [0, projection[2,2]], color=projectionColor); 
+
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111, projection='3d'); 
+	# ax.set_aspect("equal"); 
+	# Plotting original axes: 
+	plt.plot([0, 1], [0, 0], [0, 0], 'k'); 
+	plt.plot([0, 0], [0, 1], [0, 0], 'k'); 
+	plt.plot([0, 0], [0, 0], [0, 1], 'k'); 
+	# Plotting projected axes: 
+	for projection in eigVectsProjections: 
+		p = plt.plot([0, projection[1,1]], [0, projection[2,1]], [0, projection[3,1]]); 
+		projectionColor = p[0].get_color(); 
+		plt.plot([0, projection[1,2]], [0, projection[2,2]], [0, projection[3,2]], color=projectionColor); 
+		plt.plot([0, projection[1,3]], [0, projection[2,3]], [0, projection[3,3]], color=projectionColor); 
+
+
+	# Coloring by component: 
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111); 
+	ax.set_aspect("equal"); 
+	# Plotting original axes: 
+	plt.plot([0, 1], [0, 0], 'k'); 
+	plt.plot([0, 0], [0, 1], 'r'); 
+	# Plotting projected axes: 
+	for projection in eigVectsProjections: 
+		plt.plot([0, projection[1,1]], [0, projection[2,1]], 'k'); 
+		plt.plot([0, projection[1,2]], [0, projection[2,2]], 'r'); 
+
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111, projection='3d'); 
+	# ax.set_aspect("equal"); 
+	# Plotting original axes: 
+	plt.plot([0, 1], [0, 0], [0, 0], 'k'); 
+	plt.plot([0, 0], [0, 1], [0, 0], 'r'); 
+	plt.plot([0, 0], [0, 0], [0, 1], 'g'); 
+	# Plotting projected axes: 
+	for projection in eigVectsProjections: 
+		plt.plot([0, projection[1,1]], [0, projection[2,1]], [0, projection[3,1]], 'k'); 
+		plt.plot([0, projection[1,2]], [0, projection[2,2]], [0, projection[3,2]], 'r'); 
+		plt.plot([0, projection[1,3]], [0, projection[2,3]], [0, projection[3,3]], 'g'); 
+
+	return; 
 
 
 ########################################################################################################################
