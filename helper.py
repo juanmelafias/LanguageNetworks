@@ -566,7 +566,6 @@ def alignComponents(eigVects1, eigVects2, includedProperties1, includedPropertie
 
 	# If both networks have the same set of properties included in the analysis, things are greatly facilitated: 
 	if ((len(commonProperties) == len(includedProperties1)) and (len(commonProperties) == len(includedProperties1))): 
-		bestMatch = []; 
 		eigVectsProjection = np.dot(eigVects1.T, eigVects2); 
 		eigVectsProjectionAbs = np.abs(eigVectsProjection); 
 		eigVectsProjectionSign = np.sign(eigVectsProjection).astype(int); 

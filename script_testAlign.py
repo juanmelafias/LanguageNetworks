@@ -35,12 +35,17 @@ import loadHelper as lh;
 # Path to store properties -- common for all networks: 
 netPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/NetworkProperties/"; 
 
-netNames = ["syntaxNetwork", "CNB_net", "collabNet", "MRI_234_993675", "MRI_234_958976", "MRI_234_959574", "macaqueBrain"]; 
-netNames += ["macaqueInterCortex", "catTract", "mouseVisual2", "netCElegans", "netDeutscheAutobahn", "airports"]; 
 
-netsToLoad = ["MRI_234_959574", "MRI_234_993675", "MRI_234_958976", "MRI_234_100206"]; 
-netsToLoad = ["CNB_net", "collabNet", "MRI_234_993675", "MRI_234_958976", "MRI_234_959574", "macaqueBrain"]; 
-netsToLoad += ["netCElegans", "airports"]; 
+netNames_humanMRI = ["MRI_234_993675", "MRI_234_958976", "MRI_234_100408", "MRI_234_959574", "MRI_234_100206"]; 
+netNames_humanMRI += ["MRI_234_100307", "MRI_234_100610", "MRI_234_101006", "MRI_234_101107", "MRI_234_101309"]; 
+netNames_humanMRI += ["MRI_234_101410", "MRI_234_101915"]; 
+netNames = ["syntaxNetwork", "CNB_net", "collabNet", "catTract", "mouseVisual2", "netCElegans", "netDeutscheAutobahn"]; 
+netNames += ["airports"]; 
+# netNames += netNames_humanMRI; 
+
+netsToLoad = netNames_humanMRI; 
+# netsToLoad = ["CNB_net", "collabNet", "MRI_234_993675", "MRI_234_958976", "MRI_234_959574", "macaqueBrain"]; 
+# netsToLoad += ["netCElegans", "airports"]; 
 nNetworks = len(netsToLoad); 
 networksList = []; 
 for netName in netsToLoad: 

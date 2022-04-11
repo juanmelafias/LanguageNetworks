@@ -246,8 +246,75 @@ def masterLoader(netName):
 
 		metaDataDict["nativePositions"] = nativePositions; 
 
+	if ("protein" in netName): 
+		speciesName = netName.split("protein")[1]; 
+		dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/ProteinProtein/" + speciesName + '/'; 
+		fileName = "interactions.dat"; 
+
+		fIn = open(dataPath + fileName, 'r'); 
+		dL = fIn.readlines()[1:]; 
+		fIn.close(); 
+
+		edges = []; 
+		formerEdge = ('', ''); 
+		for line in dL: 
+			words = line.split('\t'); 
+			newEdge = (words[0],  words[1]); 
+			if (newEdge != formerEdge): 
+				edges += [newEdge]; 
+			formerEdge = newEdge; 
+
+
+		# # Reading edges: 
+		# fIn	= open(dataPath + "edges.csv", 'r'); 
+		# edges = []; 
+		# nodes = []; 
+		# allLines = fIn.readlines(); 
+		# for line in allLines: 
+		# 	thisEdge = line.split(', '); 
+		# 	edges += [(thisEdge[0], thisEdge[1])]; 
+
+		# Building network from edges: 
+		thisNetwork = nx.Graph(); 
+		thisNetwork.add_edges_from(edges); 
 
 	return (thisNetwork, metaDataDict); 
+
+
+def generateRandomNetwork(netName, args): 
+	"""	generateRandomNetwork function: 
+
+			This function generates random networks. It reads the kind of network to be generated from netName and
+			needed parameters from args. 
+
+			Inputs: 
+				>> netName: "random"+specs, where specs indicates the kind of random network to be generated. 
+				>> args: Dictionary storing the parameters for network generation. 
+					> For "ER": nNodes, pConnect. 
+					> For "WS": nNodes, nNeighbors, pRewire. 
+
+			Returns: 
+				<< thisNetwork: Resulting random network. 
+
+	"""
+
+	if ("ER" in netName): 
+		nNodes = args["nNodes"]; 
+		pConnect = args["pConnect"]; 
+		thisNetwork = nx.erdos_renyi_graph(nNodes, pConnect); 
+
+	if ("WS" in netName): 
+		nNodes = args["nNodes"]; 
+		nNeighbors = args["nNeighbors"]; 
+		pRewire = args["pRewire"]; 
+		thisNetwork = nx.watts_strogatz_graph(nNodes, nNeighbors, pRewire); 
+
+	if ("BA" in netName): 
+		nNodes = args["nNodes"]; 
+		nNewAttachments = args["nNewAttachments"]; 
+		thisNetwork = nx.barabasi_albert_graph(nNodesRandom, nNewAttachments); 
+
+	return thisNetwork; 
 
 
 
@@ -418,720 +485,4 @@ def loadAllSIFNetsFromPath(dataPath):
 		allNets[thisNetName] = loadNetworkFromSIF(fName, dataPath); 
 
 	return (allNets, allNetsNames); 
-
-
-def computeAgeFromName(name): 
-	""" computeAgeFromName function: 
-
-			This fucntion computes the age of a participant from the string that is used to name her or him. These
-			strings end either with 5 or 6 digits which correspond (from right to left) to i) two digist for age in
-			days, ii) two digits for age in months, and iii) one or two digist for age in years. 
-
-			Inputs: 
-				name: string used to name a participant. 
-
-			Returns: 
-				age: age of the participant in days. 
-
-	"""
-
-	nString = name[-6:]; 
-	dd = nString[4:6]; 
-	mm = nString[2:4]; 
-	yy = nString[0:2]; 
-	if (yy[0].isalpha()): 
-		yy = yy[1:]; 
-	age = 365*int(yy) + 30*int(mm)+int(dd); 
-
-	return age; 
-
-
-def extractCommonNodes(allNets): 
-	""" extractCommonNodes function: 
-
-			This function extracts all the nodes (words) which are common to all networks. 
-
-			Inputs: 
-				>> allNets: list with the network objects loaded somewhere else. 
-
-			Returns: 
-				<< commonNodes: list with the nodes (words) which are present in all networks. 
-
-	"""
-
-	commonNodes = allNets[0].nodes(); 
-	for net in allNets[1:]: 
-		commonNodes = np.intersect1d(commonNodes, net.nodes()); 
-
-	return list(commonNodes); 
-
-
-def computeIndexFromDevelopment(devFileName): 
-	""" computeIndexFromDevelopment function: 
-
-			This function extracts the index of the name along a development series. 
-
-	"""
-
-	iName = int(devFileName.split('_')[1]); 
-
-	return iName; 
-
-
-def extractCommonNodesDegree(allNets, commonNodes): 
-	""" extractCommonNodesDegree function: 
-
-			This function returns the degree of all common nodes for all networks available. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-				>> commonNodes: list with all nodes present in all networks. 
-
-			Returns: 
-				<< commonNodesDegree: degree of all nodes present in all networks. 
-
-	"""
-
-	nNets = len(allNets); 
-	nCommon = len(commonNodes); 
-	allNEdges = [net.number_of_edges() for net in allNets]; 
-	commonNodesDegree = np.zeros([nNets, nCommon]); 
-	for (iNet, net) in enumerate(allNets): 
-		thisCommonNodesDegree = net.degree(commonNodes)
-		commonNodesDegree[iNet,:] = [thisCommonNodesDegree[node] for node in commonNodes]; 
-		commonNodesDegree[iNet,:] = np.true_divide(commonNodesDegree[iNet,:], allNEdges[iNet]); 
-
-	return commonNodesDegree; 
-
-
-def extractCommonBetweennessCentrality(allNets, commonNodes): 
-	""" extractCommonBetweennessCentrality function: 
-
-			This function extracts the betweenness centrality of all nodes that are common to all networks. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-				>> commonNodes: list with all nodes present in all networks. 
-
-			Returns: 
-				<< commonNodesBC: betweenness centrality of all nodes that are common to all networks. 
-
-	"""
-
-	nNets = len(allNets); 
-	nCommon = len(commonNodes); 
-	commonNodesBC = np.zeros([nNets, nCommon]); 
-	for (iNet, net) in enumerate(allNets): 
-		thisCommonNodeBC = nx.algorithms.centrality.betweenness_centrality(net); 
-		commonNodesBC[iNet,:] = [thisCommonNodeBC[node] for node in commonNodes]; 
-
-	return commonNodesBC; 
-
-
-def extractCommonEigenvectorCentrality(allNets, commonNodes): 
-	""" extractCommonEigenvectorCentrality function: 
-
-			This function computes the eigenvector centrality for all nodes in each network, then extracts the
-			centrality for the nodes that are common to all networks.
-
-			ACHTUNG!! 
-				Most EC is zero, which here becomes 10-17 or so, and it changes between different calls. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-				>> commonNodes: list with all nodes present in all networks. 
-
-			Returns: 
-				<< commonNodesEC: eigenvector centrality of all nodes that are common to all networks. 
-
-	"""
-
-	nNets = len(allNets); 
-	nCommon = len(commonNodes); 
-	commonNodesEC = np.zeros([nNets, nCommon]); 
-	for (iNet, net) in enumerate(allNets): 
-		thisCommonNodeEC = nx.algorithms.centrality.eigenvector_centrality_numpy(net); 
-		commonNodesEC[iNet,:] = [thisCommonNodeEC[node] for node in commonNodes]; 
-
-	return commonNodesEC; 
-
-
-def computeCommonNodesStatistics(allNets): 
-	""" computeCommonNodesStatistics function: 
-
-			This function computes statistics from the common nodes for all networks. The idea is to extract efficiently
-			everything that we might be interested in. While individual calls to the functions above would loop over the
-			networks several times, this function only loops once. 
-
-			ACHTUNG!! 
-				More statistics should be added to this function. 
-				By now: degree, betweenness centrality. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-
-			Returns: 
-				<< commonNodesStatistics: A dictionary summarizing interesting statistics about all common nodes. 
-
-	"""
-
-	## Preliminary: 
-	nNets = len(allNets); 
-	allNEdges = [net.number_of_edges() for net in allNets]; 
-	# Extract common nodes: 
-	commonNodes = extractCommonNodes(allNets); 
-
-	nCommon = len(commonNodes); 
-	# Initialize dictionaries and arrays to store quantities: 
-	allStatistics = ["degree", "betweennessCentrality", "eigenvectorCentrality"]; 
-	commonNodesStatistics = {}; 
-	for statistic in allStatistics: 
-		commonNodesStatistics[statistic] = np.zeros([nNets, nCommon]); 
-
-	# Loop over networks to compute statistics: 
-	for (iNet, net) in enumerate(allNets): 
-		# Betweenness centrality: 
-		thisCommonNodeBC = nx.algorithms.centrality.betweenness_centrality(net); 
-		commonNodesStatistics["betweennessCentrality"][iNet,:] = [thisCommonNodeBC[node] for node in commonNodes]; 
-
-		# Degree: 
-		thisCommonNodesDegree = net.degree(commonNodes)
-		commonNodesStatistics["degree"][iNet,:] = [thisCommonNodesDegree[node] for node in commonNodes]; 
-		commonNodesStatistics["degree"][iNet,:] = np.true_divide(commonNodesStatistics["degree"][iNet,:], allNEdges[iNet]); 
-
-		# # Eigenvector centrality: 
-		# #	ACHTUNG!! Most EC is zero, which here becomes 10-17 or so, and it changes between different calls. 
-		# thisCommonNodeEC = nx.algorithms.centrality.eigenvector_centrality_numpy(net); 
-		# commonNodesStatistics["eigenvectorCentrality"][iNet,:] = [thisCommonNodeEC[node] for node in commonNodes]; 
-
-	return commonNodesStatistics; 
-
-
-
-
-########################################################################################################################
-## Next functions are for computing stuf on complete networks, not on individual nodes. In principle, this falls off the
-## scope of NDMs. 
-## 
-
-
-def computeCoreSizesAndLargestCore(net): 
-	""" computeCommonNodesStatistics function: 
-
-			This function computes the sizes of 2-, 3-, and 4-cores, as well as the number of the largest, non-empty
-			k-core. 
-
-			Inputs: 
-				>> net: graph upon which we are going to compute stuff. 
-
-			Returns: 
-				<< k2CoreSize, k3CoreSize, k4CoreSize: sizes of 2-, 3-, and 4-cores of the graph. 
-				<< kCoreLargest: k number of the largest, non-empty k-core -- usually between 2 and 4. 
-
-	"""
-
-	# Simplifying network to make sure there are not autoloops: 
-	thisSimplerNet = copy(net); 
-	# thisSimplerNet.remove_edges_from(thisSimplerNet.selfloop_edges()); 
-	thisSimplerNet.remove_edges_from(nx.selfloop_edges(thisSimplerNet)); 
-
-
-
-	maxKCore = 1; 
-	fNextCore = True; 
-	kCoreSizes = []; 
-	while (fNextCore): 
-		thisCore = nx.algorithms.core.k_core(thisSimplerNet, k=maxKCore+1); 
-		thisCoreSize = len(thisCore.nodes()); 
-		if (thisCoreSize): 
-			kCoreSizes += [float(thisCoreSize)]; 
-			maxKCore += 1; 
-		else: 
-			fNextCore = False; 
-
-	while (len(kCoreSizes)<3): 
-		kCoreSizes += [0.]; 
-
-	return (kCoreSizes, maxKCore); 
-
-def computeConnectedVocabularySize(net): 
-	"""	computeConnectedVocabularySize function: 
-
-			This function computes the proportion of vocabulary that belongs to the giant connected component. 
-
-			Inputs: 
-				>> net: graph upon which we are going to compute stuff. 
-
-			Returns: 
-				<< connectedVocabularySize: Fraction of nodes that belong to the giant connected component. 
-
-	"""
-
-	thisGCC = max(nx.connected_components(net), key=len); 
-	connectedVocabularySize = float(len(thisGCC))/len(net.nodes()); 
-
-	return connectedVocabularySize; 
-
-
-
-
-def computeNetworksStatistics(allNets, allNames): 
-	""" computeNetworksStatistics function: 
-
-			This function computes a lot of statistics for the purpose of plotting them, not for performing
-			PCA. Among the statistics computed is the network's age, which is read from the name of the
-			original file. 
-
-			Inputs: 
-				>> allNets: List with all networks being studied. 
-				>> allNames: List with the names of the networks so that they can be accessed when stored in
-				dictionaries. 
-
-			Returns: 
-				<< netsStatistics: Dictionary summarizing relevant statistics for all networks. 
-
-	"""
-
-	## Preliminary: 
-	nNets = len(allNets); 
-	allStatistics = ["age", "vocabularySize", "connectedVocabularySize", "assortativity", "clustering"]; 
-	allStatistics += ["coloringNumber", "connectedComponentSize", "coreSize2", "coreSize3"]; 
-	allStatistics += ["coreSizeLargest", "cycleBasisSize", "cycleBasisAverageSize", "diameter"]; 
-	allStatistics += ["pagerankEntropy", "jaccardSimilarityMean", "jaccardSimilarityEntropy"]; 
-	allStatistics += ["maximalMatchingSize", "maximalIndependentSet", "nEdges", "degree"]; 
-	netsStatistics = {}; 
-	for statistic in allStatistics: 
-		netsStatistics[statistic] = np.zeros([nNets, 1]).squeeze(); 
-
-	for (iNet, net) in enumerate(allNets): 
-		# Network name: 
-		thisNetName = allNames[iNet][1]; 
-		# Number of nodes and edges (needed several times below): 
-		thisNNodes = net.number_of_nodes(); 
-		thisEdges = net.number_of_edges(); 
-		print("Processing network " + thisNetName + ": "); 
-
-		lastStatistics = []; 
-
-		# Age: 
-		netsStatistics["age"][iNet] = computeAgeFromName(thisNetName); 
-
-		## Vocabulary: 
-		# Vocabulary size: 
-		# print("Computing vocabulary size: "); 
-		netsStatistics["vocabularySize"][iNet] = len(net.nodes()); 
-		lastStatistics += [netsStatistics["vocabularySize"][iNet]]; 
-
-		# Connected vocabulary size: 
-		# print("Computing connected vocabulary: "); 
-		netsStatistics["connectedVocabularySize"][iNet] = computeConnectedVocabularySize(net); 
-		lastStatistics += [netsStatistics["connectedVocabularySize"][iNet]]; 
-
-		# Assortativity: 
-		# 	ACH! Is troublesome with new networkx version... 
-		# print("Computing assortativity: "); 
-		netsStatistics["assortativity"][iNet] = nx.algorithms.assortativity.degree_assortativity_coefficient(net); 
-		lastStatistics += [netsStatistics["assortativity"][iNet]]; 
-
-		# Clustering: 
-		# print("Computing clustering: "); 
-		netsStatistics["clustering"][iNet] = nx.algorithms.cluster.average_clustering(net); 
-		lastStatistics += [netsStatistics["clustering"][iNet]]; 
-
-		# Coloring number: 
-		# print("Computing coloring number: "); 
-		thisColoring = nx.coloring.greedy_color(net); 
-		netsStatistics["coloringNumber"][iNet] = len(set(thisColoring.values())); 
-		lastStatistics += [netsStatistics["coloringNumber"][iNet]]; 
-
-		# Connected component size: 
-		# print("Computing size of connected component: "); 
-		thisLargestCC = max(nx.algorithms.components.connected_components(net), key=len); 
-		netsStatistics["connectedComponentSize"][iNet] = float(len(thisLargestCC))/thisNNodes; 
-		lastStatistics += [netsStatistics["connectedComponentSize"][iNet]]; 
-
-
-		## kCoreSizes and largest kCore: 
-		# print("Computing k-core stuff: "); 
-		(kSizes, kLargest) = computeCoreSizesAndLargestCore(net); 
-		kSizes = np.divide(kSizes, thisNNodes); 
-		# print("\tSize of 2-core: "); 
-		netsStatistics["coreSize2"][iNet] = kSizes[0]; 
-		# print("\tSize of 3-core: "); 
-		netsStatistics["coreSize3"][iNet] = kSizes[1]; 
-		# netsStatistics["coreSize4"][iNet] = kSizes[2]; 
-		# print("\tLargest k-core: "); 
-		netsStatistics["coreSizeLargest"][iNet] = kLargest; 
-		lastStatistics += [netsStatistics["coreSize2"][iNet]]; 
-		lastStatistics += [netsStatistics["coreSize3"][iNet]]; 
-		lastStatistics += [netsStatistics["coreSizeLargest"][iNet]]; 
-
-		## Cycles: 
-		# print("Computing cycle stuff: "); 
-		thisCycleBasis = nx.algorithms.cycles.cycle_basis(net); 
-		# print("\tSize of cycle basis: "); 
-		netsStatistics["cycleBasisSize"][iNet] = len(thisCycleBasis); 
-		# print("\tAverage size of cycles in basis: "); 
-		netsStatistics["cycleBasisAverageSize"][iNet] = np.nan_to_num(np.mean([len(cycle) for cycle in thisCycleBasis])); 
-		lastStatistics += [netsStatistics["cycleBasisSize"][iNet]]; 
-		lastStatistics += [netsStatistics["cycleBasisAverageSize"][iNet]]; 
-		# if (thisNetName=="PYeri160717"): 
-		# 	# ACHTUNG!! 
-		# 	# 	This network has no cycle basis. 
-		# 	# 	But apparently everything is correctly mapped to 0. 
-		# 	print(thisCycleBasis); 
-		# 	print(netsStatistics["cycleBasisSize"][iNet]); 
-		# 	print(len(thisCycleBasis)); 
-		# 	print(netsStatistics["cycleBasisAverageSize"][iNet]); 
-
-		## Diameter: 
-		# print("Computing diameter: ")
-		thisGCC = max(nx.connected_components(net), key=len); 
-		thisGCC = net.subgraph(thisGCC); 
-
-		# print("Computing network diameter: "); 
-		netsStatistics["diameter"][iNet] = nx.algorithms.distance_measures.diameter(thisGCC); 
-		lastStatistics += [netsStatistics["diameter"][iNet]]; 
-
-		# # Efficiency: 
-		# # 	ACH! Need myConda environment... 
-		# netsStatistics["efficiency"][iNet] = nx.algorithms.global_efficiency(net); 
-
-		## Pagerank entropy: 
-		# 	I made up this one. This is the entropy of the eigenvalues resulting from applying the pagerank entropy. 
-		pRank = nx.algorithms.link_analysis.pagerank_alg.pagerank(net); 
-		# print("Computing entropy of pageranks: "); 
-		netsStatistics["pagerankEntropy"][iNet] = entropy(list(pRank.values()))/np.log(2); 
-		lastStatistics += [netsStatistics["pagerankEntropy"][iNet]]; 
-
-		## Jaccard similarity: 
-		# 	This measures, pairwise, the Jaccard similarity between the neighbors of two given nodes. 
-		# 	Then the average and entropy of these numbers are computed. 
-		# print("Computing Jaccard stuff: "); 
-		jCoef = nx.algorithms.link_prediction.jaccard_coefficient(net, net.edges()); 
-		jCoef_ = nx.algorithms.link_prediction.jaccard_coefficient(net); 
-		goodJCoef = [elem[2] for elem in jCoef if elem[2]] + [elem[2] for elem in jCoef_ if elem[2]]; 
-		# print("\tAverage Jaccard similarity: "); 
-		netsStatistics["jaccardSimilarityMean"][iNet] = np.mean(goodJCoef); 
-		# print("\tEntropy of Jaccard similarities: "); 
-		netsStatistics["jaccardSimilarityEntropy"][iNet] = entropy(goodJCoef)/np.log(2); 
-		lastStatistics += [netsStatistics["jaccardSimilarityMean"][iNet]]; 
-		lastStatistics += [netsStatistics["jaccardSimilarityEntropy"][iNet]]; 
-
-		## Maximal matching size: 
-		# 	Maximal matching is a set of edges such that no node appears twice, and no more edges can be added without
-		# 	violating this condition. 
-		# print("Computing maximal matching size: "); 
-		maximalMatching = nx.algorithms.matching.maximal_matching(net); 
-		netsStatistics["maximalMatchingSize"][iNet] = float(len(maximalMatching))/thisEdges; 
-		lastStatistics += [netsStatistics["maximalMatchingSize"][iNet]]; 
-
-		## Maximal independent set: 
-		# 	Maximal set of nodes such that another node cannot be added without inducing edges in the graph. 
-		# print("computing maximal independent set: "); 
-		maxIndependentSetSize = []; 
-		# There are several possible such sets, and they're found by random, so repeat: 
-		for ii in range(10): 
-			thisMIS = nx.algorithms.mis.maximal_independent_set(net); 
-			maxIndependentSetSize += [float(len(thisMIS))/thisNNodes]; 
-		netsStatistics["maximalIndependentSet"][iNet] = np.mean(maxIndependentSetSize); 
-		lastStatistics += [netsStatistics["maximalIndependentSet"][iNet]]; 
-
-		## Edges and degree: 
-		netsStatistics["nEdges"][iNet] = thisEdges; 
-		lastStatistics += [netsStatistics["nEdges"][iNet]]; 
-		degrees = [elem[1] for elem in net.degree()]; 
-		netsStatistics["degree"][iNet] = float(sum(degrees))/thisNNodes; 
-		lastStatistics += [netsStatistics["degree"][iNet]]; 
-
-		if (any([np.isnan(elem) for elem in lastStatistics])): 
-			print(lastStatistics); 
-
-
-	return netsStatistics; 
-
-
-
-def computeNetworksStatistics_IFISC(allNets, allNames): 
-	""" computeNetworksStatistics function: 
-
-			Similarly to the previous function, this one loops over all available networks and computes all desired,
-			relevant statistics for the network. 
-
-			ACHTUNG!! 
-				More statistics should be added to this function. 
-				By now: assortativity. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-
-			Returns: 
-				<< netsStatistics: Dictionary summarizing relevant statistics for all networks. 
-
-	"""
-
-	## Preliminary: 
-	nNets = len(allNets); 
-	# allStatistics = ["age", "assortativity", "clustering", "coloringNumber", "connectedComponentSize", "coreSize2"]; 
-	allStatistics = ["vocabularySize", "connectedVocabularySize", "assortativity", "clustering", "coloringNumber"]; 
-	allStatistics += ["connectedComponentSize", "coreSize2", "coreSize3", "coreSizeLargest", "cycleBasisSize"]; 
-	# allStatistics += ["efficiency", "pagerankEntropy"]; 
-	allStatistics += ["cycleBasisAverageSize", "diameter", "pagerankEntropy", "jaccardSimilarityMean"]; 
-	allStatistics += ["jaccardSimilarityEntropy", "maximalMatchingSize", "maximalIndependentSet"]; 
-	netsStatistics = {}; 
-	for statistic in allStatistics: 
-		netsStatistics[statistic] = np.zeros([nNets, 1]).squeeze(); 
-
-	for (iNet, net) in enumerate(allNets): 
-		# Network name: 
-		thisNetName = allNames[iNet][1]; 
-		# Number of nodes and edges (needed several times below): 
-		thisNNodes = net.number_of_nodes(); 
-		thisEdges = net.number_of_edges(); 
-
-		# # Age: 
-		# netsStatistics["age"][iNet] = computeAgeFromName(thisNetName); 
-
-		# Vocabulary size: 
-		netsStatistics["vocabularySize"][iNet] = len(net.nodes()); 
-
-		# Connected vocabulary size: 
-		netsStatistics["connectedVocabularySize"][iNet] = computeConnectedVocabularySize(net); 
-
-		# Assortativity: 
-		# 	ACH! Is troublesome with new networkx version... 
-		netsStatistics["assortativity"][iNet] = nx.algorithms.assortativity.degree_assortativity_coefficient(net); 
-
-		# Clustering: 
-		netsStatistics["clustering"][iNet] = nx.algorithms.cluster.average_clustering(net); 
-
-		# Coloring number: 
-		thisColoring = nx.coloring.greedy_color(net); 
-		netsStatistics["coloringNumber"][iNet] = len(set(thisColoring.values())); 
-
-		# Connected component size: 
-		thisLargestCC = max(nx.algorithms.components.connected_components(net), key=len); 
-		netsStatistics["connectedComponentSize"][iNet] = float(len(thisLargestCC))/thisNNodes; 
-
-
-		## kCoreSizes and largest kCore: 
-		(kSizes, kLargest) = computeCoreSizesAndLargestCore(net); 
-		kSizes = np.divide(kSizes, thisNNodes); 
-		netsStatistics["coreSize2"][iNet] = kSizes[0]; 
-		netsStatistics["coreSize3"][iNet] = kSizes[1]; 
-		# netsStatistics["coreSize4"][iNet] = kSizes[2]; 
-		netsStatistics["coreSizeLargest"][iNet] = kLargest; 
-
-		## Cycles: 
-		thisCycleBasis = nx.algorithms.cycles.cycle_basis(net); 
-		netsStatistics["cycleBasisSize"][iNet] = len(thisCycleBasis); 
-		netsStatistics["cycleBasisAverageSize"][iNet] = np.nan_to_num(np.mean([len(cycle) for cycle in thisCycleBasis])); 
-
-		# Diameter: 
-		thisGCC = max(nx.connected_component_subgraphs(net), key=len); 
-		netsStatistics["diameter"][iNet] = nx.algorithms.distance_measures.diameter(thisGCC); 
-
-		# # Efficiency: 
-		# # 	ACH! Need myConda environment... 
-		# netsStatistics["efficiency"][iNet] = nx.algorithms.global_efficiency(net); 
-
-		## Pagerank entropy: 
-		# 	I made up this one. This is the entropy of the eigenvalues resulting from applying the pagerank entropy. 
-		pRank = nx.algorithms.link_analysis.pagerank_alg.pagerank(net); 
-		netsStatistics["pagerankEntropy"][iNet] = entropy(list(pRank.values()))/np.log(2); 
-
-		## Jaccard similarity: 
-		# 	This measures, pairwise, the Jaccard similarity between the neighbors of two given nodes. 
-		# 	Then the average and entropy of these numbers are computed. 
-		jCoef = nx.algorithms.link_prediction.jaccard_coefficient(net, net.edges()); 
-		jCoef_ = nx.algorithms.link_prediction.jaccard_coefficient(net); 
-		goodJCoef = [elem[2] for elem in jCoef if elem[2]] + [elem[2] for elem in jCoef_ if elem[2]]; 
-		netsStatistics["jaccardSimilarityMean"][iNet] = np.mean(goodJCoef); 
-		netsStatistics["jaccardSimilarityEntropy"][iNet] = entropy(goodJCoef)/np.log(2); 
-
-		## Maximal matching size: 
-		# 	Maximal matching is a set of edges such that no node appears twice, and no more edges can be added without
-		# 	violating this condition. 
-		maximalMatching = nx.algorithms.matching.maximal_matching(net); 
-		netsStatistics["maximalMatchingSize"][iNet] = float(len(maximalMatching))/thisEdges; 
-
-		## Maximal independent set: 
-		# 	Maximal set of nodes such that another node cannot be added without inducing edges in the graph. 
-		maxIndependentSetSize = []; 
-		# There are several possible such sets, and they're found by random, so repeat: 
-		for ii in range(10): 
-			thisMIS = nx.algorithms.mis.maximal_independent_set(net); 
-			maxIndependentSetSize += [float(len(thisMIS))/thisNNodes]; 
-		netsStatistics["maximalIndependentSet"][iNet] = np.mean(maxIndependentSetSize); 
-
-
-
-def computeNetworksStatistics_home(allNets, allNames): 
-	""" computeNetworksStatistics function: 
-
-			Similarly to the previous function, this one loops over all available networks and computes all desired,
-			relevant statistics for the network. 
-
-			Inputs: 
-				>> allNets: list with all networks being studied. 
-
-			Returns: 
-				<< netsStatistics: Dictionary summarizing relevant statistics for all networks. 
-
-	"""
-
-	## Preliminary: 
-	nNets = len(allNets); 
-	# allStatistics = ["age", "assortativity", "clustering", "coloringNumber", "connectedComponentSize", "coreSize2"]; 
-	allStatistics = ["vocabularySize", "connectedVocabularySize", "assortativity", "clustering", "coloringNumber"]; 
-	allStatistics += ["connectedComponentSize", "coreSize2", "coreSize3", "coreSizeLargest", "cycleBasisSize"]; 
-	# allStatistics += ["efficiency", "pagerankEntropy"]; 
-	allStatistics += ["cycleBasisAverageSize", "diameter", "pagerankEntropy", "jaccardSimilarityMean"]; 
-	allStatistics += ["jaccardSimilarityEntropy", "maximalMatchingSize", "maximalIndependentSet"]; 
-	netsStatistics = {}; 
-	for statistic in allStatistics: 
-		netsStatistics[statistic] = np.zeros([nNets, 1]).squeeze(); 
-
-	for (iNet, net) in enumerate(allNets): 
-		# Network name: 
-		thisNetName = allNames[iNet][1]; 
-		# Number of nodes and edges (needed several times below): 
-		thisNNodes = net.number_of_nodes(); 
-		thisEdges = net.number_of_edges(); 
-		print("Processing network " + thisNetName + ": "); 
-
-		lastStatistics = []; 
-
-		# # Age: 
-		# netsStatistics["age"][iNet] = computeAgeFromName(thisNetName); 
-
-
-		## Vocabulary: 
-		# Vocabulary size: 
-		# print("Computing vocabulary size: "); 
-		netsStatistics["vocabularySize"][iNet] = len(net.nodes()); 
-		lastStatistics += [netsStatistics["vocabularySize"][iNet]]; 
-
-		# Connected vocabulary size: 
-		# print("Computing connected vocabulary: "); 
-		netsStatistics["connectedVocabularySize"][iNet] = computeConnectedVocabularySize(net); 
-		lastStatistics += [netsStatistics["connectedVocabularySize"][iNet]]; 
-
-		# Assortativity: 
-		# 	ACH! Is troublesome with new networkx version... 
-		# print("Computing assortativity: "); 
-		netsStatistics["assortativity"][iNet] = nx.algorithms.assortativity.degree_assortativity_coefficient(net); 
-		lastStatistics += [netsStatistics["assortativity"][iNet]]; 
-
-		# Clustering: 
-		# print("Computing clustering: "); 
-		netsStatistics["clustering"][iNet] = nx.algorithms.cluster.average_clustering(net); 
-		lastStatistics += [netsStatistics["clustering"][iNet]]; 
-
-		# Coloring number: 
-		# print("Computing coloring number: "); 
-		thisColoring = nx.coloring.greedy_color(net); 
-		netsStatistics["coloringNumber"][iNet] = len(set(thisColoring.values())); 
-		lastStatistics += [netsStatistics["coloringNumber"][iNet]]; 
-
-		# Connected component size: 
-		# print("Computing size of connected component: "); 
-		thisLargestCC = max(nx.algorithms.components.connected_components(net), key=len); 
-		netsStatistics["connectedComponentSize"][iNet] = float(len(thisLargestCC))/thisNNodes; 
-		lastStatistics += [netsStatistics["connectedComponentSize"][iNet]]; 
-
-
-		## kCoreSizes and largest kCore: 
-		# print("Computing k-core stuff: "); 
-		(kSizes, kLargest) = computeCoreSizesAndLargestCore(net); 
-		kSizes = np.divide(kSizes, thisNNodes); 
-		# print("\tSize of 2-core: "); 
-		netsStatistics["coreSize2"][iNet] = kSizes[0]; 
-		# print("\tSize of 3-core: "); 
-		netsStatistics["coreSize3"][iNet] = kSizes[1]; 
-		# netsStatistics["coreSize4"][iNet] = kSizes[2]; 
-		# print("\tLargest k-core: "); 
-		netsStatistics["coreSizeLargest"][iNet] = kLargest; 
-		lastStatistics += [netsStatistics["coreSize2"][iNet]]; 
-		lastStatistics += [netsStatistics["coreSize3"][iNet]]; 
-		lastStatistics += [netsStatistics["coreSizeLargest"][iNet]]; 
-
-		## Cycles: 
-		# print("Computing cycle stuff: "); 
-		thisCycleBasis = nx.algorithms.cycles.cycle_basis(net); 
-		# print("\tSize of cycle basis: "); 
-		netsStatistics["cycleBasisSize"][iNet] = len(thisCycleBasis); 
-		# print("\tAverage size of cycles in basis: "); 
-		netsStatistics["cycleBasisAverageSize"][iNet] = np.nan_to_num(np.mean([len(cycle) for cycle in thisCycleBasis])); 
-		lastStatistics += [netsStatistics["cycleBasisSize"][iNet]]; 
-		lastStatistics += [netsStatistics["cycleBasisAverageSize"][iNet]]; 
-		# if (thisNetName=="PYeri160717"): 
-		# 	# ACHTUNG!! 
-		# 	# 	This network has no cycle basis. 
-		# 	# 	But apparently everything is correctly mapped to 0. 
-		# 	print(thisCycleBasis); 
-		# 	print(netsStatistics["cycleBasisSize"][iNet]); 
-		# 	print(len(thisCycleBasis)); 
-		# 	print(netsStatistics["cycleBasisAverageSize"][iNet]); 
-
-		## Diameter: 
-		# print("Computing diameter: ")
-		thisGCC = max(nx.connected_components(net), key=len); 
-		thisGCC = net.subgraph(thisGCC); 
-
-		# print("Computing network diameter: "); 
-		netsStatistics["diameter"][iNet] = nx.algorithms.distance_measures.diameter(thisGCC); 
-		lastStatistics += [netsStatistics["diameter"][iNet]]; 
-
-		# # Efficiency: 
-		# # 	ACH! Need myConda environment... 
-		# netsStatistics["efficiency"][iNet] = nx.algorithms.global_efficiency(net); 
-
-		## Pagerank entropy: 
-		# 	I made up this one. This is the entropy of the eigenvalues resulting from applying the pagerank entropy. 
-		pRank = nx.algorithms.link_analysis.pagerank_alg.pagerank(net); 
-		# print("Computing entropy of pageranks: "); 
-		netsStatistics["pagerankEntropy"][iNet] = entropy(list(pRank.values()))/np.log(2); 
-		lastStatistics += [netsStatistics["pagerankEntropy"][iNet]]; 
-
-		## Jaccard similarity: 
-		# 	This measures, pairwise, the Jaccard similarity between the neighbors of two given nodes. 
-		# 	Then the average and entropy of these numbers are computed. 
-		# print("Computing Jaccard stuff: "); 
-		jCoef = nx.algorithms.link_prediction.jaccard_coefficient(net, net.edges()); 
-		jCoef_ = nx.algorithms.link_prediction.jaccard_coefficient(net); 
-		goodJCoef = [elem[2] for elem in jCoef if elem[2]] + [elem[2] for elem in jCoef_ if elem[2]]; 
-		# print("\tAverage Jaccard similarity: "); 
-		netsStatistics["jaccardSimilarityMean"][iNet] = np.mean(goodJCoef); 
-		# print("\tEntropy of Jaccard similarities: "); 
-		netsStatistics["jaccardSimilarityEntropy"][iNet] = entropy(goodJCoef)/np.log(2); 
-		lastStatistics += [netsStatistics["jaccardSimilarityMean"][iNet]]; 
-		lastStatistics += [netsStatistics["jaccardSimilarityEntropy"][iNet]]; 
-
-		## Maximal matching size: 
-		# 	Maximal matching is a set of edges such that no node appears twice, and no more edges can be added without
-		# 	violating this condition. 
-		# print("Computing maximal matching size: "); 
-		maximalMatching = nx.algorithms.matching.maximal_matching(net); 
-		netsStatistics["maximalMatchingSize"][iNet] = float(len(maximalMatching))/thisEdges; 
-		lastStatistics += [netsStatistics["maximalMatchingSize"][iNet]]; 
-
-		## Maximal independent set: 
-		# 	Maximal set of nodes such that another node cannot be added without inducing edges in the graph. 
-		# print("computing maximal independent set: "); 
-		maxIndependentSetSize = []; 
-		# There are several possible such sets, and they're found by random, so repeat: 
-		for ii in range(10): 
-			thisMIS = nx.algorithms.mis.maximal_independent_set(net); 
-			maxIndependentSetSize += [float(len(thisMIS))/thisNNodes]; 
-		netsStatistics["maximalIndependentSet"][iNet] = np.mean(maxIndependentSetSize); 
-		lastStatistics += [netsStatistics["maximalIndependentSet"][iNet]]; 
-
-		if (any([np.isnan(elem) for elem in lastStatistics])): 
-			print(lastStatistics); 
-
-
-	return netsStatistics; 
-
-
 
