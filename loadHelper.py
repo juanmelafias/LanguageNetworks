@@ -278,6 +278,25 @@ def masterLoader(netName):
 		thisNetwork = nx.Graph(); 
 		thisNetwork.add_edges_from(edges); 
 
+	if ("Twitter" in netName): 
+		netDate = netName.split('_')[1]; 
+		dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/TwitterFromAlberto/"; 
+		fileName = "A_" + netDate + ".csv"; 
+		cMatrix = np.loadtxt(dataPath + fileName, delimiter=",", skiprows=1).astype(int); 
+		cMatrix = cMatrix[:,1:]; 
+
+		thisNetwork = nx.from_numpy_matrix(cMatrix); 
+
+	if ("SyntaxConll" in netName): 
+		langName = netName.split('_')[1]; 
+		dataPath = "/home/brigan/Desktop/Research_CNB/Networks/Networks/Syntax/" + langName + '/'; 
+		fileName = "corpus.conll"; 
+
+		# Loading the first 100 sentences by now: 
+		nSentences = 100; 
+		thisNetwork = loadNetFromConllCorpus(dataPath, fileName, nSentences); 
+
+
 	return (thisNetwork, metaDataDict); 
 
 
@@ -315,9 +334,6 @@ def generateRandomNetwork(netName, args):
 		thisNetwork = nx.barabasi_albert_graph(nNodesRandom, nNewAttachments); 
 
 	return thisNetwork; 
-
-
-
 
 
 def loadNetworkFromTXT(dataFileName, dataPath, produceCytoscape=True, dataPathOut="*"): 
@@ -486,3 +502,78 @@ def loadAllSIFNetsFromPath(dataPath):
 
 	return (allNets, allNetsNames); 
 
+
+def loadNetFromConllCorpus(dataPath, fileName, nSentences): 
+	"""	loadConllCorpus function: 
+
+			This function loads a syntax network from a corpus of kind conll. This has been put in a separate function
+			to make the main caller much lighter. 
+
+			Inputs: 
+				>> dataPath, fileName: From where to read the corpus. 
+				>> nSentences: Number of sentences that we wish to load. 
+
+			Returns: 
+				<< net: A networkx graph object. 
+
+	"""
+
+	# Loading all lines: 
+	fIn = open(dataPath + fileName); 
+	allLines = fIn.read().split('\n'); 
+	fIn.close(); 
+
+	# Each sentence is coded as a block of lines, each containing the information of a single word. 
+	# Each block ends with a blank line that marks the end of the sentence. 
+	dicConnections = {}; # Dictionary to store connections. 
+	iLine = 0; 		# Index to iterate over lines in the file. 
+	iSentence = 0; 	# Index to keep track of processed sentences. 
+	fGo = True; 
+	dicSentenceIDs = {}; 	# To keep track of words within sentence. 
+	sentenceHeads = []; 
+	while (fGo): 
+
+		thisLine = allLines[iLine]; 
+		
+		if (thisLine != ''): 
+			# This line codes a valid word. We need to process it: 
+			wordInfo = thisLine.split('\t'); 	# Info is separated by tabs. 
+			# Adding word ID to dicSenteceID: 
+			dicSentenceIDs[wordInfo[0]] = wordInfo[1]; 
+			# Adding the head of this word to sentenceConnections: 
+			sentenceHeads += [wordInfo[6]]; 
+
+		else: 
+			# End of sentence! 
+
+			# Making sure that all words are entries of dicConnections: 
+			for key in dicSentenceIDs.keys(): 
+				if (dicSentenceIDs[key] not in dicConnections.keys()): 
+					dicConnections[dicSentenceIDs[key]] = []; 
+
+			# Adding connections to dicConnections: 
+			for (iWord, head) in enumerate(sentenceHeads): 
+				# If the head is 0, this is the root node of the tree or a punctuation symbol. We don't process this! 
+				if (head != '0'): 
+					dicConnections[dicSentenceIDs[str(iWord+1)]] += [dicSentenceIDs[head]]; 
+					dicConnections[dicSentenceIDs[head]] += [dicSentenceIDs[str(iWord+1)]]; 
+
+			# Clearing sentence buffers: 
+			dicSentenceIDs = {}; 
+			sentenceHeads = []; 
+
+			iSentence += 1; 
+
+		iLine += 1; 
+		if (iSentence==nSentences): 
+			break; 
+
+
+
+	# Properly building the network: 
+	net = nx.Graph(); 
+	net.add_nodes_from(dicConnections.keys()); 
+	for (k, v) in dicConnections.items():
+	    net.add_edges_from(([(k, t) for t in v])); 
+
+	return net; 
