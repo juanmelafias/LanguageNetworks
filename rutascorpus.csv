@@ -1,0 +1,123 @@
+,route,num_lines,language,num_cols
+0,UsefulData/ud-treebanks/ud-treebanks/UD_Afrikaans-AfriBooms/af_afribooms-ud-train.conllu,39141,Afrikaans,10
+1,UsefulData/ud-treebanks/ud-treebanks/UD_Akkadian-RIAO/akk_riao-ud-test.conllu,31343,Akkadian,10
+2,UsefulData/ud-treebanks/ud-treebanks/UD_Akuntsu-TuDeT/aqz_tudet-ud-test.conllu,819,Akuntsu,10
+3,UsefulData/ud-treebanks/ud-treebanks/UD_Albanian-TSA/sq_tsa-ud-test.conllu,1103,Albanian,10
+4,UsefulData/ud-treebanks/ud-treebanks/UD_Amharic-ATT/am_att-ud-test.conllu,16979,Amharic,10
+5,UsefulData/ud-treebanks/ud-treebanks/UD_Ancient_Greek-PROIEL/grc_proiel-ud-train.conllu,247090,Ancient Greek,10
+6,UsefulData/ud-treebanks/ud-treebanks/UD_Apurina-UFPA/apu_ufpa-ud-test.conllu,1482,Apurina,10
+7,UsefulData/ud-treebanks/ud-treebanks/UD_Arabic-NYUAD/ar_nyuad-ud-train.conllu,720408,Arabic,10
+8,UsefulData/ud-treebanks/ud-treebanks/UD_Armenian-ArmTDP/hy_armtdp-ud-train.conllu,51077,Armenian,10
+9,UsefulData/ud-treebanks/ud-treebanks/UD_Assyrian-AS/aii_as-ud-test.conllu,626,Assyrian,10
+10,UsefulData/ud-treebanks/ud-treebanks/UD_Bambara-CRB/bm_crb-ud-test.conllu,16936,Bambara,10
+11,UsefulData/ud-treebanks/ud-treebanks/UD_Basque-BDT/eu_bdt-ud-train.conllu,89163,Basque,10
+12,UsefulData/ud-treebanks/ud-treebanks/UD_Beja-NSC/bej_nsc-ud-test.conllu,1440,Beja,10
+13,UsefulData/ud-treebanks/ud-treebanks/UD_Belarusian-HSE/be_hse-ud-train.conllu,411034,Belarusian,10
+14,UsefulData/ud-treebanks/ud-treebanks/UD_Bengali-BRU/bn_bru-ud-test.conllu,601,Bengali,10
+15,UsefulData/ud-treebanks/ud-treebanks/UD_Bhojpuri-BHTB/bho_bhtb-ud-test.conllu,7739,Bhojpuri,10
+16,UsefulData/ud-treebanks/ud-treebanks/UD_Breton-KEB/br_keb-ud-test.conllu,14780,Breton,10
+17,UsefulData/ud-treebanks/ud-treebanks/UD_Bulgarian-BTB/bg_btb-ud-train.conllu,151144,Bulgarian,10
+18,UsefulData/ud-treebanks/ud-treebanks/UD_Buryat-BDT/bxr_bdt-ud-test.conllu,12775,Buryat,10
+19,UsefulData/ud-treebanks/ud-treebanks/UD_Cantonese-HK/yue_hk-ud-test.conllu,16931,Cantonese,10
+20,UsefulData/ud-treebanks/ud-treebanks/UD_Catalan-AnCora/ca_ancora-ud-train.conllu,500281,Catalan,10
+21,UsefulData/ud-treebanks/ud-treebanks/UD_Chinese-GSD/zh_gsd-ud-train.conllu,110608,Chinese,10
+22,UsefulData/ud-treebanks/ud-treebanks/UD_Chukchi-HSE/ckt_hse-ud-test.conllu,13916,Chukchi,10
+23,UsefulData/ud-treebanks/ud-treebanks/UD_Classical_Chinese-Kyoto/lzh_kyoto-ud-train.conllu,377816,Classical Chinese,10
+24,UsefulData/ud-treebanks/ud-treebanks/UD_Coptic-Scriptorium/cop_scriptorium-ud-train.conllu,44801,Coptic,10
+25,UsefulData/ud-treebanks/ud-treebanks/UD_Croatian-SET/hr_set-ud-train.conllu,173976,Croatian,10
+26,UsefulData/ud-treebanks/ud-treebanks/UD_Czech-PDT/cs_pdt-ud-train.conllu,1476688,Czech,10
+27,UsefulData/ud-treebanks/ud-treebanks/UD_Danish-DDT/da_ddt-ud-train.conllu,93528,Danish,10
+28,UsefulData/ud-treebanks/ud-treebanks/UD_Dutch-Alpino/nl_alpino-ud-train.conllu,247591,Dutch,10
+29,UsefulData/ud-treebanks/ud-treebanks/UD_English-EWT/en_ewt-ud-train.conllu,247866,English,10
+30,UsefulData/ud-treebanks/ud-treebanks/UD_Erzya-JR/myv_jr-ud-test.conllu,23615,Erzya,10
+31,UsefulData/ud-treebanks/ud-treebanks/UD_Estonian-EDT/et_edt-ud-train.conllu,418881,Estonian,10
+32,UsefulData/ud-treebanks/ud-treebanks/UD_Faroese-FarPaHC/fo_farpahc-ud-train.conllu,27180,Faroese,10
+33,UsefulData/ud-treebanks/ud-treebanks/UD_Finnish-TDT/fi_tdt-ud-train.conllu,199875,Finnish,10
+34,UsefulData/ud-treebanks/ud-treebanks/UD_French-FTB/fr_ftb-ud-train.conllu,528734,French,10
+35,UsefulData/ud-treebanks/ud-treebanks/UD_Frisian_Dutch-Fame/qfn_fame-ud-test.conllu,6132,Frisian Dutch,10
+36,UsefulData/ud-treebanks/ud-treebanks/UD_Galician-CTG/gl_ctg-ud-train.conllu,93493,Galician,10
+37,UsefulData/ud-treebanks/ud-treebanks/UD_German-HDT/de_hdt-ud-train.conllu,3303617,German,10
+38,UsefulData/ud-treebanks/ud-treebanks/UD_Gothic-PROIEL/got_proiel-ud-train.conllu,48573,Gothic,10
+39,UsefulData/ud-treebanks/ud-treebanks/UD_Greek-GDT/el_gdt-ud-train.conllu,48535,Greek,10
+40,UsefulData/ud-treebanks/ud-treebanks/UD_Guajajara-TuDeT/gub_tudet-ud-test.conllu,4069,Guajajara,10
+41,UsefulData/ud-treebanks/ud-treebanks/UD_Hebrew-HTB/he_htb-ud-train.conllu,185121,Hebrew,10
+42,UsefulData/ud-treebanks/ud-treebanks/UD_Hindi_English-HIENCS/qhe_hiencs-ud-train.conllu,24548,Hindi English,10
+43,UsefulData/ud-treebanks/ud-treebanks/UD_Hindi-HDTB/hi_hdtb-ud-train.conllu,320970,Hindi,10
+44,UsefulData/ud-treebanks/ud-treebanks/UD_Hungarian-Szeged/hu_szeged-ud-train.conllu,22897,Hungarian,10
+45,UsefulData/ud-treebanks/ud-treebanks/UD_Icelandic-IcePaHC/is_icepahc-ud-train.conllu,842820,Icelandic,10
+46,UsefulData/ud-treebanks/ud-treebanks/UD_Indonesian-GSD/id_gsd-ud-train.conllu,117265,Indonesian,10
+47,UsefulData/ud-treebanks/ud-treebanks/UD_Irish-IDT/ga_idt-ud-train.conllu,107897,Irish,10
+48,UsefulData/ud-treebanks/ud-treebanks/UD_Italian-ISDT/it_isdt-ud-train.conllu,333820,Italian,10
+49,UsefulData/ud-treebanks/ud-treebanks/UD_Japanese-BCCWJ/ja_bccwj-ud-train.conllu,1031142,Japanese,10
+50,UsefulData/ud-treebanks/ud-treebanks/UD_Javanese-CSUI/jv_csui-ud-test.conllu,2737,Javanese,10
+51,UsefulData/ud-treebanks/ud-treebanks/UD_Kaapor-TuDeT/urb_tudet-ud-test.conllu,715,Kaapor,10
+52,UsefulData/ud-treebanks/ud-treebanks/UD_Kangri-KDTB/xnr_kdtb-ud-test.conllu,3379,Kangri,10
+53,UsefulData/ud-treebanks/ud-treebanks/UD_Karelian-KKPP/krl_kkpp-ud-test.conllu,3783,Karelian,10
+54,UsefulData/ud-treebanks/ud-treebanks/UD_Karo-TuDeT/arr_tudet-ud-test.conllu,5015,Karo,10
+55,UsefulData/ud-treebanks/ud-treebanks/UD_Kazakh-KTB/kk_ktb-ud-test.conllu,13284,Kazakh,10
+56,UsefulData/ud-treebanks/ud-treebanks/UD_Khunsari-AHA/kfm_aha-ud-test.conllu,125,Khunsari,10
+57,UsefulData/ud-treebanks/ud-treebanks/UD_Kiche-IU/quc_iu-ud-test.conllu,18863,Kiche,10
+58,UsefulData/ud-treebanks/ud-treebanks/UD_Komi_Permyak-UH/koi_uh-ud-test.conllu,1471,Komi Permyak,10
+59,UsefulData/ud-treebanks/ud-treebanks/UD_Komi_Zyrian-Lattice/kpv_lattice-ud-test.conllu,10364,Komi Zyrian,10
+60,UsefulData/ud-treebanks/ud-treebanks/UD_Korean-Kaist/ko_kaist-ud-train.conllu,365477,Korean,10
+61,UsefulData/ud-treebanks/ud-treebanks/UD_Kurmanji-MG/kmr_mg-ud-test.conllu,12293,Kurmanji,10
+62,UsefulData/ud-treebanks/ud-treebanks/UD_Latin-ITTB/la_ittb-ud-train.conllu,481886,Latin,10
+63,UsefulData/ud-treebanks/ud-treebanks/UD_Latvian-LVTB/lv_lvtb-ud-train.conllu,244865,Latvian,10
+64,UsefulData/ud-treebanks/ud-treebanks/UD_Ligurian-GLT/lij_glt-ud-test.conllu,8021,Ligurian,10
+65,UsefulData/ud-treebanks/ud-treebanks/UD_Lithuanian-ALKSNIS/lt_alksnis-ud-train.conllu,57050,Lithuanian,10
+66,UsefulData/ud-treebanks/ud-treebanks/UD_Livvi-KKPP/olo_kkpp-ud-test.conllu,1807,Livvi,10
+67,UsefulData/ud-treebanks/ud-treebanks/UD_Low_Saxon-LSDC/nds_lsdc-ud-test.conllu,2637,Low Saxon,10
+68,UsefulData/ud-treebanks/ud-treebanks/UD_Makurap-TuDeT/mpu_tudet-ud-test.conllu,274,Makurap,10
+69,UsefulData/ud-treebanks/ud-treebanks/UD_Maltese-MUDT/mt_mudt-ud-train.conllu,26250,Maltese,10
+70,UsefulData/ud-treebanks/ud-treebanks/UD_Manx-Cadhan/gv_cadhan-ud-test.conllu,33969,Manx,10
+71,UsefulData/ud-treebanks/ud-treebanks/UD_Marathi-UFAL/mr_ufal-ud-train.conllu,4373,Marathi,10
+72,UsefulData/ud-treebanks/ud-treebanks/UD_Mbya_Guarani-Dooley/gun_dooley-ud-test.conllu,15042,Mbya Guarani,10
+73,UsefulData/ud-treebanks/ud-treebanks/UD_Moksha-JR/mdf_jr-ud-test.conllu,4432,Moksha,10
+74,UsefulData/ud-treebanks/ud-treebanks/UD_Munduruku-TuDeT/myu_tudet-ud-test.conllu,1049,Munduruku,10
+75,UsefulData/ud-treebanks/ud-treebanks/UD_Naija-NSC/pcm_nsc-ud-train.conllu,162825,Naija,10
+76,UsefulData/ud-treebanks/ud-treebanks/UD_Nayini-AHA/nyq_aha-ud-test.conllu,129,Nayini,10
+77,UsefulData/ud-treebanks/ud-treebanks/UD_Neapolitan-RB/nap_rb-ud-test.conllu,15,Neapolitan,10
+78,UsefulData/ud-treebanks/ud-treebanks/UD_North_Sami-Giella/sme_giella-ud-train.conllu,23607,North Sami,10
+79,UsefulData/ud-treebanks/ud-treebanks/UD_Norwegian-Bokmaal/no_bokmaal-ud-train.conllu,292796,Norwegian,10
+80,UsefulData/ud-treebanks/ud-treebanks/UD_Old_Church_Slavonic-PROIEL/cu_proiel-ud-train.conllu,53929,Old Church Slavonic,10
+81,UsefulData/ud-treebanks/ud-treebanks/UD_Old_East_Slavic-TOROT/orv_torot-ud-train.conllu,171975,Old East Slavic,10
+82,UsefulData/ud-treebanks/ud-treebanks/UD_Old_French-SRCMF/fro_srcmf-ud-train.conllu,215614,Old French,10
+83,UsefulData/ud-treebanks/ud-treebanks/UD_Old_Turkish-Tonqq/otk_tonqq-ud-test.conllu,278,Old Turkish,10
+84,UsefulData/ud-treebanks/ud-treebanks/UD_Persian-PerDT/fa_perdt-ud-train.conllu,537593,Persian,10
+85,UsefulData/ud-treebanks/ud-treebanks/UD_Polish-PDB/pl_pdb-ud-train.conllu,354635,Polish,10
+86,UsefulData/ud-treebanks/ud-treebanks/UD_Portuguese-GSD/pt_gsd-ud-train.conllu,301546,Portuguese,10
+87,UsefulData/ud-treebanks/ud-treebanks/UD_Romanian-Nonstandard/ro_nonstandard-ud-train.conllu,624627,Romanian,10
+88,UsefulData/ud-treebanks/ud-treebanks/UD_Russian-SynTagRus/ru_syntagrus-ud-train.conllu,1456919,Russian,10
+89,UsefulData/ud-treebanks/ud-treebanks/UD_Sanskrit-Vedic/sa_vedic-ud-train.conllu,25018,Sanskrit,10
+90,UsefulData/ud-treebanks/ud-treebanks/UD_Scottish_Gaelic-ARCOSG/gd_arcosg-ud-train.conllu,77917,Scottish Gaelic,10
+91,UsefulData/ud-treebanks/ud-treebanks/UD_Serbian-SET/sr_set-ud-train.conllu,84508,Serbian,10
+92,UsefulData/ud-treebanks/ud-treebanks/UD_Skolt_Sami-Giellagas/sms_giellagas-ud-test.conllu,3215,Skolt Sami,10
+93,UsefulData/ud-treebanks/ud-treebanks/UD_Slovak-SNK/sk_snk-ud-train.conllu,114676,Slovak,10
+94,UsefulData/ud-treebanks/ud-treebanks/UD_Slovenian-SSJ/sl_ssj-ud-train.conllu,131965,Slovenian,10
+95,UsefulData/ud-treebanks/ud-treebanks/UD_Soi-AHA/soj_aha-ud-test.conllu,96,Soi,10
+96,UsefulData/ud-treebanks/ud-treebanks/UD_South_Levantine_Arabic-MADAR/ajp_madar-ud-test.conllu,1189,South Levantine Arabic,10
+97,UsefulData/ud-treebanks/ud-treebanks/UD_Spanish-AnCora/es_ancora-ud-train.conllu,527827,Spanish,10
+98,UsefulData/ud-treebanks/ud-treebanks/UD_Swedish_Sign_Language-SSLC/swl_sslc-ud-dev.conllu,931,Swedish Sign Language,10
+99,UsefulData/ud-treebanks/ud-treebanks/UD_Swedish-Talbanken/sv_talbanken-ud-train.conllu,81179,Swedish,10
+100,UsefulData/ud-treebanks/ud-treebanks/UD_Swiss_German-UZH/gsw_uzh-ud-test.conllu,1745,Swiss German,10
+101,UsefulData/ud-treebanks/ud-treebanks/UD_Tagalog-Ugnayan/tl_ugnayan-ud-test.conllu,1561,Tagalog,10
+102,UsefulData/ud-treebanks/ud-treebanks/UD_Tamil-TTB/ta_ttb-ud-train.conllu,8850,Tamil,10
+103,UsefulData/ud-treebanks/ud-treebanks/UD_Tatar-NMCTT/tt_nmctt-ud-test.conllu,1450,Tatar,10
+104,UsefulData/ud-treebanks/ud-treebanks/UD_Telugu-MTG/te_mtg-ud-train.conllu,9287,Telugu,10
+105,UsefulData/ud-treebanks/ud-treebanks/UD_Thai-PUD/th_pud-ud-test.conllu,26326,Thai,10
+106,UsefulData/ud-treebanks/ud-treebanks/UD_Tupinamba-TuDeT/tpn_tudet-ud-test.conllu,2458,Tupinamba,10
+107,UsefulData/ud-treebanks/ud-treebanks/UD_Turkish_German-SAGT/qtd_sagt-ud-test.conllu,16622,Turkish German,10
+108,UsefulData/ud-treebanks/ud-treebanks/UD_Turkish-Penn/tr_penn-ud-train.conllu,211064,Turkish,10
+109,UsefulData/ud-treebanks/ud-treebanks/UD_Ukrainian-IU/uk_iu-ud-train.conllu,117448,Ukrainian,10
+110,UsefulData/ud-treebanks/ud-treebanks/UD_Upper_Sorbian-UFAL/hsb_ufal-ud-test.conllu,12832,Upper Sorbian,10
+111,UsefulData/ud-treebanks/ud-treebanks/UD_Urdu-UDTB/ur_udtb-ud-train.conllu,120820,Urdu,10
+112,UsefulData/ud-treebanks/ud-treebanks/UD_Uyghur-UDT/ug_udt-ud-train.conllu,24231,Uyghur,10
+113,UsefulData/ud-treebanks/ud-treebanks/UD_Vietnamese-VTB/vi_vtb-ud-train.conllu,24486,Vietnamese,10
+114,UsefulData/ud-treebanks/ud-treebanks/UD_Warlpiri-UFAL/wbp_ufal-ud-test.conllu,627,Warlpiri,10
+115,UsefulData/ud-treebanks/ud-treebanks/UD_Welsh-CCG/cy_ccg-ud-test.conllu,21124,Welsh,10
+116,UsefulData/ud-treebanks/ud-treebanks/UD_Western_Armenian-ArmTDP/hyw_armtdp-ud-train.conllu,90154,Western Armenian,10
+117,UsefulData/ud-treebanks/ud-treebanks/UD_Wolof-WTB/wo_wtb-ud-train.conllu,27821,Wolof,10
+118,UsefulData/ud-treebanks/ud-treebanks/UD_Xibe-XDT/sjo_xdt-ud-test.conllu,19540,Xibe,10
+119,UsefulData/ud-treebanks/ud-treebanks/UD_Yakut-YKTDT/sah_yktdt-ud-test.conllu,572,Yakut,10
+120,UsefulData/ud-treebanks/ud-treebanks/UD_Yoruba-YTB/yo_ytb-ud-test.conllu,9566,Yoruba,10
+121,UsefulData/ud-treebanks/ud-treebanks/UD_Yupik-SLI/ess_sli-ud-test.conllu,4887,Yupik,10
