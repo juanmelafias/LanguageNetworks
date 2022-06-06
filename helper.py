@@ -750,8 +750,7 @@ def saveNetworkProperties(netName, netPath, nodeList, propertiesDict):
 
 	with open(netPath + netName + "_properties.pkl", 'wb') as fOut:
 	    pkl.dump(propertiesDict, fOut); 
-
-	return; 
+ 
 
 def writeNetworkProperties(netName, netPath, nodeList, propertiesDict): 
 	""" writeNetworkProperties function: 
