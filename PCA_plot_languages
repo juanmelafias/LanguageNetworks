@@ -1,0 +1,110 @@
+# Importing relevant libraries: 
+#import pandas as pd
+import numpy as np; 
+import matplotlib.pyplot as plt; 
+import matplotlib as mplt; 
+import networkx as nx; 
+#from copy import copy; 
+# For 3D scatter: 
+#from mpl_toolkits.mplot3d import Axes3D; 
+
+# Importing libraries for I/O and system communication: 
+import os, sys; 
+#import pickle as pkl; 
+#import scipy.io as sio; # To read .mat files! and .mnx files! 
+
+# Importing functions for clustering: 
+#from sklearn.cluster import KMeans;  
+#import scipy.cluster.hierarchy as spc; 
+
+# Importing homebrew libraries: 
+import helper as h
+from utils import build_properties_array_languages; 
+#import loadHelper as lh; 
+arraymeanproperties = build_properties_array_languages('avgproperties/')
+arraymeanpropertieslemma = build_properties_array_languages('avgpropertieslemma/')
+arraymeanproperties = h.normalizeProperties(arraymeanproperties)
+arraymeanpropertieslemma = h.normalizeProperties(arraymeanpropertieslemma)
+paths = ['languagesmean/','languagesmeanlemma/'] 
+filelist = os.listdir('./dictionaries/')
+nodeList = [file.split('.')[0] for file in filelist]
+
+for indexlang, includedPropertiesArray in enumerate([arraymeanproperties,arraymeanpropertieslemma]):
+    picsPath = paths[indexlang]
+    allStatisticsCov = np.cov(includedPropertiesArray); 
+    (eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
+    eigVals = np.real(eigVals); 
+    eigVects = np.real(eigVects); 
+
+
+    # Computing PCs with information above noise level according to ref: 
+    # 	Donoho DL, Gavish M. 
+    # 	The optimal hard threshold for singular values is 4/√3. 
+    # 	arXiv preprint arXiv:1305.5870, (2013).
+    (noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals); 
+    print("Noise-trucating PC value is: " + str(noiseThreshold)); 
+    print("According to this, optimal number of PCs kept is: " + str(nKeep)); 
+    print("This is a fraction " + str(float(nKeep)/len(eigVals)) + " of eigenvalues. "); 
+
+    # Plotting covariance matrix: 
+    plt.figure(); 
+    plt.imshow(allStatisticsCov, interpolation="none"); 
+    plt.colorbar(); 
+
+    # Plotting eigenvectors: 
+    plt.figure(); 
+    plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
+    plt.colorbar(); 
+
+
+    # Computing and plotting variance explained: 
+    (varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
+
+    plt.figure(); 
+    plt.plot(varianceExplained); 
+
+    plt.figure(); 
+    plt.plot(varianceExplained_cumul); 
+
+
+
+    ## Projecting data into eigenspace: 
+    includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
+
+    # Using first three PCs as color coding: 
+    # 	Normalize components to [0,1]; 
+    valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
+    valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1,:]); 
+    valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2,:]); 
+    # Save hex color values to a list: 
+    nodeColor = []; 
+    for (iNode, node) in enumerate(nodeList): 
+        nodeColor += [mplt.colors.to_hex([valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]])]; 
+
+
+    # PC1-PC2: 
+    fig = plt.figure(); 
+    ax = fig.add_subplot(111); 
+    plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], c=nodeColor); 
+    plt.xlabel("PC1"); 
+    plt.ylabel("PC2"); 
+    plt.title("Nodes projected in PCs"); 
+    fig.savefig(picsPath + "projection_PCs1-2.pdf"); 
+
+    # PC1-PC3: 
+    fig = plt.figure(); 
+    plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[2,:], c=nodeColor); 
+    plt.xlabel("PC1"); 
+    plt.ylabel("PC3"); 
+    plt.title("Nodes projected in PCs"); 
+    fig.savefig(picsPath + "projection_PCs1-3.pdf"); 
+
+    # PC1-PC2-PC3: 
+    fig = plt.figure(); 
+    ax = fig.add_subplot(111, projection='3d'); 
+    ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeColor); 
+    ax.set_xlabel("PC1"); 
+    ax.set_ylabel("PC2"); 
+    ax.set_zlabel("PC3"); 
+    plt.title("Nodes projected in PCs"); 
+    fig.savefig(picsPath + "projection_PCs1-2-3.pdf"); 

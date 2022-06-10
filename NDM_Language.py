@@ -74,7 +74,7 @@ mostfreq =langframe.unique_id.to_list()
 thisNetwork = load_network('dictionaries/Spanish.csv')
 thisNetwork=thisNetwork.subgraph(mostfreq)
 netName = 'Spanish'
-netPath='networks'
+netPath='networks/'
 """""
 nativePositions = {}; 
 nativePositions_3D = {}; 

@@ -1,9 +1,34 @@
 from json import loads as cargar
 import json
 import pandas as pd
+import numpy as np
 import shutil
 import os
 import networkx as nx
+import helper as h; 
+#import loadHelper as lh;
+def build_properties_array_languages(netPath):
+ 
+    filelist = os.listdir('./dictionaries/')
+    languagelist = [file.split('.')[0] for file in filelist]
+    fNeighborMean = True; 
+    fNeighborStd = True;
+    properties_array_languages = np.zeros([15,len(languagelist)])
+    for column,netName in enumerate(languagelist):
+        jsonname = netPath+netName+'.json'
+        meanpropertiesDict=json2dict(jsonname, transform_keys=False)
+        meanpropertieslist=[value for value in meanpropertiesDict.values()]
+        properties_array_languages[:,column] = meanpropertieslist[:15]
+    return properties_array_languages
+
+
+def build_language_mean_dict(netName,netPath,fNeighborMean,fNeighborStd):
+    (nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath, fNeighborMean, fNeighborStd); 
+    (includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
+    meanpropertiesDict = {key:propertiesDict[key].mean() for key in propertiesDict.keys()}
+    return meanpropertiesDict
+    
+
 
 
 def load_network(jsonfile):
@@ -60,13 +85,14 @@ def csv2df(csvname,	wordsnumber=500):
     return df
 
 
-def json2dict(jsonname):
+def json2dict(jsonname,transform_keys = True):
 
     with open(jsonname, 'r') as f:
         a = f.readline()
 
     dicti = cargar(a)
-    dicti = {int(key): dicti[key] for key in dicti.keys()}
+    if transform_keys:
+        dicti = {int(key): dicti[key] for key in dicti.keys()}
     return dicti
 
 
