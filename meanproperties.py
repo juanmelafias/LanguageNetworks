@@ -23,17 +23,32 @@ import helper as h;
 
 #importing functions
 
+"""
+This scripts computes mean properties for all nodes in the network for every desired language
+"""
+
 from utils import csv2df,json2dict,dict2json,load_network
-filelist = os.listdir('./dictionaries/')
+filelist = os.listdir('./files/inflected/dictionaries/')
 languagelist = [file.split('.')[0] for file in filelist]
 CreateProperties = True
+lemmatized = True
+if lemmatized:
+    netPath = 'files/lemmatized/networks/'
+    folderframe = 'files/lemmatized/dataframes'
+    folderdict = 'files/lemmatized/dictionaries'
+    folderavg = 'files/lemmatized/avgproperties'
+else:
+    netPath = 'files/inflected/networks/'
+    folderframe = 'files/inflected/dataframes'
+    folderdict = 'files/inflected/dictionaries'
+    folderavg = 'files/inflected/avgproperties'
 for netName in languagelist:
     netPath='networkslemma/'
     if CreateProperties:
         picsPath = 'pics/'
-        langframe = csv2df(f'dataframeslemma/{netName}.csv')
+        langframe = csv2df(f'{folderframe}/{netName}.csv')
         mostfreq =langframe.unique_id.to_list()
-        jsonfile = f'dictionarieslemma/{netName}.json'
+        jsonfile = f'{folderdict}/{netName}.json'
         thisNetwork = load_network(jsonfile)
         thisNetwork=thisNetwork.subgraph(mostfreq)
         
@@ -54,5 +69,5 @@ for netName in languagelist:
     (includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
     #Creating mean properties
     meanpropertiesDict = {key:propertiesDict[key].mean() for key in propertiesDict.keys()}
-    jsonname = f'avgpropertieslemma/{netName}.json'
+    jsonname = f'{folderavg}/{netName}.json'
     dict2json(meanpropertiesDict,jsonname)

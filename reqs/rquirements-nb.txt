@@ -1,0 +1,8 @@
+# notebook
+jedi==0.18.1
+jupyter==1.0.0
+jupyterlab==3.4.2
+ipywidgets>=7.7.0
+notebook>=6.4.11
+pygments>=2.12.0
+jupyter-dash==0.4.0

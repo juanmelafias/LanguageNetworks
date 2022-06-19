@@ -7,30 +7,75 @@ import os
 import networkx as nx
 import helper as h; 
 #import loadHelper as lh;
-def build_properties_array_languages(netPath):
+def build_properties_array_languages(netPath,primaries = True):
+    """
+    Args:
+        netPath: Path of directory where to find language files with mean properties
+    Returns:
+        properties_array_languages: np.array of shape(valid_properties,num_languages) 
+        with valid properties <= 15., with mean properties for each language
+        dict_pathologies: dictionary with languages as keys and Pathological features 
+        as values.
+
+    """
  
-    filelist = os.listdir('./dictionaries/')
-    languagelist = [file.split('.')[0] for file in filelist]
+    filelist = os.listdir('./files/inflected/dictionaries/')
+    languagelist = [file.split('.')[0] for file in filelist if file not in ['Japanese.json','Arabic.json','French.json']]
     fNeighborMean = True; 
-    fNeighborStd = True;
-    properties_array_languages = np.zeros([15,len(languagelist)])
+    fNeighborStd = True; 
+    dict_pathologies = {}
+    list_excluded = set(); 
+    
     for column,netName in enumerate(languagelist):
-        jsonname = netPath+netName+'.json'
-        meanpropertiesDict=json2dict(jsonname, transform_keys=False)
-        meanpropertieslist=[value for value in meanpropertiesDict.values()]
-        properties_array_languages[:,column] = meanpropertieslist[:15]
-    return properties_array_languages
+        
+        meanpropertiesDict, excludedProperties = build_language_mean_dict(netName,netPath,fNeighborMean,fNeighborStd)
+        dict_pathologies[netName] = excludedProperties
+        for prop in excludedProperties:
+            list_excluded.add(prop)
+    if primaries:
+        first17 = [key for key in meanpropertiesDict.keys()][:17]
+        valid_keys = [key for key in first17 if key not in list_excluded]
+        
+    else: 
+        all = [key for key in meanpropertiesDict.keys()]
+        valid_keys = [key for key in all if key not in list_excluded]
+    num_cols = len(valid_keys)
+    properties_array_languages = np.zeros([num_cols,len(languagelist)])
+    print(list_excluded)
+    for column,netName in enumerate(languagelist):
+        meanpropertiesDict, excludedProperties = build_language_mean_dict(netName,netPath,fNeighborMean,fNeighborStd)
+        meanpropertieslist=[meanpropertiesDict[key] for key in valid_keys]
+        properties_array_languages[:,column] = meanpropertieslist
+    return valid_keys, properties_array_languages, dict_pathologies
 
 
 def build_language_mean_dict(netName,netPath,fNeighborMean,fNeighborStd):
+    
+    """
+    Args:
+        netPath: Path of directory where to find language files with mean properties
+        netName: Name of language where to find the properties
+        fNeighbourMean/Std: Boolean that indicates wether to compute Neighbour properties
+    Returns:
+        meanpropertiesDict:dictionary with properties
+        excludedproperties: list with excluded properties
+
+    """
     (nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath, fNeighborMean, fNeighborStd); 
     (includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
     meanpropertiesDict = {key:propertiesDict[key].mean() for key in propertiesDict.keys()}
-    return meanpropertiesDict
+    return meanpropertiesDict,excludedProperties
     
 
 
-
+def stats_language(lemmatized = False):
+    if lemmatized:
+        dirdf = 'dataframeslemma/'
+        dirdict = 'dictionarieslemma/'
+    else:
+        dirdf = 'dataframes/'
+        dirdict = 'dictionaries/'
+    csv2df()
 def load_network(jsonfile):
     net = json2dict(jsonfile)
     g = nx.Graph()
@@ -40,18 +85,18 @@ def load_network(jsonfile):
     return g
 
 
-def file_generator(numlines, routesfile='rutascorpus.csv', lemmatized=False):
+def file_generator(routesfile='csvroutes/rutascorpus.csv', numlines=50000, lemmatized=False):
 
     if lemmatized:
-        folderdict = 'dictionarieslemma'
-        folderframe = 'dataframeslemma'
+        folderdict = 'files/lemmatized/dictionaries'
+        folderframe = 'files/lemmatized/dataframes'
         shutil.rmtree(f'./{folderdict}/')
         shutil.rmtree(f'./{folderframe}/')
         os.mkdir(f'./{folderdict}')
         os.mkdir(f'./{folderframe}')
     else:
-        folderdict = 'dictionaries'
-        folderframe = 'dataframes'
+        folderdict = 'files/inflected/dictionaries'
+        folderframe = 'files/inflected/dataframes'
         shutil.rmtree(f'./{folderdict}/')
         shutil.rmtree(f'./{folderframe}/')
         os.mkdir(f'./{folderdict}')
