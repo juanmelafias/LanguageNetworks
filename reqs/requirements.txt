@@ -1,0 +1,8 @@
+pandas
+numpy
+matplotlib
+networkx
+pathlib
+scipy
+sklearn
+seaborn
