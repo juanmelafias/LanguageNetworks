@@ -6,7 +6,7 @@
 4,UsefulData/ud-treebanks/ud-treebanks/UD_Amharic-ATT/am_att-ud-test.conllu,16979,Amharic,10
 5,UsefulData/ud-treebanks/ud-treebanks/UD_Ancient_Greek-PROIEL/grc_proiel-ud-train.conllu,247090,Ancient Greek,10
 6,UsefulData/ud-treebanks/ud-treebanks/UD_Apurina-UFPA/apu_ufpa-ud-test.conllu,1482,Apurina,10
-7,UsefulData/ud-treebanks/ud-treebanks/UD_Arabic-NYUAD/ar_nyuad-ud-train.conllu,720408,Arabic,10
+7,UsefulData/ud-treebanks/ud-treebanks/UD_Arabic-PADT/ar_padt-ud-train.conllu,284829,Arabic,10
 8,UsefulData/ud-treebanks/ud-treebanks/UD_Armenian-ArmTDP/hy_armtdp-ud-train.conllu,51077,Armenian,10
 9,UsefulData/ud-treebanks/ud-treebanks/UD_Assyrian-AS/aii_as-ud-test.conllu,626,Assyrian,10
 10,UsefulData/ud-treebanks/ud-treebanks/UD_Bambara-CRB/bm_crb-ud-test.conllu,16936,Bambara,10
@@ -33,7 +33,7 @@
 31,UsefulData/ud-treebanks/ud-treebanks/UD_Estonian-EDT/et_edt-ud-train.conllu,418881,Estonian,10
 32,UsefulData/ud-treebanks/ud-treebanks/UD_Faroese-FarPaHC/fo_farpahc-ud-train.conllu,27180,Faroese,10
 33,UsefulData/ud-treebanks/ud-treebanks/UD_Finnish-TDT/fi_tdt-ud-train.conllu,199875,Finnish,10
-34,UsefulData/ud-treebanks/ud-treebanks/UD_French-FTB/fr_ftb-ud-train.conllu,528734,French,10
+34,UsefulData/ud-treebanks/ud-treebanks/UD_French-GSD/fr_gsd-ud-train.conllu,407544,French,10
 35,UsefulData/ud-treebanks/ud-treebanks/UD_Frisian_Dutch-Fame/qfn_fame-ud-test.conllu,6132,Frisian Dutch,10
 36,UsefulData/ud-treebanks/ud-treebanks/UD_Galician-CTG/gl_ctg-ud-train.conllu,93493,Galician,10
 37,UsefulData/ud-treebanks/ud-treebanks/UD_German-HDT/de_hdt-ud-train.conllu,3303617,German,10
@@ -48,7 +48,7 @@
 46,UsefulData/ud-treebanks/ud-treebanks/UD_Indonesian-GSD/id_gsd-ud-train.conllu,117265,Indonesian,10
 47,UsefulData/ud-treebanks/ud-treebanks/UD_Irish-IDT/ga_idt-ud-train.conllu,107897,Irish,10
 48,UsefulData/ud-treebanks/ud-treebanks/UD_Italian-ISDT/it_isdt-ud-train.conllu,333820,Italian,10
-49,UsefulData/ud-treebanks/ud-treebanks/UD_Japanese-BCCWJ/ja_bccwj-ud-train.conllu,1031142,Japanese,10
+49,UsefulData/ud-treebanks/ud-treebanks/UD_Japanese-GSD/ja_gsd-ud-train.conllu,196534,Japanese,10
 50,UsefulData/ud-treebanks/ud-treebanks/UD_Javanese-CSUI/jv_csui-ud-test.conllu,2737,Javanese,10
 51,UsefulData/ud-treebanks/ud-treebanks/UD_Kaapor-TuDeT/urb_tudet-ud-test.conllu,715,Kaapor,10
 52,UsefulData/ud-treebanks/ud-treebanks/UD_Kangri-KDTB/xnr_kdtb-ud-test.conllu,3379,Kangri,10

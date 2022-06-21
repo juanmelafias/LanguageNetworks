@@ -41,176 +41,177 @@ clusterStyles[7] = "tab:gray"
 primaries = True
 
 (valid1, arraymeanproperties, dict_pathologies) = build_properties_array_languages(
-    "files/inflected/networks/", primaries
+	"files/inflected/networks/", primaries
 )
 (
-    valid2,
-    arraymeanpropertieslemma,
-    dict_pathologies_lemma,
+	valid2,
+	arraymeanpropertieslemma,
+	dict_pathologies_lemma,
 ) = build_properties_array_languages("files/lemmatized/networks/", primaries)
 arraymeanproperties = h.normalizeProperties(arraymeanproperties)
 arraymeanpropertieslemma = h.normalizeProperties(arraymeanpropertieslemma)
 if primaries:
-    folderpics = "languagesmeanprimaries"
+	folderpics = "languagesmeanprimaries"
 else:
-    folderpics = "languagesmeanneighbours"
+	folderpics = "languagesmeanneighbours"
 paths = [f"files/inflected/{folderpics}/", f"files/lemmatized/{folderpics}/"]
 filelist = os.listdir("./files/inflected/dictionaries/")
 nodeList = [
-    file.split(".")[0]
-    for file in filelist
-    if file not in ["Japanese.json", "Arabic.json", "French.json"]
+	file.split(".")[0]
+	for file in filelist
 ]
 valid_keys = [valid1, valid2]
 
 for indexlang, includedPropertiesArray in enumerate(
-    [arraymeanproperties, arraymeanpropertieslemma]
+	[arraymeanproperties, arraymeanpropertieslemma]
 ):
-    picsPath = paths[indexlang]
-    includedProperties = valid_keys[indexlang]
-    allStatisticsCov = np.cov(includedPropertiesArray)
-    (eigVals, eigVects) = np.linalg.eig(allStatisticsCov)
-    eigVals = np.real(eigVals)
-    eigVects = np.real(eigVects)
+	picsPath = paths[indexlang]
+	includedProperties = valid_keys[indexlang]
+	allStatisticsCov = np.cov(includedPropertiesArray)
+	(eigVals, eigVects) = np.linalg.eig(allStatisticsCov)
+	eigVals = np.real(eigVals)
+	eigVects = np.real(eigVects)
 
-    # Computing PCs with information above noise level according to ref:
-    # 	Donoho DL, Gavish M.
-    # 	The optimal hard threshold for singular values is 4/√3.
-    # 	arXiv preprint arXiv:1305.5870, (2013).
-    (noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals)
-    print("Noise-trucating PC value is: " + str(noiseThreshold))
-    print("According to this, optimal number of PCs kept is: " + str(nKeep))
-    print(
-        "This is a fraction " + str(float(nKeep) / len(eigVals)) + " of eigenvalues. "
-    )
+	# Computing PCs with information above noise level according to ref:
+	# 	Donoho DL, Gavish M.
+	# 	The optimal hard threshold for singular values is 4/√3.
+	# 	arXiv preprint arXiv:1305.5870, (2013).
+	(noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals)
+	print("Noise-trucating PC value is: " + str(noiseThreshold))
+	print("According to this, optimal number of PCs kept is: " + str(nKeep))
+	print(
+		"This is a fraction " + str(float(nKeep) / len(eigVals)) + " of eigenvalues. "
+	)
 
-    # Plotting covariance matrix:
-    plt.figure()
-    plt.imshow(allStatisticsCov, interpolation="none")
-    plt.colorbar()
+	# Plotting covariance matrix:
+	plt.figure()
+	plt.imshow(allStatisticsCov, interpolation="none")
+	plt.colorbar()
 
-    # Plotting eigenvectors:
-    plt.figure()
-    plt.imshow(eigVects, interpolation="none", cmap="coolwarm")
-    plt.colorbar()
+	# Plotting eigenvectors:
+	plt.figure()
+	plt.imshow(eigVects, interpolation="none", cmap="coolwarm")
+	plt.colorbar()
 
-    # Computing and plotting variance explained:
-    (varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals)
+	# Computing and plotting variance explained:
+	(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals)
 
-    plt.figure()
-    plt.plot(varianceExplained)
+	plt.figure()
+	plt.plot(varianceExplained)
 
-    plt.figure()
-    plt.plot(varianceExplained_cumul)
+	plt.figure()
+	plt.plot(varianceExplained_cumul)
 
-    ## Projecting data into eigenspace:
-    includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray)
+	## Projecting data into eigenspace:
+	includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray)
+	print(includedPropertiesArray_.shape)
 
-    # Using first three PCs as color coding:
-    # 	Normalize components to [0,1];
-    valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
-    valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
-    valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
-    # Save hex color values to a list:
-    nodeColor = []
-    for (iNode, node) in enumerate(nodeList):
-        nodeColor += [
-            mplt.colors.to_hex(
-                [valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]]
-            )
-        ]
+	# Using first three PCs as color coding:
+	# 	Normalize components to [0,1];
+	valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
+	valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
+	valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
+	# Save hex color values to a list:
+	nodeColor = []
+	for (iNode, node) in enumerate(nodeList):
+	
+		nodeColor += [
+			mplt.colors.to_hex(
+				[valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]]
+			)
+		]
 
-    # PC1-PC2:
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.scatter(
-        includedPropertiesArray_[0, :], includedPropertiesArray_[1, :], c=nodeColor
-    )
-    plt.xlabel("PC1")
-    plt.ylabel("PC2")
-    plt.title("Nodes projected in PCs")
-    fig.savefig(picsPath + "projection_PCs1-2.pdf")
+	# PC1-PC2:
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	plt.scatter(
+		includedPropertiesArray_[0, :], includedPropertiesArray_[1, :], c=nodeColor
+	)
+	plt.xlabel("PC1")
+	plt.ylabel("PC2")
+	plt.title("Nodes projected in PCs")
+	fig.savefig(picsPath + "projection_PCs1-2.pdf")
 
-    # PC1-PC3:
-    fig = plt.figure()
-    plt.scatter(
-        includedPropertiesArray_[0, :], includedPropertiesArray_[2, :], c=nodeColor
-    )
-    plt.xlabel("PC1")
-    plt.ylabel("PC3")
-    plt.title("Nodes projected in PCs")
-    fig.savefig(picsPath + "projection_PCs1-3.pdf")
+	# PC1-PC3:
+	fig = plt.figure()
+	plt.scatter(
+		includedPropertiesArray_[0, :], includedPropertiesArray_[2, :], c=nodeColor
+	)
+	plt.xlabel("PC1")
+	plt.ylabel("PC3")
+	plt.title("Nodes projected in PCs")
+	fig.savefig(picsPath + "projection_PCs1-3.pdf")
 
-    # PC1-PC2-PC3:
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(
-        includedPropertiesArray_[0, :],
-        includedPropertiesArray_[1, :],
-        includedPropertiesArray_[2, :],
-        c=nodeColor,
-    )
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
-    ax.set_zlabel("PC3")
-    plt.title("Nodes projected in PCs")
-    fig.savefig(picsPath + "projection_PCs1-2-3.pdf")
+	# PC1-PC2-PC3:
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection="3d")
+	ax.scatter(
+		includedPropertiesArray_[0, :],
+		includedPropertiesArray_[1, :],
+		includedPropertiesArray_[2, :],
+		c=nodeColor,
+	)
+	ax.set_xlabel("PC1")
+	ax.set_ylabel("PC2")
+	ax.set_zlabel("PC3")
+	plt.title("Nodes projected in PCs")
+	fig.savefig(picsPath + "projection_PCs1-2-3.pdf")
 
-    # Plotting in network space:
-    """"
-    fig = plt.figure(); 
-    ax = fig.add_subplot(111); 
-    nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
-    ax.set_aspect("equal"); 
-    plt.title("PC colors projected in network layout"); 
-    fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf");
-    """
+	# Plotting in network space:
+	""""
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111); 
+	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
+	ax.set_aspect("equal"); 
+	plt.title("PC colors projected in network layout"); 
+	fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf");
+	"""
 
-    pdist = spc.distance.pdist(allStatisticsCov)
-    propertiesLinkage = spc.linkage(pdist, method="complete")
+	pdist = spc.distance.pdist(allStatisticsCov)
+	propertiesLinkage = spc.linkage(pdist, method="complete")
 
-    fig = plt.figure()
-    spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties)
-    plt.xlabel("Distance")
-    plt.ylabel("Node properties")
-    plt.title("Properties dendrogram")
-    fig.savefig(picsPath + "propertiesDendogram.pdf")
+	fig = plt.figure()
+	spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties)
+	plt.xlabel("Distance")
+	plt.ylabel("Node properties")
+	plt.title("Properties dendrogram")
+	fig.savefig(picsPath + "propertiesDendogram.pdf")
 
-    ## Dendograms for data:
-    nodesLinkage = spc.linkage(includedPropertiesArray_.T, "ward")
+	## Dendograms for data:
+	nodesLinkage = spc.linkage(includedPropertiesArray_.T, "ward")
 
-    distanceThreshold = 45
-    fig = plt.figure()
-    spc.dendrogram(
-        nodesLinkage,
-        orientation="right",
-        color_threshold=distanceThreshold,
-        labels=nodeList,
-    )
-    plt.xlabel("Distance")
-    plt.ylabel("Nodes")
-    plt.title("Nodes dendrogram")
-    fig.savefig(picsPath + "nodesDendogram.pdf")
+	distanceThreshold = 45
+	fig = plt.figure()
+	spc.dendrogram(
+		nodesLinkage,
+		orientation="right",
+		color_threshold=distanceThreshold,
+		labels=nodeList,
+	)
+	plt.xlabel("Distance")
+	plt.ylabel("Nodes")
+	plt.title("Nodes dendrogram")
+	fig.savefig(picsPath + "nodesDendogram.pdf")
 
-    # Coloring according to clusters:
-    # nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance');
-    nClusters = 5
-    nodeClusters = spc.fcluster(nodesLinkage, nClusters, criterion="maxclust")
-    nodeClusterColor = []
-    for (iNode, node) in enumerate(nodeList):
-        nodeClusterColor += [clusterStyles[nodeClusters[iNode] - 1]]
+	# Coloring according to clusters:
+	# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance');
+	nClusters = 5
+	nodeClusters = spc.fcluster(nodesLinkage, nClusters, criterion="maxclust")
+	nodeClusterColor = []
+	for (iNode, node) in enumerate(nodeList):
+		nodeClusterColor += [clusterStyles[nodeClusters[iNode] - 1]]
 
-    # Plotting in eigenspace:
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(
-        includedPropertiesArray_[0, :],
-        includedPropertiesArray_[1, :],
-        includedPropertiesArray_[2, :],
-        c=nodeClusterColor,
-    )
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
-    ax.set_zlabel("PC3")
-    plt.title("Clusters (dendogram) in eigenspace")
-    fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf")
+	# Plotting in eigenspace:
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection="3d")
+	ax.scatter(
+		includedPropertiesArray_[0, :],
+		includedPropertiesArray_[1, :],
+		includedPropertiesArray_[2, :],
+		c=nodeClusterColor,
+	)
+	ax.set_xlabel("PC1")
+	ax.set_ylabel("PC2")
+	ax.set_zlabel("PC3")
+	plt.title("Clusters (dendogram) in eigenspace")
+	fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf")

@@ -29,9 +29,9 @@ This scripts computes mean properties for all nodes in the network for every des
 
 from utils import csv2df,json2dict,dict2json,load_network
 filelist = os.listdir('./files/inflected/dictionaries/')
-languagelist = [file.split('.')[0] for file in filelist]
+languagelist = [file.split('.')[0] for file in filelist if file in ['French.json','Arabic.json', 'Japanese.json']]
 CreateProperties = True
-lemmatized = True
+lemmatized = False
 if lemmatized:
     netPath = 'files/lemmatized/networks/'
     folderframe = 'files/lemmatized/dataframes'
@@ -43,7 +43,6 @@ else:
     folderdict = 'files/inflected/dictionaries'
     folderavg = 'files/inflected/avgproperties'
 for netName in languagelist:
-    netPath='networkslemma/'
     if CreateProperties:
         picsPath = 'pics/'
         langframe = csv2df(f'{folderframe}/{netName}.csv')
