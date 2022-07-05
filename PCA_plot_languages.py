@@ -111,6 +111,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
 	valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
 	valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
+	print(valuesRGB0.shape)
 	# Save hex color values to a list:
 	nodeColor = []
 	for (iNode, node) in enumerate(nodeList):
