@@ -5,7 +5,8 @@ from json import loads as cargar
 import networkx as nx
 import numpy as np
 import pandas as pd
-
+import plotly.graph_objects as go
+import pyodbc 
 import helper as h
 
 
@@ -394,3 +395,103 @@ def dict2json(dicti, jsonname):
 
 	# close file
 	f.close()
+def build_connection_string(server, database, username, password,driver) -> str:
+    return (
+        "DRIVER={"+driver+"};"
+        "SERVER="+server+";"
+        "DATABASE="+database+";"
+        "UID="+username+";"
+        "PWD="+password
+    )
+
+def connect(server, database, username, password, driver): 
+    conn_str = build_connection_string(
+        server, database, username, password, driver
+    )
+    return pyodbc.connect(conn_str)
+
+def get_insert_query(table, list_cols, list_values,cnxn):
+    colstr = ''
+    valstr = ""
+    for i in range(len(list_cols)):
+        col = list_cols[i]
+        value = list_values[i]
+        #print(col)
+        
+        colstr += f'{col}, '
+
+        if isinstance(value,str): 
+            valstr += f"'{value}', "
+        else:
+            valstr += f"{value}, "
+    colstr = colstr[:-2]
+    valstr = valstr[:-2]
+    query = f"INSERT INTO {table} ({colstr}) VALUES ({valstr})"
+    return query
+
+def parse_entities(db_entities, columns):
+    return [
+        {
+            k: v for k,v in zip(columns, db_entity)
+        }
+        for db_entity in db_entities
+    ]
+def get_traces(G):
+	edge_x = []
+	edge_y = []
+	for edge in G.edges():
+		x0, y0 = G.nodes[edge[0]]['pos']
+		x1, y1 = G.nodes[edge[1]]['pos']
+		edge_x.append(x0)
+		edge_x.append(x1)
+		edge_x.append(None)
+		edge_y.append(y0)
+		edge_y.append(y1)
+		edge_y.append(None)
+
+	edge_trace = go.Scatter(
+		x=edge_x, y=edge_y,
+		line=dict(width=0.5, color='#888'),
+		hoverinfo='none',
+		mode='lines')
+
+	node_x = []
+	node_y = []
+	for node in G.nodes():
+		x, y = G.nodes[node]['pos']
+		node_x.append(x)
+		node_y.append(y)
+
+	node_trace = go.Scatter(
+		x=node_x, y=node_y,
+		mode='markers',
+		hoverinfo='text',
+		marker=dict(
+			showscale=True,
+			# colorscale options
+			#'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+			#'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+			#'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+			colorscale='YlGnBu',
+			reversescale=True,
+			color=[],
+			size=10,
+			colorbar=dict(
+				thickness=15,
+				title='Node Connections',
+				xanchor='left',
+				titleside='right'
+			),
+			line_width=2))
+	return node_trace,edge_trace
+
+def adjust_trace_colors(node_trace,G):
+	node_adjacencies = []
+	node_text = []
+	for node, adjacencies in enumerate(G.adjacency()):
+		node_adjacencies.append(len(adjacencies[1]))
+		node_text.append('# of connections: '+str(len(adjacencies[1])))
+
+	node_trace.marker.color = node_adjacencies
+	node_trace.text = node_text
+	return node_trace

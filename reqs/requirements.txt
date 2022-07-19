@@ -6,3 +6,7 @@ pathlib
 scipy
 sklearn
 seaborn
+tableauserverclient 
+streamlit
+dash
+plotly

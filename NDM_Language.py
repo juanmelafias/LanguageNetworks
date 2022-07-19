@@ -39,6 +39,7 @@
 
 
 # Importing relevant libraries: 
+from telnetlib import WONT
 import pandas as pd
 import numpy as np; 
 import matplotlib.pyplot as plt; 
@@ -50,6 +51,7 @@ from mpl_toolkits.mplot3d import Axes3D;
 
 # Importing libraries for I/O and system communication: 
 import os, sys; 
+from pathlib import Path
 import pickle as pkl; 
 import scipy.io as sio; # To read .mat files! and .mnx files! 
 
@@ -57,420 +59,522 @@ import scipy.io as sio; # To read .mat files! and .mnx files!
 from sklearn.cluster import KMeans;  
 import scipy.cluster.hierarchy as spc; 
 
+
 # Importing homebrew libraries: 
 import helper as h; 
 import loadHelper as lh; 
 
 #importing functions
 
-from utils import csv2df,json2dict,load_network
-
-
-
-#Loading data
-picsPath = 'pics/'
-langframe = csv2df('dataframes/Spanish.csv')
-mostfreq =langframe.unique_id.to_list()
-thisNetwork = load_network('dictionaries/Spanish.csv')
-thisNetwork=thisNetwork.subgraph(mostfreq)
-netName = 'Spanish'
-netPath='networks/'
-"""""
-nativePositions = {}; 
-nativePositions_3D = {}; 
-for node in thisNetwork.nodes(): 
-	nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-							thisNetwork.nodes()[node]["dn_position_y"]]; 
-	nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
-								thisNetwork.nodes()[node]["dn_position_y"], 
-								thisNetwork.nodes()[node]["dn_position_z"]]; 
-metaDataDict = {}
-metaDataDict["nativePositions"] = nativePositions; 
-metaDataDict["nativePositions_3D"] = nativePositions_3D; 
-
-
-if ("random" not in netName): 
-	(thisNetwork, metaDataDict) = lh.masterLoader(netName); 
-	if ("nativePositions" in metaDataDict.keys()): 
-		nativePositions = metaDataDict["nativePositions"]; 
-	if ("nativePositions_3D" in metaDataDict.keys()): 
-		nativePositions_3D = metaDataDict["nativePositions_3D"]; 
-else: 
-	args = {}; 
-	args["nNodes"] = 200; 
-	args["nNeighbors"] = 4; 
-	args["pRewire"] = 0.05; 
-	thisNetwork = lh.generateRandomNetwork(netName, args); 
-
-"""""
-
-# # Loading largest connected component and number of nodes: 
-Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-nNodes = len(thisNetwork.nodes()); 
-nEdges = thisNetwork.number_of_edges(); 
-
-# # Uncomment for quick network representation: 
-# fig = plt.figure(); 
-# ax = fig.add_subplot(111); 
-# nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork)); 
-# ax.set_aspect("equal"); 
-
-# print(nNodes); 
-# print(nEdges); 
-
-# plt.show(); 
-# sys.exit(0);
-
-
-
-########################################################################################################################
-########################################################################################################################
-#### Perform analysis on nodes: 
-#### 
-
-## Obtaining network propeties: 
-# 	To avoid re-computing all the time, we now save network properties in individual files that can be accessed. 
-# 	If computations have already been performed for some network, we read them from the files. 
-# 	Otherwise, we need to compute and store them. 
-
-fNeighborMean = True; 
-fNeighborStd = True; 
-if (("random" not in netName) and (os.path.isfile(netPath + netName + "_nodeList.csv")) 
-								and (os.path.isfile(netPath + netName + "_properties.pkl"))): 
-	# Files already exist with properties that have been computed. We can proceed with these: 
-	# (nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
-	(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath, fNeighborMean, fNeighborStd); 
-	(includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
-else: 
-	# Properties have not been saved for this network and need to be computed: 
-	(nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, 
-																						fNeighborMean, fNeighborStd); 
-	if ("random" not in netName): 
-		h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
-
-# # Just in case, we keep these lines of code in case we wish to manually force the re-computation for some network: 
-# (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
-# # (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
-# h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
-
-
-# In either case, we retain only those properties that are not pathological. 
-# We build a numpy array to work with them: 
-includedPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
-includedPropertiesArray = h.normalizeProperties(includedPropertiesArray); 
-
-
-print("Analysis includes the following properties: "); 
-for (iP, thisProperty) in enumerate(includedProperties): 
-	print('\t' + str(iP+1) + ": " + thisProperty); 
-
-# for (iP, thisProperty) in enumerate(includedProperties): 
-# 	print('\t' + str(iP+1) + ": " + thisProperty); 
-# 	print("\t\t" + str(includedPropertiesArray[iP])); 
-
-## Computing correlation matrix and diagonalizing: 
-allStatisticsCov = np.cov(includedPropertiesArray); 
-(eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
-eigVals = np.real(eigVals); 
-eigVects = np.real(eigVects); 
-
-
-# Computing PCs with information above noise level according to ref: 
-# 	Donoho DL, Gavish M. 
-# 	The optimal hard threshold for singular values is 4/√3. 
-# 	arXiv preprint arXiv:1305.5870, (2013).
-(noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals); 
-print("Noise-trucating PC value is: " + str(noiseThreshold)); 
-print("According to this, optimal number of PCs kept is: " + str(nKeep)); 
-print("This is a fraction " + str(float(nKeep)/len(eigVals)) + " of eigenvalues. "); 
-
-# Plotting covariance matrix: 
-plt.figure(); 
-plt.imshow(allStatisticsCov, interpolation="none"); 
-plt.colorbar(); 
-
-# Plotting eigenvectors: 
-plt.figure(); 
-plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
-plt.colorbar(); 
-
-
-# Computing and plotting variance explained: 
-(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
-
-plt.figure(); 
-plt.plot(varianceExplained); 
-
-plt.figure(); 
-plt.plot(varianceExplained_cumul); 
-
-
-
-## Projecting data into eigenspace: 
-includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
-
-# Using first three PCs as color coding: 
-# 	Normalize components to [0,1]; 
-valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
-valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1,:]); 
-valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2,:]); 
-# Save hex color values to a list: 
-nodeColor = []; 
-for (iNode, node) in enumerate(nodeList): 
-	nodeColor += [mplt.colors.to_hex([valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]])]; 
-
-
-# PC1-PC2: 
-fig = plt.figure(); 
-ax = fig.add_subplot(111); 
-plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], c=nodeColor); 
-plt.xlabel("PC1"); 
-plt.ylabel("PC2"); 
-plt.title("Nodes projected in PCs"); 
-fig.savefig(picsPath + "projection_PCs1-2.pdf"); 
-
-# PC1-PC3: 
-fig = plt.figure(); 
-plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[2,:], c=nodeColor); 
-plt.xlabel("PC1"); 
-plt.ylabel("PC3"); 
-plt.title("Nodes projected in PCs"); 
-fig.savefig(picsPath + "projection_PCs1-3.pdf"); 
-
-# PC1-PC2-PC3: 
-fig = plt.figure(); 
-ax = fig.add_subplot(111, projection='3d'); 
-ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeColor); 
-ax.set_xlabel("PC1"); 
-ax.set_ylabel("PC2"); 
-ax.set_zlabel("PC3"); 
-plt.title("Nodes projected in PCs"); 
-fig.savefig(picsPath + "projection_PCs1-2-3.pdf"); 
-
-
-# Plotting in network space: 
-fig = plt.figure(); 
-ax = fig.add_subplot(111); 
-nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
-ax.set_aspect("equal"); 
-plt.title("PC colors projected in network layout"); 
-fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf"); 
-
-# Plotting in network space in 2D if they have native coordinates: 
-if "nativePositions" in locals(): 
-	fig = plt.figure(); 
-	ax = fig.add_subplot(111); 
-	nx.draw(thisNetwork, with_labels=False, node_color=nodeColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
-	ax.set_aspect("equal"); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-	plt.title("PC colors projected in real space"); 
-	fig.savefig(picsPath + "networkColoredWithPCs_geometry2D.pdf"); 
-
-
-# Plotting in network space in 3D if they have such native coordinates: 
-if "nativePositions_3D" in locals(): 
-
-	# Position cannot be given as a dictionary: 
-	sortedPositions = []; 
-	for node in thisNetwork.nodes(): 
-		sortedPositions += [nativePositions_3D[node]]; 
-	sortedPositions = np.array(sortedPositions); 
-
-	# Proper plot: 
-	fig = plt.figure(); 
-	ax = plt.axes(projection='3d'); 
-	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeColor); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-	ax.set_zlabel("z-coordinate"); 
-	plt.title("PC colors projected in real space"); 
-	fig.savefig(picsPath + "networkColoredWithPCs_geometry3D.pdf"); 
-
-	# # Plot the edges (commented by now -- it takes too much RAM). 
-	# for edge in thisNetwork.edges():
-	# 	xCoor = (nativePositions_3D[edge[0]][0], nativePositions_3D[edge[1]][0]); 
-	# 	yCoor = (nativePositions_3D[edge[0]][1], nativePositions_3D[edge[1]][1]); 
-	# 	zCoor = (nativePositions_3D[edge[0]][2], nativePositions_3D[edge[1]][2]); 
-	# 	plt.plot(xCoor, yCoor, zCoor, color="tab:gray"); 
-
-
-# Plotting nodes most similar to a target node: 
-# iTarget = 155; 
-iTarget = 10; 
-(distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(includedPropertiesArray_, iTarget); 
-colorDistance = [[elem, elem, elem] for elem in distanceToTarget_]; 
-fig = plt.figure(); 
-ax = fig.add_subplot(111); 
-if "nativePositions" in locals(): 
-	nx.draw(thisNetwork, with_labels=False, node_color=colorDistance, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
-	ax.set_aspect("equal"); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-else: 
-	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=colorDistance, edge_color="tab:gray"); 
-	ax.set_aspect("equal"); 
-
-# Same, but in 3D if coordinates are provided: 
-if "nativePositions_3D" in locals(): 
-	fig = plt.figure(); 
-	ax = plt.axes(projection='3d'); 
-	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-	ax.set_zlabel("z-coordinate"); 
-
-
-
-########################################################################################################################
-########################################################################################################################
-## k-means clustering: 
-## 
-"""""
-nClusters = 5; 
-# nClusters = 8; 
-kmeans = KMeans(nClusters).fit(includedPropertiesArray_.T); 
-
-# Coloring nodes according to their cluster: 
-clusterStyles = {}; 
-clusterStyles[0] = 'k'; 
-clusterStyles[1] = 'r'; 
-clusterStyles[2] = 'g'; 
-clusterStyles[3] = 'b'; 
-clusterStyles[4] = 'y'; 
-clusterStyles[5] = 'm'; 
-clusterStyles[6] = 'c'; 
-clusterStyles[7] = 'tab:gray'; 
-
-nodeClusterColor = []; 
-for (iNode, node) in enumerate(nodeList): 
-	nodeClusterColor += [clusterStyles[kmeans.labels_[iNode]]]; 
-
-
-# Plotting in eigenspace: 
-fig = plt.figure(); 
-ax = fig.add_subplot(111, projection='3d'); 
-ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
-ax.set_xlabel("PC1"); 
-ax.set_ylabel("PC2"); 
-ax.set_zlabel("PC3"); 
-plt.title("Clusters (k-means) in eigenspace"); 
-fig.savefig(picsPath + "kMeans_eigenspace.pdf"); 
-
-
-fig = plt.figure(); 
-ax = fig.add_subplot(111); 
-if "nativePositions" in locals(): 
-	nx.draw(thisNetwork, with_labels=False, node_color=nodeClusterColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
-	ax.set_aspect("equal"); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-else: 
-	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
-	ax.set_aspect("equal"); 
-
-plt.title("Clusters (k-means) in network layout"); 
-fig.savefig(picsPath + "kMeans_netLayout.pdf"); 
-
-
-# Same, but in 3D if coordinates are provided: 
-if "nativePositions_3D" in locals(): 
-	fig = plt.figure(); 
-	ax = plt.axes(projection='3d'); 
-	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-	ax.set_zlabel("z-coordinate"); 
-
-	plt.title("Clusters (k-means) in real space"); 
-	fig.savefig(picsPath + "kMeans_geometry3D.pdf"); 
-
-
-
-"""""
-
-
-
-########################################################################################################################
-########################################################################################################################
-## Dendograms to visualize closeness between properties and data: 
-## 
-
-## Dendograms for properties:  
-
-# From correlations to distances: 
-pdist = spc.distance.pdist(allStatisticsCov); 
-propertiesLinkage = spc.linkage(pdist, method='complete'); 
-
-fig = plt.figure(); 
-spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties); 
-plt.xlabel("Distance"); 
-plt.ylabel("Node properties"); 
-plt.title("Properties dendrogram"); 
-fig.savefig(picsPath + "propertiesDendogram.pdf"); 
-
-
-## Dendograms for data: 
-nodesLinkage = spc.linkage(includedPropertiesArray_.T, 'ward'); 
-
-distanceThreshold = 45; 
-fig = plt.figure(); 
-spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold); 
-plt.xlabel("Distance"); 
-plt.ylabel("Nodes"); 
-plt.title("Nodes dendrogram"); 
-fig.savefig(picsPath + "nodesDendogram.pdf"); 
-
-
-# Coloring according to clusters: 
-# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance'); 
-nClusters = 5; 
-nodeClusters = spc.fcluster(nodesLinkage, nClusters, criterion="maxclust"); 
-nodeClusterColor = []; 
-for (iNode, node) in enumerate(nodeList): 
-	nodeClusterColor += [clusterStyles[nodeClusters[iNode]-1]]; 
-
-
-# Plotting in eigenspace: 
-fig = plt.figure(); 
-ax = fig.add_subplot(111, projection='3d'); 
-ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
-ax.set_xlabel("PC1"); 
-ax.set_ylabel("PC2"); 
-ax.set_zlabel("PC3"); 
-plt.title("Clusters (dendogram) in eigenspace"); 
-fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf"); 
-
-
-
-fig = plt.figure(); 
-ax = fig.add_subplot(111); 
-if "nativePositions" in locals(): 
-	nx.draw(thisNetwork, with_labels=False, node_color=nodeClusterColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
-	ax.set_aspect("equal"); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-else: 
-	nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
-	ax.set_aspect("equal"); 
-plt.title("Clusters (dendogram) in network layout"); 
-fig.savefig(picsPath + "dendogramClusters_netLayout.pdf"); 
-
-
-
-# Same, but in 3D if coordinates are provided: 
-if "nativePositions_3D" in locals(): 
-	fig = plt.figure(); 
-	ax = plt.axes(projection='3d'); 
-	ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
-	plt.xlabel("x-coordinate"); 
-	plt.ylabel("y-coordinate"); 
-	ax.set_zlabel("z-coordinate"); 
-	plt.title("Clusters (dendogram) in real space"); 
-	fig.savefig(picsPath + "dendogramClusters_geometry3D.pdf"); 
-
-
-plt.show(); 
-sys.exit(0); 
+from utils import csv2df,json2dict,load_network,connect,get_insert_query
+from constants import SERVER, DATABASE, USERNAME, PASSWORD, DRIVERS, DRIVER
+root = os.getcwd()
+filelist = os.listdir('./files/inflected/dictionaries/')
+#languagelist = [file.split('.')[0] for file in filelist if file not in ['Ancient_Greek']]
+languagelist = ['Spanish','Portuguese','English','German','French','Chinese']
+for bool in [False,True]:
+
+	for language in languagelist:
+	#Loading data
+		print(language)
+		cnxn = connect(SERVER, DATABASE, USERNAME, PASSWORD, DRIVER)
+		root = os.getcwd()
+		netName = language
+		lemmatized = bool
+		if lemmatized:
+			iol = 'lemmatized'
+		else:
+			iol='inflected'
+		picsPath = f'./pics/{iol}/{netName}/'
+		#picsPath.mkdir(picsPath, exist_ok = True)
+		image_path = root / Path("pics") / Path(iol) / Path(language)
+		image_path.mkdir(parents=True, exist_ok=True)
+		langframe = csv2df(f'files/{iol}/dataframes/{netName}.csv')
+		mostfreq =langframe.unique_id.to_list()
+		thisNetwork = load_network(f'files/{iol}/dictionaries/{netName}.json')
+		thisNetwork=thisNetwork.subgraph(mostfreq)
+		word_list = langframe.word.to_list()
+		POS_list = langframe.POS.to_list()
+		
+		indexes = [i for i in range(1,len(word_list)+1,1)]
+		dict_rank = dict(zip(word_list,indexes))
+		dict_pos = dict(zip(word_list,POS_list))
+
+		netPath=f'./files/{iol}/networks/'
+		"""""
+		nativePositions = {}; 
+		nativePositions_3D = {}; 
+		for node in thisNetwork.nodes(): 
+			nativePositions[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+									thisNetwork.nodes()[node]["dn_position_y"]]; 
+			nativePositions_3D[node] = [thisNetwork.nodes()[node]["dn_position_x"], 
+										thisNetwork.nodes()[node]["dn_position_y"], 
+										thisNetwork.nodes()[node]["dn_position_z"]]; 
+		metaDataDict = {}
+		metaDataDict["nativePositions"] = nativePositions; 
+		metaDataDict["nativePositions_3D"] = nativePositions_3D; 
+
+
+		if ("random" not in netName): 
+			(thisNetwork, metaDataDict) = lh.masterLoader(netName); 
+			if ("nativePositions" in metaDataDict.keys()): 
+				nativePositions = metaDataDict["nativePositions"]; 
+			if ("nativePositions_3D" in metaDataDict.keys()): 
+				nativePositions_3D = metaDataDict["nativePositions_3D"]; 
+		else: 
+			args = {}; 
+			args["nNodes"] = 200; 
+			args["nNeighbors"] = 4; 
+			args["pRewire"] = 0.05; 
+			thisNetwork = lh.generateRandomNetwork(netName, args); 
+
+		"""""
+
+		# # Loading largest connected component and number of nodes: 
+		Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+		thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+		nNodes = len(thisNetwork.nodes());
+
+		nEdges = thisNetwork.number_of_edges(); 
+		nodeList = [node for node in thisNetwork.nodes()]
+		
+		dict_words = dict(zip(langframe['unique_id'].to_list(),langframe['word'].to_list()))
+		wordList = [dict_words[node] for node in nodeList]
+		rankList = [dict_rank[word] for word in wordList]
+		POSList = [dict_pos[word] for word in wordList]
+		ranking = range(1,len(wordList)+1,1)
+		df = pd.DataFrame()
+		df['id_palabra'] = np.array(nodeList) 
+		df['palabra'] = pd.Series(wordList)
+		#pd.DataFrame(data = [np.array(nodeList),np.array(wordList)], columns = ['id_palabra', 'palabra'])
+		df['language'] = netName
+		df['POS'] = pd.Series(POSList)
+		df['ranking'] = np.array(rankList)
+		if lemmatized:
+			df['lemmatized'] = 'yes'
+		else:
+			df['lemmatized'] = 'no'
+		# # Uncomment for quick network representation: 
+		# fig = plt.figure(); 
+		# ax = fig.add_subplot(111); 
+		# nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork)); 
+		# ax.set_aspect("equal"); 
+
+		# print(nNodes); 
+		# print(nEdges); 
+
+		# plt.show(); 
+		# sys.exit(0);
+
+
+
+		########################################################################################################################
+		########################################################################################################################
+		#### Perform analysis on nodes: 
+		#### 
+
+		## Obtaining network propeties: 
+		# 	To avoid re-computing all the time, we now save network properties in individual files that can be accessed. 
+		# 	If computations have already been performed for some network, we read them from the files. 
+		# 	Otherwise, we need to compute and store them. 
+
+		fNeighborMean = True; 
+		fNeighborStd = True; 
+		if (("random" not in netName) and (os.path.isfile(netPath + netName + "_nodeList.csv")) 
+										and (os.path.isfile(netPath + netName + "_properties.pkl"))): 
+			# Files already exist with properties that have been computed. We can proceed with these: 
+			# (nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath); 
+			(nodeList, propertiesDict) = h.readNetworkProperties(netName, netPath, fNeighborMean, fNeighborStd); 
+			(includedProperties, excludedProperties) = h.findPathologicalProperties(propertiesDict); 
+		else: 
+			# Properties have not been saved for this network and need to be computed: 
+			(nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, 
+																								fNeighborMean, fNeighborStd); 
+			if ("random" not in netName): 
+				h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+
+		# # Just in case, we keep these lines of code in case we wish to manually force the re-computation for some network: 
+		# (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork); 
+		# # (nodeList, propertiesDict, includedProperties, excludedProperties) = h.computeNodesProperties(thisNetwork, False, False); 
+		# h.writeNetworkProperties(netName, netPath, nodeList, propertiesDict); 
+
+
+		# In either case, we retain only those properties that are not pathological. 
+		# We build a numpy array to work with them: 
+		includedPropertiesArray = h.buildPropertiesArray(propertiesDict, includedProperties); 
+		includedPropertiesArray = h.normalizeProperties(includedPropertiesArray); 
+
+
+		print("Analysis includes the following properties: "); 
+		for (iP, thisProperty) in enumerate(includedProperties): 
+			print('\t' + str(iP+1) + ": " + thisProperty); 
+
+		# for (iP, thisProperty) in enumerate(includedProperties): 
+		# 	print('\t' + str(iP+1) + ": " + thisProperty); 
+		# 	print("\t\t" + str(includedPropertiesArray[iP])); 
+
+		## Computing correlation matrix and diagonalizing: 
+		allStatisticsCov = np.cov(includedPropertiesArray); 
+		(eigVals, eigVects) = np.linalg.eig(allStatisticsCov); 
+		eigVals = np.real(eigVals); 
+		eigVects = np.real(eigVects); 
+
+
+		# Computing PCs with information above noise level according to ref: 
+		# 	Donoho DL, Gavish M. 
+		# 	The optimal hard threshold for singular values is 4/√3. 
+		# 	arXiv preprint arXiv:1305.5870, (2013).
+		(noiseThreshold, nKeep) = h.computeComponentsAboveNoise(eigVals); 
+		print("Noise-trucating PC value is: " + str(noiseThreshold)); 
+		print("According to this, optimal number of PCs kept is: " + str(nKeep)); 
+		print("This is a fraction " + str(float(nKeep)/len(eigVals)) + " of eigenvalues. "); 
+
+		# Plotting covariance matrix: 
+		plt.figure(); 
+		plt.imshow(allStatisticsCov, interpolation="none"); 
+		plt.colorbar(); 
+
+		# Plotting eigenvectors: 
+		plt.figure(); 
+		plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
+		plt.colorbar(); 
+
+
+		# Computing and plotting variance explained: 
+		(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals); 
+
+		plt.figure(); 
+		plt.plot(varianceExplained); 
+
+		plt.figure(); 
+		plt.plot(varianceExplained_cumul); 
+
+
+
+		## Projecting data into eigenspace: 
+		includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
+
+		# Using first three PCs as color coding: 
+		# 	Normalize components to [0,1]; 
+		valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
+		valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1,:]); 
+		valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2,:]); 
+
+		df['pc1']=pd.Series(includedPropertiesArray_[0,:]); 
+		df['pc1']=df['pc1'].apply(lambda x: np.round(x,4))
+		df['pc2']=pd.Series(includedPropertiesArray_[1,:]); 
+		df['pc2']=df['pc2'].apply(lambda x: np.round(x,4)) 
+		df['pc3']=pd.Series(includedPropertiesArray_[2,:]); 
+		df['pc3']=df['pc3'].apply(lambda x: np.round(x,4)) 
+		df['rgb1']=pd.Series(valuesRGB0)  
+		df['rgb1']=df['rgb1'].apply(lambda x: np.round(x,4))
+		df['rgb2']=pd.Series(valuesRGB1)  
+		df['rgb2']=df['rgb2'].apply(lambda x: np.round(x,4))
+		df['rgb3']=pd.Series(valuesRGB2) 
+		df['rgb3']=df['rgb3'].apply(lambda x: np.round(x,4))
+
+		cursor = cnxn.cursor()
+		# Insert Dataframe into SQL Server:
+
+		# Save hex color values to a list: 
+		nodeColor = []; 
+		for (iNode, node) in enumerate(nodeList): 
+			nodeColor += [mplt.colors.to_hex([valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]])]; 
+
+
+		# PC1-PC2: 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111); 
+		plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], c=nodeColor); 
+		plt.xlabel("PC1"); 
+		plt.ylabel("PC2"); 
+		plt.title("Nodes projected in PCs"); 
+		fig.savefig(picsPath + "projection_PCs1-2.pdf"); 
+
+		# PC1-PC3: 
+		fig = plt.figure(); 
+		plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[2,:], c=nodeColor); 
+		plt.xlabel("PC1"); 
+		plt.ylabel("PC3"); 
+		plt.title("Nodes projected in PCs"); 
+		fig.savefig(picsPath + "projection_PCs1-3.pdf"); 
+
+		# PC1-PC2-PC3: 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111, projection='3d'); 
+		ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeColor); 
+		ax.set_xlabel("PC1"); 
+		ax.set_ylabel("PC2"); 
+		ax.set_zlabel("PC3"); 
+		plt.title("Nodes projected in PCs"); 
+		fig.savefig(picsPath + "projection_PCs1-2-3.pdf"); 
+
+
+		# Plotting in network space: 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111); 
+		nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
+		ax.set_aspect("equal"); 
+		plt.title("PC colors projected in network layout"); 
+		fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf"); 
+
+		# Plotting in network space in 2D if they have native coordinates: 
+		if "nativePositions" in locals(): 
+			fig = plt.figure(); 
+			ax = fig.add_subplot(111); 
+			nx.draw(thisNetwork, with_labels=False, node_color=nodeColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+			ax.set_aspect("equal"); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+			plt.title("PC colors projected in real space"); 
+			fig.savefig(picsPath + "networkColoredWithPCs_geometry2D.pdf"); 
+
+
+		# Plotting in network space in 3D if they have such native coordinates: 
+		if "nativePositions_3D" in locals(): 
+
+			# Position cannot be given as a dictionary: 
+			sortedPositions = []; 
+			for node in thisNetwork.nodes(): 
+				sortedPositions += [nativePositions_3D[node]]; 
+			sortedPositions = np.array(sortedPositions); 
+
+			# Proper plot: 
+			fig = plt.figure(); 
+			ax = plt.axes(projection='3d'); 
+			ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeColor); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+			ax.set_zlabel("z-coordinate"); 
+			plt.title("PC colors projected in real space"); 
+			fig.savefig(picsPath + "networkColoredWithPCs_geometry3D.pdf"); 
+
+			# # Plot the edges (commented by now -- it takes too much RAM). 
+			# for edge in thisNetwork.edges():
+			# 	xCoor = (nativePositions_3D[edge[0]][0], nativePositions_3D[edge[1]][0]); 
+			# 	yCoor = (nativePositions_3D[edge[0]][1], nativePositions_3D[edge[1]][1]); 
+			# 	zCoor = (nativePositions_3D[edge[0]][2], nativePositions_3D[edge[1]][2]); 
+			# 	plt.plot(xCoor, yCoor, zCoor, color="tab:gray"); 
+
+
+		# Plotting nodes most similar to a target node: 
+		# iTarget = 155; 
+		iTarget = 10; 
+		(distanceToTarget, distanceToTarget_) = h.distanceToTargetNode(includedPropertiesArray_, iTarget); 
+		colorDistance = [[elem, elem, elem] for elem in distanceToTarget_]; 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111); 
+		if "nativePositions" in locals(): 
+			nx.draw(thisNetwork, with_labels=False, node_color=colorDistance, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+			ax.set_aspect("equal"); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+		else: 
+			nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=colorDistance, edge_color="tab:gray"); 
+			ax.set_aspect("equal"); 
+			fig.savefig(picsPath + "networkcolordist.pdf"); 
+
+		# Same, but in 3D if coordinates are provided: 
+		if "nativePositions_3D" in locals(): 
+			fig = plt.figure(); 
+			ax = plt.axes(projection='3d'); 
+			ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=colorDistance); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+			ax.set_zlabel("z-coordinate"); 
+
+
+
+		########################################################################################################################
+		########################################################################################################################
+		## k-means clustering: 
+		## 
+		"""""
+		nClusters = 5; 
+		# nClusters = 8; 
+		kmeans = KMeans(nClusters).fit(includedPropertiesArray_.T); 
+
+		# Coloring nodes according to their cluster: 
+		clusterStyles = {}; 
+		clusterStyles[0] = 'k'; 
+		clusterStyles[1] = 'r'; 
+		clusterStyles[2] = 'g'; 
+		clusterStyles[3] = 'b'; 
+		clusterStyles[4] = 'y'; 
+		clusterStyles[5] = 'm'; 
+		clusterStyles[6] = 'c'; 
+		clusterStyles[7] = 'tab:gray'; 
+
+		nodeClusterColor = []; 
+		for (iNode, node) in enumerate(nodeList): 
+			nodeClusterColor += [clusterStyles[kmeans.labels_[iNode]]]; 
+
+
+		# Plotting in eigenspace: 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111, projection='3d'); 
+		ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
+		ax.set_xlabel("PC1"); 
+		ax.set_ylabel("PC2"); 
+		ax.set_zlabel("PC3"); 
+		plt.title("Clusters (k-means) in eigenspace"); 
+		fig.savefig(picsPath + "kMeans_eigenspace.pdf"); 
+
+
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111); 
+		if "nativePositions" in locals(): 
+			nx.draw(thisNetwork, with_labels=False, node_color=nodeClusterColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+			ax.set_aspect("equal"); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+		else: 
+			nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
+			ax.set_aspect("equal"); 
+
+		plt.title("Clusters (k-means) in network layout"); 
+		fig.savefig(picsPath + "kMeans_netLayout.pdf"); 
+
+
+		# Same, but in 3D if coordinates are provided: 
+		if "nativePositions_3D" in locals(): 
+			fig = plt.figure(); 
+			ax = plt.axes(projection='3d'); 
+			ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+			ax.set_zlabel("z-coordinate"); 
+
+			plt.title("Clusters (k-means) in real space"); 
+			fig.savefig(picsPath + "kMeans_geometry3D.pdf"); 
+
+
+
+		"""""
+
+
+
+		########################################################################################################################
+		########################################################################################################################
+		## Dendograms to visualize closeness between properties and data: 
+		## 
+
+		## Dendograms for properties:
+		# Coloring nodes according to their cluster: 
+		clusterStyles = {}; 
+		clusterStyles[0] = 'k'; 
+		clusterStyles[1] = 'r'; 
+		clusterStyles[2] = 'g'; 
+		clusterStyles[3] = 'b'; 
+		clusterStyles[4] = 'y'; 
+		clusterStyles[5] = 'm'; 
+		clusterStyles[6] = 'c'; 
+		clusterStyles[7] = 'tab:gray'; 
+
+		# From correlations to distances: 
+		pdist = spc.distance.pdist(allStatisticsCov); 
+		propertiesLinkage = spc.linkage(pdist, method='complete'); 
+
+		fig = plt.figure(); 
+		spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties); 
+		plt.xlabel("Distance"); 
+		plt.ylabel("Node properties"); 
+		plt.title("Properties dendrogram"); 
+		fig.savefig(picsPath + "propertiesDendogram.pdf"); 
+
+
+		## Dendograms for data: 
+		nodesLinkage = spc.linkage(includedPropertiesArray_.T, 'ward'); 
+
+		distanceThreshold = 45; 
+		fig = plt.figure(); 
+		spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold); 
+		plt.xlabel("Distance"); 
+		plt.ylabel("Nodes"); 
+		plt.title("Nodes dendrogram"); 
+		fig.savefig(picsPath + "nodesDendogram.pdf"); 
+
+
+		# Coloring according to clusters: 
+		# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance'); 
+		nClusters = 5; 
+		nodeClusters5 = spc.fcluster(nodesLinkage, 5, criterion="maxclust"); 
+		nodeClusters4 = spc.fcluster(nodesLinkage, 4, criterion="maxclust"); 
+		nodeClusters3 = spc.fcluster(nodesLinkage, 3, criterion="maxclust"); 
+		nodeClusters2 = spc.fcluster(nodesLinkage, 2, criterion="maxclust");
+
+		nodeClusterColor = []; 
+		for (iNode, node) in enumerate(nodeList): 
+			nodeClusterColor += [clusterStyles[nodeClusters5[iNode]-1]]; 
+
+		df['nc5'] = nodeClusters5
+		df['nc5'] = df['nc5'].apply(lambda x: str(x))
+		df['nc4'] = nodeClusters4
+		df['nc4'] = df['nc4'].apply(lambda x: str(x))
+		df['nc3'] = nodeClusters3
+		df['nc3'] = df['nc3'].apply(lambda x: str(x))
+		df['nc2'] = nodeClusters2
+		df['nc2'] = df['nc2'].apply(lambda x: str(x))
+		# Plotting in eigenspace: 
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111, projection='3d'); 
+		ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
+		ax.set_xlabel("PC1"); 
+		ax.set_ylabel("PC2"); 
+		ax.set_zlabel("PC3"); 
+		plt.title("Clusters (dendogram) in eigenspace"); 
+		fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf"); 
+
+
+
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111); 
+		if "nativePositions" in locals(): 
+			nx.draw(thisNetwork, with_labels=False, node_color=nodeClusterColor, pos=nativePositions, edge_color="tab:gray"); # Some connectomes might have a native position. 
+			ax.set_aspect("equal"); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+		else: 
+			nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
+			ax.set_aspect("equal"); 
+		plt.title("Clusters (dendogram) in network layout"); 
+		fig.savefig(picsPath + "dendogramClusters_netLayout.pdf"); 
+
+
+
+		# Same, but in 3D if coordinates are provided: 
+		if "nativePositions_3D" in locals(): 
+			fig = plt.figure(); 
+			ax = plt.axes(projection='3d'); 
+			ax.scatter(sortedPositions[:,0], sortedPositions[:,1], sortedPositions[:,2], s=100, ec="w", color=nodeClusterColor); 
+			plt.xlabel("x-coordinate"); 
+			plt.ylabel("y-coordinate"); 
+			ax.set_zlabel("z-coordinate"); 
+			plt.title("Clusters (dendogram) in real space"); 
+			fig.savefig(picsPath + "dendogramClusters_geometry3D.pdf"); 
+
+		print(df.columns)
+		for index, row in df.iterrows():
+			print(index)
+			cols = [col for col in df.columns]
+			values = [row[col] for col in cols]
+			query = get_insert_query('lista',cols,values,cnxn)
+			#print(f'{row.language},{row.id_palabra},{row.palabra},{row.pc1},{row.pc2},{row.pc3},{row.rgb1},{row.rgb2},{row.rgb3},{index})')
+			cursor.execute(query)
+		cnxn.commit()
+		cursor.close()
+
+		'''
+		cursor = cnxn.cursor()
+		nodeList = [node for node in thisNetwork.nodes()]
+		for node in nodeList:
+			neighbours = thisNetwork.neighbors(node)
+			for ne in neighbours:
+				query = get_insert_query('nodos',['source','target','[language]'],[node,ne,netName],cnxn)
+				cursor.execute(query)
+		cnxn.commit()
+		cursor.close()
+		'''
+
+	 
 
