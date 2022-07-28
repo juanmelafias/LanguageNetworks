@@ -8,5 +8,6 @@ sklearn
 seaborn
 tableauserverclient 
 streamlit
+streamlit-aggrid
 dash
 plotly

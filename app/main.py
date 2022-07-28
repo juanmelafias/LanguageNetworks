@@ -92,7 +92,7 @@ def run_app():
             df2concat = read_plot_info(lang,nwords,iol)
             df = pd.concat([df,df2concat],axis = 0,join = 'outer',ignore_index = True)
 
-
+    df['ranking_inv'] = df['ranking'].apply(lambda x: abs(501-x))
     cols = [col for col in df.columns]
 
     color = st.selectbox('Pick a variable to represent color in the viz:',
@@ -108,11 +108,11 @@ def run_app():
 
     if st.button('Generate plot:'):
 
-        col = st.color_picker('Select a plot colour')
+        #col = st.color_picker('Select a plot colour')
         
         fig = px.scatter_3d(df, x='pc1', y='pc2', z='pc3',
                                 color=color, symbol=symbol, size = size, text = text , hover_name = extra)
-        fig.update_traces(marker=dict(color = col))
+        #fig.update_traces(marker=dict(color = col))
 
         st.plotly_chart(fig)
 
