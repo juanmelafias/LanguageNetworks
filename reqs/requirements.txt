@@ -11,3 +11,4 @@ streamlit
 streamlit-aggrid
 dash
 plotly
+googletrans

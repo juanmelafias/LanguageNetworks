@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import pyodbc 
+#import pyodbc 
 import helper as h
 
 
@@ -97,7 +97,7 @@ def stats_language(lemmatized=False):
 		dirdict = "files/inflected/dictionaries/"
 	listdf = os.listdir(dirdf)
 	listdict = os.listdir(dirdict)
-	stats = {}
+	stats = {'language':[],'nodes':[],'edges':[]}
 	for index, routedf in enumerate(listdf):
 		lang = routedf.split(".")[0]
 		routedict = listdict[index]
@@ -109,8 +109,9 @@ def stats_language(lemmatized=False):
 		thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0]))
 		nNodes = len(thisNetwork.nodes())
 		nEdges = thisNetwork.number_of_edges()
-		stats[lang] = [nNodes, nEdges]
-
+		stats['language'].append(lang)
+		stats['nodes'] = nNodes
+		stats['edges'] = nEdges
 		stats = pd.DataFrame(stats)
 	return stats
 

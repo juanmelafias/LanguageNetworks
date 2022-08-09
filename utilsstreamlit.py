@@ -53,4 +53,5 @@ def read_plot_info(language,nwords,iol):
     df = df.drop(labels = ['Unnamed: 0'],axis = 1).sort_values(by='ranking')
     if nwords != 0:
         df = df.iloc[0:nwords]
+    return df
     
