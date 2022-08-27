@@ -6,7 +6,7 @@ import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 
-def display_grid(df: pd.DataFrame, row_selection: str) -> pd.DataFrame:
+def display_grid(df: pd.DataFrame) -> pd.DataFrame:
     """
     Args:
         df: Pandas dataframe to be converted to AgGrid
@@ -83,10 +83,11 @@ def run_app():
         df = read_plot_info(lang,nwords,iol)
         
     else:
-        dflang = pd.Dataframe()
+        dflang = pd.DataFrame()
         dflang['languages'] = pd.Series(languagelist)
         dflangs = display_grid(dflang)
-        langs = dflangs['language'].to_list()
+
+        langs = dflangs['languages'].to_list()
         df = pd.DataFrame()
         for lang in langs:
             df2concat = read_plot_info(lang,nwords,iol)
@@ -105,7 +106,14 @@ def run_app():
             (col for col in cols))
     extra = st.selectbox('Any other data to show while hovering',
             (col for col in cols))
-
+    filteryes = st.radio('Would you like to filter?:',
+        options = ['Yes','No'])
+    if filteryes=='Yes':
+        filter = st.selectbox('Filter by',
+            (col for col in cols))
+        filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
+            (col for col in df.groupby(by=filter).count().index))
+        df = df[df[filter] == filtervalue]
     if st.button('Generate plot:'):
 
         #col = st.color_picker('Select a plot colour')
