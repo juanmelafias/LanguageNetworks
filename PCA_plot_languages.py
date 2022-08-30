@@ -7,7 +7,7 @@ import matplotlib as mplt
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as spc
-
+os.chdir('..')
 # Importing homebrew libraries:
 import helper as h
 from utils import build_properties_array_languages
