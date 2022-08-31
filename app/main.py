@@ -5,59 +5,8 @@ import plotly.express as px
 
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+from utilsstreamlit import display_grid, read_plot_info
 
-def display_grid(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Args:
-        df: Pandas dataframe to be converted to AgGrid
-
-    Returns:
-        data: Modified pandas dataframe
-
-    This module allows the app user to edit a dataframe in real time and save those
-    changes in memory using the AgGrid module.
-    """
-    # Construct GridOptionsBuilder dict
-    gd = GridOptionsBuilder.from_dataframe(df)
-    gd.configure_pagination(enabled=True)
-    gd.configure_default_column(editable=True, groupable=True)
-    #sel_mode = st.radio("Selection type", options=["single", "multiple"])
-    gd.configure_selection(selection_mode="multiple", use_checkbox=True)
-    gridoptions = gd.build()
-    
-    Table = AgGrid(
-        df,
-        gridOptions=gridoptions,
-        update_mode=GridUpdateMode.SELECTION_CHANGED,
-        height=500,
-        allow_unsafe_jscode=True,
-        theme="fresh",
-    )
-    # here only selected rows are used to generate reports. The problem is that
-    # the returned value is a list of dictionaries, not a df, so we need to transform it back again
-    data = pd.DataFrame(Table["selected_rows"])
-    
-
-    """
-    Table = AgGrid(
-        df,
-        gridOptions=gridoptions,
-        update_mode=GridUpdateMode.MODEL_CHANGED,
-        height=500,
-        allow_unsafe_jscode=True,
-        theme="fresh",
-    )
-    data = Table["data"]
-    """
-    return data
-
-def read_plot_info(language,nwords,iol):
-    
-    df = pd.read_csv(f'files/{iol}/dfplot/{language}.csv')
-    df = df.drop(labels = ['Unnamed: 0'],axis = 1).sort_values(by='ranking')
-    if nwords != 0:
-        df = df.iloc[0:nwords]
-    return df
 
 def run_app():
 
@@ -85,7 +34,7 @@ def run_app():
     else:
         dflang = pd.DataFrame()
         dflang['languages'] = pd.Series(languagelist)
-        dflangs = display_grid(dflang)
+        dflangs = display_grid(dflang,row_selection=Y)
 
         langs = dflangs['languages'].to_list()
         df = pd.DataFrame()
