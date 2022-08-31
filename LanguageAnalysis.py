@@ -226,6 +226,34 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
     colorsinverse2 = {value:key for key,value in colors2.items()}
     for colorset in [realcolors2,realcolors3, realcolors4,realcolors5]:
         plotly_graph(thisNetwork,colorset,realpalabras,True,picsdir)
+    #same violin plots as before, but know grouping by topological communities, nc= 5 has been chosem
+    for key in goodprops.keys():
+        prop = goodprops[key]
+        zipdict = dict(zip(nodeList,prop))
+        orderednodes = dfplot['id_palabra'].to_list()
+        dfplot[key] = pd.Series([zipdict[node] for node in orderednodes])
+        valuesperpos = []
+        topcoms = [i for i in range(1,6,1)]
+        for topcom in topcoms:
+            values = dfplot[dfplot['nc5'] == topcom][key].to_list()
+            valuesperpos.append(values)
+        
+
+        fig = plt.figure()
+        ax = fig.add_axes([0,0,1,1])
+        bp = ax.violinplot(valuesperpos)
+        ax.set_xticks([i for i in range(1,len(topcoms)+1,1)])
+        ax.set_xticklabels(topcoms)
+        plt.title(f'Distribution per topological community of {key}')
+        plt.xlabel('topological community')
+        plt.ylabel(key)
+        #plt.show()
+        finaldir = picsdir+'/violinpertc'
+        if not os.path.exists(finaldir):
+            os.mkdir(finaldir)
+        fig.savefig(f'{finaldir}/{key}.png',bbox_inches = 'tight')
+        fvalue,pvalue = stats.f_oneway(valuesperpos[0], valuesperpos[1], valuesperpos[2], valuesperpos[3], valuesperpos[4] )
+        print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")
     #Here we are going to study the distribution of words by part of speech through the topological communities
     cpertcandpos=dfplot.groupby(by=['nc5','POS']).count()['palabra']
     cpertc = dfplot.groupby(by=['nc5']).count()['palabra']
@@ -439,6 +467,6 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
 
 
 if __name__== '__main__':
-    netName = 'Catalan'
+    netName = 'Spanish'
     lemmatized = False
     language_analysis(netName, lemmatized)
