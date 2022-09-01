@@ -5,6 +5,7 @@ import os
 
 import matplotlib as mplt
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import colorbar
 import numpy as np
 import scipy.cluster.hierarchy as spc
 
@@ -68,6 +69,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	picsPath = paths[indexlang]
 	includedProperties = valid_keys[indexlang]
 	allStatisticsCov = np.cov(includedPropertiesArray)
+	print(includedPropertiesArray.shape)
 	(eigVals, eigVects) = np.linalg.eig(allStatisticsCov)
 	eigVals = np.real(eigVals)
 	eigVects = np.real(eigVects)
@@ -85,43 +87,90 @@ for indexlang, includedPropertiesArray in enumerate(
 
 	# Plotting covariance matrix:
 	plt.figure()
-	plt.imshow(allStatisticsCov, interpolation="none")
-	plt.colorbar()
+	plt.savefig(picsPath+'covariance_matrix.pdf', bbox_inches = 'tight')
+	#plt.colorbar()
 
 	# Plotting eigenvectors:
 	plt.figure()
 	plt.imshow(eigVects, interpolation="none", cmap="coolwarm")
-	plt.colorbar()
+	#plt.colorbar()
 
 	# Computing and plotting variance explained:
 	(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals)
 
 	plt.figure()
 	plt.plot(varianceExplained)
+	
 
 	plt.figure()
 	plt.plot(varianceExplained_cumul)
+	plt.savefig(picsPath+'accum_variance.pdf', bbox_inches = 'tight')
 
 	## Projecting data into eigenspace:
 	includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray)
 	print(includedPropertiesArray_.shape)
 
-	# Using first three PCs as color coding:
-	# 	Normalize components to [0,1];
-	valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
-	valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
-	valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
-	print(valuesRGB0.shape)
-	# Save hex color values to a list:
-	nodeColor = []
-	for (iNode, node) in enumerate(nodeList):
-	
-		nodeColor += [
-			mplt.colors.to_hex(
-				[valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]]
-			)
-		]
+	'''
+		# Using first three PCs as color coding:
+		# 	Normalize components to [0,1];
+		
+		valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
+		valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
+		valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
+		
+		# Save hex color values to a list:
+		nodeColor = []
+		for (iNode, node) in enumerate(nodeList):
+		
+			nodeColor += [
+				mplt.colors.to_hex(
+					[valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]]
+				)
+			]
+	'''
+			## Dendograms for properties:
+		# Coloring nodes according to their cluster: 
+	clusterStyles = {}; 
+	clusterStyles[0] = 'k'; 
+	clusterStyles[1] = 'r'; 
+	clusterStyles[2] = 'g'; 
+	clusterStyles[3] = 'b'; 
+	clusterStyles[4] = 'y'; 
+	clusterStyles[5] = 'm'; 
+	clusterStyles[6] = 'c'; 
+	clusterStyles[7] = 'tab:gray'; 
 
+	# From correlations to distances: 
+	pdist = spc.distance.pdist(allStatisticsCov); 
+	propertiesLinkage = spc.linkage(pdist, method='complete'); 
+
+	fig = plt.figure(); 
+	spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties); 
+	plt.xlabel("Distance"); 
+	plt.ylabel("Node properties"); 
+	plt.title("Properties dendrogram"); 
+	fig.savefig(picsPath + "propertiesDendogram.pdf"); 
+
+
+	## Dendograms for data: 
+	nodesLinkage = spc.linkage(includedPropertiesArray_.T, 'ward'); 
+
+	distanceThreshold = 45; 
+	fig = plt.figure(); 
+	spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold); 
+	plt.xlabel("Distance"); 
+	plt.ylabel("Nodes"); 
+	plt.title("Nodes dendrogram"); 
+	fig.savefig(picsPath + "nodesDendogram.pdf"); 
+
+
+	# Coloring according to clusters: 
+	# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance'); 
+	nClusters = 5; 
+	nodeClusters5 = spc.fcluster(nodesLinkage, 5, criterion="maxclust"); 
+	nodeColor = []; 
+	for (iNode, node) in enumerate(nodeList): 
+		nodeColor += [clusterStyles[nodeClusters5[iNode]-1]]; 
 	# PC1-PC2:
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -131,7 +180,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("PC1")
 	plt.ylabel("PC2")
 	plt.title("Nodes projected in PCs")
-	fig.savefig(picsPath + "projection_PCs1-2.pdf")
+	fig.savefig(picsPath + "projection_PCs1-2.pdf", bbox_inches = 'tight')
 
 	# PC1-PC3:
 	fig = plt.figure()
@@ -141,7 +190,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("PC1")
 	plt.ylabel("PC3")
 	plt.title("Nodes projected in PCs")
-	fig.savefig(picsPath + "projection_PCs1-3.pdf")
+	fig.savefig(picsPath + "projection_PCs1-3.pdf", bbox_inches = 'tight')
 
 	# PC1-PC2-PC3:
 	fig = plt.figure()
@@ -156,7 +205,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	ax.set_ylabel("PC2")
 	ax.set_zlabel("PC3")
 	plt.title("Nodes projected in PCs")
-	fig.savefig(picsPath + "projection_PCs1-2-3.pdf")
+	fig.savefig(picsPath + "projection_PCs1-2-3.pdf", bbox_inches = 'tight')
 
 	# Plotting in network space:
 	""""
@@ -176,12 +225,13 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance")
 	plt.ylabel("Node properties")
 	plt.title("Properties dendrogram")
-	fig.savefig(picsPath + "propertiesDendogram.pdf")
+	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight')
 
 	## Dendograms for data:
 	nodesLinkage = spc.linkage(includedPropertiesArray_.T, "ward")
 
 	distanceThreshold = 45
+	print(nodesLinkage.shape)
 	fig = plt.figure()
 	spc.dendrogram(
 		nodesLinkage,
@@ -192,7 +242,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance")
 	plt.ylabel("Nodes")
 	plt.title("Nodes dendrogram")
-	fig.savefig(picsPath + "nodesDendogram.pdf")
+	fig.savefig(picsPath + "nodesDendogram.pdf", bbox_inches = 'tight')
 
 	# Coloring according to clusters:
 	# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance');
@@ -215,4 +265,4 @@ for indexlang, includedPropertiesArray in enumerate(
 	ax.set_ylabel("PC2")
 	ax.set_zlabel("PC3")
 	plt.title("Clusters (dendogram) in eigenspace")
-	fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf")
+	fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf", bbox_inches = 'tight')

@@ -28,7 +28,7 @@ def build_properties_array_languages(netPath, primaries=True):
 	languagelist = [
 		file.split(".")[0]
 		for file in filelist
-		if file not in ["Japanese.json", "Arabic.json", "French.json"]
+		
 	]
 	fNeighborMean = True
 	fNeighborStd = True
