@@ -7,6 +7,7 @@ import matplotlib as mplt
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import colorbar
 import numpy as np
+import pandas as pd
 import scipy.cluster.hierarchy as spc
 
 # Importing homebrew libraries:
@@ -87,23 +88,37 @@ for indexlang, includedPropertiesArray in enumerate(
 
 	# Plotting covariance matrix:
 	plt.figure()
-	plt.savefig(picsPath+'covariance_matrix.pdf', bbox_inches = 'tight')
-	#plt.colorbar()
+	x = np.arange(len(includedProperties))
+	plt.imshow(allStatisticsCov, interpolation="none"); 
+	plt.xticks(x, includedProperties,fontsize = 8,rotation = 90)
+	plt.yticks(x, includedProperties,fontsize = 8)
+	plt.savefig(picsPath+'covariance_matrix.pdf', bbox_inches = 'tight',dpi = 150)
+	plt.colorbar()
 
 	# Plotting eigenvectors:
 	plt.figure()
+	x = np.arange(len(includedProperties))
 	plt.imshow(eigVects, interpolation="none", cmap="coolwarm")
-	#plt.colorbar()
+	plt.colorbar()
 
 	# Computing and plotting variance explained:
 	(varianceExplained, varianceExplained_cumul) = h.varianceExplained(eigVals)
 
+
 	plt.figure()
-	plt.plot(varianceExplained)
+	plt.plot(varianceExplained,marker = 'o')
+	plt.ylabel('%')
+	plt.xlabel('PCs')
+	plt.title('Explained variance')
+	plt.savefig(picsPath+'explained_variance.pdf', bbox_inches = 'tight')
 	
 
 	plt.figure()
-	plt.plot(varianceExplained_cumul)
+	plt.plot(varianceExplained_cumul,marker = 'o')
+	plt.ylabel('%')
+	plt.xlabel('PCs')
+	plt.title('Explained variance')
+	#plt.xticks(x, includedProperties,fontsize = 8)
 	plt.savefig(picsPath+'accum_variance.pdf', bbox_inches = 'tight')
 
 	## Projecting data into eigenspace:
@@ -149,7 +164,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance"); 
 	plt.ylabel("Node properties"); 
 	plt.title("Properties dendrogram"); 
-	fig.savefig(picsPath + "propertiesDendogram.pdf"); 
+	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight', dpi = 150); 
 
 
 	## Dendograms for data: 
@@ -161,7 +176,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance"); 
 	plt.ylabel("Nodes"); 
 	plt.title("Nodes dendrogram"); 
-	fig.savefig(picsPath + "nodesDendogram.pdf"); 
+	fig.savefig(picsPath + "nodesDendogram.pdf", dpi = 150); 
 
 
 	# Coloring according to clusters: 
@@ -225,7 +240,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance")
 	plt.ylabel("Node properties")
 	plt.title("Properties dendrogram")
-	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight')
+	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight', dpi = 150)
 
 	## Dendograms for data:
 	nodesLinkage = spc.linkage(includedPropertiesArray_.T, "ward")
@@ -242,7 +257,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	plt.xlabel("Distance")
 	plt.ylabel("Nodes")
 	plt.title("Nodes dendrogram")
-	fig.savefig(picsPath + "nodesDendogram.pdf", bbox_inches = 'tight')
+	fig.savefig(picsPath + "nodesDendogram.pdf", bbox_inches = 'tight', dpi = 150)
 
 	# Coloring according to clusters:
 	# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance');
@@ -265,4 +280,16 @@ for indexlang, includedPropertiesArray in enumerate(
 	ax.set_ylabel("PC2")
 	ax.set_zlabel("PC3")
 	plt.title("Clusters (dendogram) in eigenspace")
-	fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf", bbox_inches = 'tight')
+	fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf", bbox_inches = 'tight', dpi = 150)
+	dflangs = pd.DataFrame()
+	dflangs['languages'] = nodeList
+	dflangs['pc1'] = includedPropertiesArray_[0, :]
+	dflangs['pc2'] = includedPropertiesArray_[1, :]
+	dflangs['pc3'] = includedPropertiesArray_[2, :]
+	iol_list = ['inflected','lemmatized']
+	dflangs['iol'] = iol_list[indexlang]
+	if primaries:
+		dflangs['prim_or_neigh'] = 'primaries'
+	else:
+		dflangs['prim_or_neigh'] = 'neighbours'
+	dflangs.to_csv(picsPath + 'dflangcomp.csv')
