@@ -40,7 +40,7 @@ clusterStyles[5] = "m"
 clusterStyles[6] = "c"
 clusterStyles[7] = "tab:gray"
 
-primaries = True
+primaries = False
 
 (valid1, arraymeanproperties, dict_pathologies) = build_properties_array_languages(
 	"files/inflected/networks/", primaries
@@ -287,6 +287,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	dflangs['pc2'] = includedPropertiesArray_[1, :]
 	dflangs['pc3'] = includedPropertiesArray_[2, :]
 	iol_list = ['inflected','lemmatized']
+	dflangs['nc5'] = nodeColor
 	dflangs['iol'] = iol_list[indexlang]
 	if primaries:
 		dflangs['prim_or_neigh'] = 'primaries'
