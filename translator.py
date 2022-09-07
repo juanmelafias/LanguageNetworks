@@ -9,7 +9,7 @@ list_trans = [lang for lang in dictlangcodes.keys()]
 filelist = os.listdir('./files/inflected/dictionaries/')
 languagelist = [file.split('.')[0] for file in filelist]
 languagelist = [lang for lang in languagelist if lang in list_trans]
-for lang in languagelist[36:]:
+for lang in languagelist[21:]:
     print(lang)
     for iol in ['inflected','lemmatized']:
         code = dictlangcodes[lang]

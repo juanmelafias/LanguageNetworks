@@ -242,6 +242,7 @@ for bool in [False,True]:
 		plt.figure(); 
 		plt.imshow(eigVects, interpolation="none", cmap="coolwarm"); 
 		plt.colorbar(); 
+		plt.savefig(picsPath+'eigenvectors.pdf',bbox_inches = 'tight') 
 
 
 		# Computing and plotting variance explained: 
