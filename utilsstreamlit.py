@@ -57,7 +57,7 @@ def read_plot_info(language,nwords,iol):
     if nwords != 0:
         df = df.iloc[0:nwords]
     return df
-def plotly_graph(G,colors,palabras,display_legend):
+def plotly_graph(G,colors,palabras,trans,display_legend):
 	nodeList = [int(node) for node in G.nodes()]
 	edge_x = []
 	edge_y = []
@@ -106,6 +106,7 @@ def plotly_graph(G,colors,palabras,display_legend):
 	dfgo['y'] = node_y
 	dfgo['color'] = realcolors
 	dfgo['palabras'] = palabras
+	dfgo['trans'] = trans
 	node_traces = []
 	for color in legendgraph.keys():
 		name = legendgraph[color]
@@ -115,7 +116,7 @@ def plotly_graph(G,colors,palabras,display_legend):
 		node_trace = go.Scatter(
 			x=dfsel['x'], y=dfsel['y'],
 			mode='markers',
-			showlegend=False,
+			showlegend=True,
 			marker=dict(
 				# colorscale options
 				#'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
@@ -128,7 +129,7 @@ def plotly_graph(G,colors,palabras,display_legend):
 				)
 		if display_legend:
 			node_trace.name = name
-		node_trace.text = dfsel['palabras'].to_list()
+		node_trace.text = (dfsel['palabras']+', '+dfsel['trans']).to_list()
 		node_trace.marker.color = dfsel['color'].to_list()
 		node_traces.append(node_trace)
 	
@@ -153,29 +154,31 @@ def plotly_graph(G,colors,palabras,display_legend):
 	st.plotly_chart(fig)
     
 def whole_network_plotter(netName,iol,now,noc):
-    dfplot = read_plot_info(netName,now,iol)
-    
-    mostfreq =dfplot.id_palabra.to_list()
-    thisNetwork = load_network(f'files/{iol}/dictionaries/{netName}.json')
-    thisNetwork=thisNetwork.subgraph(mostfreq)
-    Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
-    thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
-    #Now we have to follow the order of g.nodes(), so we will have to rearrange
-    #the colors in the dataframe in that order
-    nodeList = [int(node) for node in thisNetwork.nodes()]
-    dictpalabras = dict(zip(dfplot['id_palabra'].to_list(),dfplot['palabra'].to_list()))
-    realpalabras = [dictpalabras[node] for node in nodeList]
-    pc2 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['pc2']))
-    pc1 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['pc1']))
-    realpc1 = [pc1[node] for node in nodeList]
-    realpc2 = [pc2[node] for node in nodeList]
-    colors2 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc2']))
-    colors3 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc3']))
-    colors4 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc4']))
-    colors5 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc5']))
-    realcolors2 = [colors2[node] for node in nodeList]
-    realcolors3 = [colors3[node] for node in nodeList]
-    realcolors4 = [colors4[node] for node in nodeList]
-    realcolors5 = [colors5[node] for node in nodeList]
-    dict_colors = {2:realcolors2,3:realcolors3,4:realcolors4,5:realcolors5}
-    plotly_graph(thisNetwork,dict_colors[noc],realpalabras,display_legend=False)
+	dfplot = read_plot_info(netName,now,iol)
+
+	mostfreq =dfplot.id_palabra.to_list()
+	thisNetwork = load_network(f'files/{iol}/dictionaries/{netName}.json')
+	thisNetwork=thisNetwork.subgraph(mostfreq)
+	Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+	thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0])); 
+	#Now we have to follow the order of g.nodes(), so we will have to rearrange
+	#the colors in the dataframe in that order
+	nodeList = [int(node) for node in thisNetwork.nodes()]
+	dictpalabras = dict(zip(dfplot['id_palabra'].to_list(),dfplot['palabra'].to_list()))
+	realpalabras = [dictpalabras[node] for node in nodeList]
+	dict_trans = dict(zip(dfplot['id_palabra'].to_list(),dfplot['trans'].to_list()))
+	real_trans = [dict_trans[node] for node in nodeList]
+	pc2 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['pc2']))
+	pc1 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['pc1']))
+	realpc1 = [pc1[node] for node in nodeList]
+	realpc2 = [pc2[node] for node in nodeList]
+	colors2 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc2']))
+	colors3 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc3']))
+	colors4 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc4']))
+	colors5 = dict(zip(dfplot['id_palabra'].to_list(),dfplot['nc5']))
+	realcolors2 = [colors2[node] for node in nodeList]
+	realcolors3 = [colors3[node] for node in nodeList]
+	realcolors4 = [colors4[node] for node in nodeList]
+	realcolors5 = [colors5[node] for node in nodeList]
+	dict_colors = {2:realcolors2,3:realcolors3,4:realcolors4,5:realcolors5}
+	plotly_graph(thisNetwork,dict_colors[noc],realpalabras,real_trans,display_legend=False)

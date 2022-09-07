@@ -71,7 +71,8 @@ from utils import csv2df,json2dict,load_network,connect,get_insert_query
 root = os.getcwd()
 filelist = os.listdir('./files/inflected/dictionaries/')
 #languagelist = [file.split('.')[0] for file in filelist if file not in ['Ancient_Greek']]
-languagelist = ['Spanish']
+languagelist = ['Korean']
+
 for bool in [False,True]:
 
 	for language in languagelist:
@@ -85,6 +86,8 @@ for bool in [False,True]:
 			iol = 'lemmatized'
 		else:
 			iol='inflected'
+		if not os.path.exists(f'./files/{iol}/analysis/{language}'):
+			os.mkdir(f'./files/{iol}/analysis/{language}')
 		picsPath = f'./files/{iol}/analysis/{netName}/analysis/'
 		if not os.path.exists(picsPath):
 			os.mkdir(picsPath)
@@ -234,7 +237,10 @@ for bool in [False,True]:
 
 		# Plotting covariance matrix: 
 		plt.figure(); 
-		plt.imshow(allStatisticsCov, interpolation="none"); 
+		plt.imshow(allStatisticsCov[0:15,0:15], interpolation="none"); 
+		x = np.arange(len(includedProperties[:15]))
+		plt.xticks(x, includedProperties[:15],fontsize = 8,rotation = 90)
+		plt.yticks(x, includedProperties[:15],fontsize = 8)
 		plt.colorbar();
 		plt.savefig(picsPath+'covariance.pdf',bbox_inches = 'tight') 
 
@@ -269,6 +275,9 @@ for bool in [False,True]:
 		valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
 		valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1,:]); 
 		valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2,:]); 
+		
+		
+		
 
 		df['pc1']=pd.Series(includedPropertiesArray_[0,:]); 
 		df['pc1']=df['pc1'].apply(lambda x: np.round(x,4))
@@ -291,6 +300,23 @@ for bool in [False,True]:
 		for (iNode, node) in enumerate(nodeList): 
 			nodeColor += [mplt.colors.to_hex([valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]])]; 
 
+		pos = nx.spring_layout(thisNetwork)
+		for node in nodeList:
+			node = int(node)
+			thisNetwork.nodes[int(node)]['pos'] = (pos[node][0],pos[node][1])
+		node_x = []
+		node_y = []
+		for node in thisNetwork.nodes():
+			x, y = thisNetwork.nodes[node]['pos']
+			node_x.append(x)
+			node_y.append(y)
+		dfgo = pd.DataFrame()
+		dfgo['x'] = node_x
+		dfgo['y'] = node_y
+		dfgo['colours'] = nodeColor
+		plt.figure()
+		plt.scatter(x=dfgo['x'],y=dfgo['y'],c=dfgo['colours'])
+		plt.savefig(picsPath+'netlayoutrgb.pdf')
 
 		# PC1-PC2: 
 		fig = plt.figure(); 

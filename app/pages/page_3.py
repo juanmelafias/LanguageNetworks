@@ -33,16 +33,17 @@ def run_app():
     
     cols = [col for col in df.columns]
 
-    
+    colors = {'r':'1','k':'2','b':'3','g':'4','y':'5'}
     if st.button('Generate plot:'):
-
+        df['size'] = 30
+        df['nc5'] = df['nc5'].apply(lambda x: colors[x])
         #col = st.color_picker('Select a plot colour')
         if dim == '3D':
             fig = px.scatter_3d(df, x='pc1', y='pc2', z='pc3',
                                     color='nc5', text = 'languages')
         else: 
             fig = px.scatter(df, x='pc1', y='pc2',
-                                    color='nc5', hover_data = ['languages'])
+                                    color='nc5', hover_data = ['languages'],size = 'size')
 
         #fig.update_traces(marker=dict(color = col))
 

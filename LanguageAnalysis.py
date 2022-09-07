@@ -152,19 +152,19 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
         if not os.path.exists(finaldir):
             os.mkdir(finaldir)
         plt.savefig(f'{finaldir}/{key}.pdf',bbox_inches = 'tight')
-        plt.show()
-        fvalue,pvalue = stats.f_oneway(valuesperpos[0], valuesperpos[1], valuesperpos[2], valuesperpos[3], valuesperpos[4], 
+        
+        '''fvalue,pvalue = stats.f_oneway(valuesperpos[0], valuesperpos[1], valuesperpos[2], valuesperpos[3], valuesperpos[4], 
         valuesperpos[5], valuesperpos[6], valuesperpos[7], valuesperpos[8], valuesperpos[9], valuesperpos[10], 
         valuesperpos[11], valuesperpos[12] )
-        print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")
-        flist.append(fvalue)
-        plist.append(pvalue)
-    dfvil = pd.DataFrame()
+        print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")'''
+        '''flist.append(fvalue)
+        plist.append(pvalue)'''
+    '''dfvil = pd.DataFrame()
     dfvil['prop'] = [prop for prop in goodprops.keys()]   
     dfvil['f-value'] = flist
     dfvil['p-value'] = plist
     dfvil.to_csv('p_f_values_pos.csv')
-
+'''
     postags = dfplot.groupby(by = 'POS').mean().index
     for tag in postags:
         deg_plot = np.array(dfplot[dfplot['POS']==tag]['degree'].to_list()).reshape((-1,1))
@@ -422,7 +422,10 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
     weights = [g[u][v]['weight'] for u,v in edges]
     plt.figure()
     nx.draw(g,pos,width=weights, edge_color = colors, node_size = list_nodesize, with_labels = True,font_size=10)
-    plt.savefig(picsdir+'/networks/posvstc.pdf',bbox_inches = 'tight')
+    finaldir = picsdir+'/networks/'
+    if not os.path.exists(finaldir):
+            os.mkdir(finaldir)
+    plt.savefig(finaldir + 'posvstc.pdf',bbox_inches = 'tight')
     #gettin here total connections to each community by TC
     thickness_tc = dfplot.groupby(by='nc5').sum()[['cnxnstc1','cnxnstc2','cnxnstc3','cnxnstc4','cnxnstc5','cnxnstotal']]
     #Now getting the frequency of connections to each tc by TC
@@ -475,6 +478,6 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
 
 
 if __name__== '__main__':
-    netName = 'Spanish'
-    lemmatized = False
+    netName = 'Korean'
+    lemmatized = True
     language_analysis(netName, lemmatized)
