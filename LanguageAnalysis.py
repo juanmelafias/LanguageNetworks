@@ -124,6 +124,8 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
     postags = dfplot.groupby(by = 'POS').mean().index
     #getting our list of nodes
     nodeList = dfplot['id_palabra'].to_list()
+    flist = []
+    plist = []
     for key in goodprops.keys():
         dfanova = pd.DataFrame()
         prop = goodprops[key]
@@ -150,14 +152,20 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
         if not os.path.exists(finaldir):
             os.mkdir(finaldir)
         plt.savefig(f'{finaldir}/{key}.pdf',bbox_inches = 'tight')
-        #plt.show()
+        plt.show()
         fvalue,pvalue = stats.f_oneway(valuesperpos[0], valuesperpos[1], valuesperpos[2], valuesperpos[3], valuesperpos[4], 
         valuesperpos[5], valuesperpos[6], valuesperpos[7], valuesperpos[8], valuesperpos[9], valuesperpos[10], 
         valuesperpos[11], valuesperpos[12] )
         print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")
+        flist.append(fvalue)
+        plist.append(pvalue)
+    dfvil = pd.DataFrame()
+    dfvil['prop'] = [prop for prop in goodprops.keys()]   
+    dfvil['f-value'] = flist
+    dfvil['p-value'] = plist
+    dfvil.to_csv('p_f_values_pos.csv')
 
     postags = dfplot.groupby(by = 'POS').mean().index
-    
     for tag in postags:
         deg_plot = np.array(dfplot[dfplot['POS']==tag]['degree'].to_list()).reshape((-1,1))
         deg_mean_plot = np.array(dfplot[dfplot['POS']==tag]['degree_neighborMean'].to_list())

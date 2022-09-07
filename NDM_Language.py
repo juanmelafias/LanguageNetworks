@@ -67,17 +67,17 @@ import loadHelper as lh;
 #importing functions
 
 from utils import csv2df,json2dict,load_network,connect,get_insert_query
-from constants import SERVER, DATABASE, USERNAME, PASSWORD, DRIVERS, DRIVER
+
 root = os.getcwd()
 filelist = os.listdir('./files/inflected/dictionaries/')
 #languagelist = [file.split('.')[0] for file in filelist if file not in ['Ancient_Greek']]
-languagelist = ['Spanish','Portuguese','English','German','French','Chinese']
+languagelist = ['Spanish']
 for bool in [False,True]:
 
 	for language in languagelist:
 	#Loading data
 		print(language)
-		cnxn = connect(SERVER, DATABASE, USERNAME, PASSWORD, DRIVER)
+		
 		root = os.getcwd()
 		netName = language
 		lemmatized = bool
@@ -85,7 +85,10 @@ for bool in [False,True]:
 			iol = 'lemmatized'
 		else:
 			iol='inflected'
-		picsPath = f'./pics/{iol}/{netName}/'
+		picsPath = f'./files/{iol}/analysis/{netName}/analysis/'
+		if not os.path.exists(picsPath):
+			os.mkdir(picsPath)
+        	
 		#picsPath.mkdir(picsPath, exist_ok = True)
 		image_path = root / Path("pics") / Path(iol) / Path(language)
 		image_path.mkdir(parents=True, exist_ok=True)
@@ -232,7 +235,8 @@ for bool in [False,True]:
 		# Plotting covariance matrix: 
 		plt.figure(); 
 		plt.imshow(allStatisticsCov, interpolation="none"); 
-		plt.colorbar(); 
+		plt.colorbar();
+		plt.savefig(picsPath+'covariance.pdf',bbox_inches = 'tight') 
 
 		# Plotting eigenvectors: 
 		plt.figure(); 
@@ -246,10 +250,15 @@ for bool in [False,True]:
 		plt.figure(); 
 		plt.plot(varianceExplained); 
 
+
 		plt.figure(); 
-		plt.plot(varianceExplained_cumul); 
+		plt.plot(varianceExplained_cumul, marker = 'o'); 
+		plt.xlabel('PC')
+		plt.ylabel('%')
+		plt.title('Accumulated variance') 
+		plt.savefig(picsPath+'acc_variance.pdf',bbox_inches = 'tight') 
 
-
+		np.save('eigvects_inSpanish.npy',eigVects)
 
 		## Projecting data into eigenspace: 
 		includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
@@ -273,7 +282,7 @@ for bool in [False,True]:
 		df['rgb3']=pd.Series(valuesRGB2) 
 		df['rgb3']=df['rgb3'].apply(lambda x: np.round(x,4))
 
-		cursor = cnxn.cursor()
+		
 		# Insert Dataframe into SQL Server:
 
 		# Save hex color values to a list: 
@@ -289,7 +298,8 @@ for bool in [False,True]:
 		plt.xlabel("PC1"); 
 		plt.ylabel("PC2"); 
 		plt.title("Nodes projected in PCs"); 
-		fig.savefig(picsPath + "projection_PCs1-2.pdf"); 
+		fig.savefig(picsPath + "projection_PCs1-2.pdf", bbox_inches = 'tight'); 
+		
 
 		# PC1-PC3: 
 		fig = plt.figure(); 
@@ -297,7 +307,7 @@ for bool in [False,True]:
 		plt.xlabel("PC1"); 
 		plt.ylabel("PC3"); 
 		plt.title("Nodes projected in PCs"); 
-		fig.savefig(picsPath + "projection_PCs1-3.pdf"); 
+		fig.savefig(picsPath + "projection_PCs1-3.pdf", bbox_inches = 'tight'); 
 
 		# PC1-PC2-PC3: 
 		fig = plt.figure(); 
@@ -307,7 +317,7 @@ for bool in [False,True]:
 		ax.set_ylabel("PC2"); 
 		ax.set_zlabel("PC3"); 
 		plt.title("Nodes projected in PCs"); 
-		fig.savefig(picsPath + "projection_PCs1-2-3.pdf"); 
+		fig.savefig(picsPath + "projection_PCs1-2-3.pdf", bbox_inches = 'tight'); 
 
 
 		# Plotting in network space: 
@@ -316,7 +326,7 @@ for bool in [False,True]:
 		nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeColor, edge_color="tab:gray"); 
 		ax.set_aspect("equal"); 
 		plt.title("PC colors projected in network layout"); 
-		fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf"); 
+		fig.savefig(picsPath + "networkColoredWithPCs_netLayout.pdf", bbox_inches = 'tight'); 
 
 		# Plotting in network space in 2D if they have native coordinates: 
 		if "nativePositions" in locals(): 
@@ -372,7 +382,7 @@ for bool in [False,True]:
 		else: 
 			nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=colorDistance, edge_color="tab:gray"); 
 			ax.set_aspect("equal"); 
-			fig.savefig(picsPath + "networkcolordist.pdf"); 
+			fig.savefig(picsPath + "networkcolordist.pdf", bbox_inches = 'tight'); 
 
 		# Same, but in 3D if coordinates are provided: 
 		if "nativePositions_3D" in locals(): 
@@ -480,7 +490,7 @@ for bool in [False,True]:
 		plt.xlabel("Distance"); 
 		plt.ylabel("Node properties"); 
 		plt.title("Properties dendrogram"); 
-		fig.savefig(picsPath + "propertiesDendogram.pdf"); 
+		fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight'); 
 
 
 		## Dendograms for data: 
@@ -492,7 +502,7 @@ for bool in [False,True]:
 		plt.xlabel("Distance"); 
 		plt.ylabel("Nodes"); 
 		plt.title("Nodes dendrogram"); 
-		fig.savefig(picsPath + "nodesDendogram.pdf"); 
+		fig.savefig(picsPath + "nodesDendogram.pdf", bbox_inches = 'tight'); 
 
 
 		# Coloring according to clusters: 
@@ -517,15 +527,17 @@ for bool in [False,True]:
 		df['nc2'] = df['nc2'].apply(lambda x: str(x))
 		# Plotting in eigenspace: 
 		fig = plt.figure(); 
-		ax = fig.add_subplot(111, projection='3d'); 
-		ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], includedPropertiesArray_[2,:], c=nodeClusterColor); 
+		plt.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:], c=nodeClusters5); 
+		plt.xlabel("PC1"); 
+		plt.ylabel("PC2"); 
+		plt.title("Clusters (dendogram) in eigenspace"); 
+		fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf", bbox_inches = 'tight'); 
+
+		ax.scatter(includedPropertiesArray_[0,:], includedPropertiesArray_[1,:],  c=nodeClusterColor); 
 		ax.set_xlabel("PC1"); 
 		ax.set_ylabel("PC2"); 
-		ax.set_zlabel("PC3"); 
 		plt.title("Clusters (dendogram) in eigenspace"); 
-		fig.savefig(picsPath + "dendogramClusters_eigenspace.pdf"); 
-
-
+		fig.savefig(picsPath + "dendogramClusters_eigenspace2D.pdf", bbox_inches = 'tight'); 
 
 		fig = plt.figure(); 
 		ax = fig.add_subplot(111); 
@@ -538,7 +550,7 @@ for bool in [False,True]:
 			nx.draw(thisNetwork, with_labels=False, pos=nx.kamada_kawai_layout(thisNetwork), node_color=nodeClusterColor, edge_color="tab:gray"); 
 			ax.set_aspect("equal"); 
 		plt.title("Clusters (dendogram) in network layout"); 
-		fig.savefig(picsPath + "dendogramClusters_netLayout.pdf"); 
+		fig.savefig(picsPath + "dendogramClusters_netLayout.pdf", bbox_inches = 'tight'); 
 
 
 
@@ -554,6 +566,7 @@ for bool in [False,True]:
 			fig.savefig(picsPath + "dendogramClusters_geometry3D.pdf"); 
 
 		print(df.columns)
+		'''
 		for index, row in df.iterrows():
 			print(index)
 			cols = [col for col in df.columns]
@@ -563,7 +576,7 @@ for bool in [False,True]:
 			cursor.execute(query)
 		cnxn.commit()
 		cursor.close()
-
+'''
 		'''
 		cursor = cnxn.cursor()
 		nodeList = [node for node in thisNetwork.nodes()]

@@ -26,8 +26,7 @@ import loadHelper as lh;
 
 #importing functions
 
-from utils import csv2df,json2dict,load_network,connect,get_traces, adjust_trace_colors
-from constants import SERVER, DATABASE, USERNAME, PASSWORD, DRIVERS, DRIVER
+from utils import csv2df,json2dict,load_network,connect
 root = os.getcwd()
 filelist = os.listdir('./files/inflected/dictionaries/')
 languagelist = [file.split('.')[0] for file in filelist]
@@ -35,8 +34,7 @@ for bool in [False,True]:
     for language in languagelist:
 	#Loading data
         print(language)
-        cnxn = connect(SERVER, DATABASE, USERNAME, PASSWORD, DRIVER)
-        root = os.getcwd()
+        
         netName = language
         lemmatized = bool
         if lemmatized:
@@ -151,7 +149,9 @@ for bool in [False,True]:
         nodeList = [node for node in thisNetwork.nodes()]
         ## Projecting data into eigenspace: 
         includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray); 
-
+        #Projecting data into inflected spanish eigenspace
+        eigVects_inSpanish = np.load("eigvects_inSpanish.npy")
+        includedPropertiesArray_inSpanish = np.dot(np.transpose(eigVects_inSpanish), includedPropertiesArray);
         # Using first three PCs as color coding: 
         # 	Normalize components to [0,1]; 
         valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0,:]); 
@@ -170,8 +170,13 @@ for bool in [False,True]:
         df['rgb2']=df['rgb2'].apply(lambda x: np.round(x,4))
         df['rgb3']=pd.Series(valuesRGB2) 
         df['rgb3']=df['rgb3'].apply(lambda x: np.round(x,4))
+        df['pc1is']=pd.Series(includedPropertiesArray_inSpanish[0,:]); 
+        df['pc1is']=df['pc1is'].apply(lambda x: np.round(x,4))
+        df['pc2is']=pd.Series(includedPropertiesArray_inSpanish[1,:]); 
+        df['pc2is']=df['pc2is'].apply(lambda x: np.round(x,4)) 
+        df['pc3is']=pd.Series(includedPropertiesArray_inSpanish[2,:]); 
+        df['pc3is']=df['pc3is'].apply(lambda x: np.round(x,4))
 
-        cursor = cnxn.cursor()
         # Insert Dataframe into SQL Server:
 
         # Save hex color values to a list: 
@@ -222,7 +227,7 @@ for bool in [False,True]:
         nodeClusters5 = spc.fcluster(nodesLinkage, 5, criterion="maxclust"); 
         nodeClusters4 = spc.fcluster(nodesLinkage, 4, criterion="maxclust"); 
         nodeClusters3 = spc.fcluster(nodesLinkage, 3, criterion="maxclust"); 
-        nodeClusters2 = spc.fcluster(nodesLinkage, 2, criterion="maxclust");
+        nodeClusters2 = spc.fcluster(nodesLinkage, 2, criterion="maxclust"); 
 
         nodeClusterColor = []; 
         for (iNode, node) in enumerate(nodeList): 

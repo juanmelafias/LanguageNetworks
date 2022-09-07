@@ -30,11 +30,17 @@ def run_app():
         lang = st.selectbox('Pick a language:',
             (lang for lang in languagelist))
         df = read_plot_info(lang,nwords,iol)
+        pc1 = 'pc1'
+        pc2 = 'pc2'
+        pc3 = 'pc3'
         
     else:
         dflang = pd.DataFrame()
         dflang['languages'] = pd.Series(languagelist)
-        dflangs = display_grid(dflang,row_selection=Y)
+        dflangs = display_grid(dflang)
+        pc1 = 'pc1is'
+        pc2 = 'pc2is'
+        pc3 = 'pc3is'
 
         langs = dflangs['languages'].to_list()
         df = pd.DataFrame()
@@ -63,13 +69,21 @@ def run_app():
         filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
             (col for col in df.groupby(by=filter).count().index))
         df = df[df[filter] == filtervalue]
+    dim = st.radio('Would you like to show data in 2D or 3D:',
+        options = ['2D','3D'])
     if st.button('Generate plot:'):
-
-        #col = st.color_picker('Select a plot colour')
         
-        fig = px.scatter_3d(df, x='pc1', y='pc2', z='pc3',
-                                color=color, symbol=symbol, size = size, text = text , hover_name = extra)
-        #fig.update_traces(marker=dict(color = col))
+        df['nc5'] = df['nc5'].apply(lambda x: str(x))
+        #col = st.color_picker('Select a plot colour')
+        if dim == "3D":
+        
+            fig = px.scatter_3d(df, x=pc1, y=pc2, z=pc3,
+                                    color=color, symbol=symbol, size = size, text = text , hover_name = extra)
+            #fig.update_traces(marker=dict(color = col))
+        else:
+            fig = px.scatter(df, x=pc1, y=pc2,
+                                    color=color,  size = size, text = text , hover_name = extra)
+
 
         st.plotly_chart(fig)
 
