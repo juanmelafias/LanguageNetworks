@@ -9,7 +9,7 @@ FROM python:3.10.0-slim-bullseye AS base
 RUN mkdir -p /build/tests
 RUN mkdir /src
 
-COPY reqs /build/reqs
+COPY reqs/ /build/reqs
 
 # Export defaults for necessary environment variables.
 # ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
