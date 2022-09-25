@@ -1,6 +1,6 @@
 build:
   docker:
-    web: app.Dockerfile
+    web: ./dockerfiles/web.Dockerfile
           
    
           

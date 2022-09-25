@@ -9,8 +9,12 @@ RUN mkdir /src
 
 COPY reqs/ /build/reqs
 
+
 # Export defaults for necessary environment variables.
 # ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+COPY ./config/ports.conf /etc/apache2/ports.conf
+COPY ./config/apache.conf /etc/apache2/sites-enabled/000-default.conf
+
 ENV PYTHONPATH /src
 
 ########################################################################################
