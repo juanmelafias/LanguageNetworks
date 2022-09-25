@@ -40,7 +40,9 @@ clusterStyles[5] = "m"
 clusterStyles[6] = "c"
 clusterStyles[7] = "tab:gray"
 
-primaries = False
+primaries = True
+filelist = os.listdir('./files/inflected/dictionaries/')
+languagelist = [file.split('.')[0] for file in filelist if file not in ['Ancient_Greek']]
 
 (valid1, arraymeanproperties, dict_pathologies) = build_properties_array_languages(
 	"files/inflected/networks/", primaries
@@ -124,27 +126,14 @@ for indexlang, includedPropertiesArray in enumerate(
 	## Projecting data into eigenspace:
 	includedPropertiesArray_ = np.dot(np.transpose(eigVects), includedPropertiesArray)
 	print(includedPropertiesArray_.shape)
-
-	'''
-		# Using first three PCs as color coding:
-		# 	Normalize components to [0,1];
-		
-		valuesRGB0 = h.convertPC2RGB(includedPropertiesArray_[0, :])
-		valuesRGB1 = h.convertPC2RGB(includedPropertiesArray_[1, :])
-		valuesRGB2 = h.convertPC2RGB(includedPropertiesArray_[2, :])
-		
-		# Save hex color values to a list:
-		nodeColor = []
-		for (iNode, node) in enumerate(nodeList):
-		
-			nodeColor += [
-				mplt.colors.to_hex(
-					[valuesRGB0[iNode], valuesRGB1[iNode], valuesRGB2[iNode]]
-				)
-			]
-	'''
-			## Dendograms for properties:
-		# Coloring nodes according to their cluster: 
+	if indexlang == 0: #inflected
+		np.save('eigvects_inlangcomp.npy',eigVects)
+	else:	#lemmatized
+		eigVects_inlangcomp = np.load("eigvects_inlangcomp.npy")
+		includedPropertiesArray_inlangcomp = np.dot(np.transpose(eigVects_inlangcomp), includedPropertiesArray); 
+		print(f'sum is {np.dot(eigVects_inlangcomp[1,:], eigVects[1,:])}')
+	## Dendograms for properties:
+	# Coloring nodes according to their cluster: 
 	clusterStyles = {}; 
 	clusterStyles[0] = 'k'; 
 	clusterStyles[1] = 'r'; 
@@ -159,24 +148,30 @@ for indexlang, includedPropertiesArray in enumerate(
 	pdist = spc.distance.pdist(allStatisticsCov); 
 	propertiesLinkage = spc.linkage(pdist, method='complete'); 
 
-	fig = plt.figure(); 
+	fig = plt.figure(figsize=(3,4),dpi = 200); 
 	spc.dendrogram(propertiesLinkage, orientation="right", labels=includedProperties); 
 	plt.xlabel("Distance"); 
+	
 	plt.ylabel("Node properties"); 
 	plt.title("Properties dendrogram"); 
-	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight', dpi = 150); 
+	
+	fig.savefig(picsPath + "propertiesDendogram.pdf", bbox_inches = 'tight', dpi = 200); 
 
-
+	
 	## Dendograms for data: 
 	nodesLinkage = spc.linkage(includedPropertiesArray_.T, 'ward'); 
 
 	distanceThreshold = 45; 
-	fig = plt.figure(); 
-	spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold); 
+	fig = plt.figure(figsize=(4.8,8.4),dpi = 200); 
+	
+	spc.dendrogram(nodesLinkage, orientation="right", color_threshold=distanceThreshold, leaf_font_size=13, labels=languagelist); 
+	
 	plt.xlabel("Distance"); 
 	plt.ylabel("Nodes"); 
 	plt.title("Nodes dendrogram"); 
-	fig.savefig(picsPath + "nodesDendogram.pdf", dpi = 150); 
+	
+
+	fig.savefig(picsPath + "nodesDendogram.pdf", dpi =200,bbox_inches = 'tight'); 
 
 
 	# Coloring according to clusters: 
@@ -246,18 +241,7 @@ for indexlang, includedPropertiesArray in enumerate(
 	nodesLinkage = spc.linkage(includedPropertiesArray_.T, "ward")
 
 	distanceThreshold = 45
-	print(nodesLinkage.shape)
-	fig = plt.figure()
-	spc.dendrogram(
-		nodesLinkage,
-		orientation="right",
-		color_threshold=distanceThreshold,
-		labels=nodeList,
-	)
-	plt.xlabel("Distance")
-	plt.ylabel("Nodes")
-	plt.title("Nodes dendrogram")
-	fig.savefig(picsPath + "nodesDendogram.pdf", bbox_inches = 'tight', dpi = 150)
+	
 
 	# Coloring according to clusters:
 	# nodeClusters = spc.fcluster(nodesLinkage, distanceThreshold, criterion='distance');
@@ -286,6 +270,10 @@ for indexlang, includedPropertiesArray in enumerate(
 	dflangs['pc1'] = includedPropertiesArray_[0, :]
 	dflangs['pc2'] = includedPropertiesArray_[1, :]
 	dflangs['pc3'] = includedPropertiesArray_[2, :]
+	if indexlang == 1:
+		dflangs['pc1_i'] = includedPropertiesArray_inlangcomp[0,:]
+		dflangs['pc2_i'] = includedPropertiesArray_inlangcomp[1,:]
+		dflangs['pc3_i'] = includedPropertiesArray_inlangcomp[2,:]
 	iol_list = ['inflected','lemmatized']
 	dflangs['nc5'] = nodeColor
 	dflangs['iol'] = iol_list[indexlang]
@@ -294,3 +282,4 @@ for indexlang, includedPropertiesArray in enumerate(
 	else:
 		dflangs['prim_or_neigh'] = 'neighbours'
 	dflangs.to_csv(picsPath + 'dflangcomp.csv')
+	

@@ -21,12 +21,12 @@ import scipy.cluster.hierarchy as spc;
 import plotly.express as px
 
 # Importing homebrew libraries: 
-import helper as h; 
-import loadHelper as lh; 
+import common.helper as h; 
+import common.loadHelper as lh; 
 
 #importing functions
 
-from utils import csv2df,json2dict,load_network,connect
+from common.utils import csv2df,json2dict,load_network,connect
 root = os.getcwd()
 filelist = os.listdir('./files/inflected/dictionaries/')
 languagelist = [file.split('.')[0] for file in filelist]

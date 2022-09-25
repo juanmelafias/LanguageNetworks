@@ -61,17 +61,16 @@ import scipy.cluster.hierarchy as spc;
 
 
 # Importing homebrew libraries: 
-import helper as h; 
-import loadHelper as lh; 
+import common.helper as h; 
+import common.loadHelper as lh; 
 
 #importing functions
 
-from utils import csv2df,json2dict,load_network,connect,get_insert_query
-
+from common.utils import csv2df, load_network
 root = os.getcwd()
 filelist = os.listdir('./files/inflected/dictionaries/')
 #languagelist = [file.split('.')[0] for file in filelist if file not in ['Ancient_Greek']]
-languagelist = ['Korean']
+languagelist = ['Spanish']
 
 for bool in [False,True]:
 
@@ -239,8 +238,8 @@ for bool in [False,True]:
 		plt.figure(); 
 		plt.imshow(allStatisticsCov[0:15,0:15], interpolation="none"); 
 		x = np.arange(len(includedProperties[:15]))
-		plt.xticks(x, includedProperties[:15],fontsize = 8,rotation = 90)
-		plt.yticks(x, includedProperties[:15],fontsize = 8)
+		plt.xticks(x, includedProperties[:15],fontsize = 12,rotation = 90)
+		plt.yticks(x, includedProperties[:15],fontsize = 12)
 		plt.colorbar();
 		plt.savefig(picsPath+'covariance.pdf',bbox_inches = 'tight') 
 

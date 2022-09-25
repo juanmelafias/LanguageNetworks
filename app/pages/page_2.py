@@ -4,8 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 
-
-from utilsstreamlit import whole_network_plotter, read_plot_info,display_grid
+from common.utilsstreamlit import whole_network_plotter, read_plot_info,display_grid
 
 
 def run_app():

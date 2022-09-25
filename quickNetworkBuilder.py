@@ -15,7 +15,6 @@ from copy import copy;
 from mpl_toolkits.mplot3d import Axes3D; 
 from pathlib import Path
 
-from pydantic import FilePath
 
 
 # Naming paths and files: 

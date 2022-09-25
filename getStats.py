@@ -1,4 +1,4 @@
-from utils import stats_language
+from common.utils import stats_language
 lemmatized = True
 if lemmatized:
     direc = 'files/lemmatized/'

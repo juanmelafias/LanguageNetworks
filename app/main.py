@@ -5,7 +5,7 @@ import plotly.express as px
 
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-from utilsstreamlit import display_grid, read_plot_info
+from common.utilsstreamlit import display_grid, read_plot_info
 
 
 def run_app():
@@ -13,7 +13,7 @@ def run_app():
     filelist = os.listdir('./files/inflected/dictionaries/')
     languagelist = [file.split('.')[0] for file in filelist]
 
-    st.title('Syntax networks plotter')
+    st.title('Words PCA plotter')
 
     iol = st.radio('Would you like to show data of inflected or lemmatized forms:',
         options = ['inflected','lemmatized'])
@@ -84,7 +84,7 @@ def run_app():
             fig = px.scatter(df, x=pc1, y=pc2,
                                     color=color,  size = size, text = text , hover_name = extra)
 
-
+        fig.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
         st.plotly_chart(fig)
 
 

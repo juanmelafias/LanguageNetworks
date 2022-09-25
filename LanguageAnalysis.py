@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os 
-import helper as h
-from utilsstreamlit import read_plot_info
+import common.helper as h
+from common.utilsstreamlit import read_plot_info
 from msilib.schema import Component
 import scipy.stats as stats
 from sklearn.linear_model import LinearRegression
@@ -12,7 +12,7 @@ from pylab import colorbar
 from matplotlib.lines import Line2D
 import plotly.io as pio
 pio.kaleido.scope.mathjax = None
-from utils import csv2df,load_network,plotly_graph,json2dict
+from common.utils import csv2df,load_network,plotly_graph,json2dict
 from turtle import color, width
 
 def plot_fractions_per_tc(fracposoverpos, fracposovertc, labels,tc, path):
@@ -123,7 +123,13 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
     #geting our pos tags
     postags = dfplot.groupby(by = 'POS').mean().index
     #getting our list of nodes
-    nodeList = dfplot['id_palabra'].to_list()
+    langframe = csv2df(f'files/{iol}/dataframes/{netName}.csv')
+    mostfreq =langframe.unique_id.to_list()
+    thisNetwork = load_network(f'files/{iol}/dictionaries/{netName}.json')
+    thisNetwork=thisNetwork.subgraph(mostfreq)
+    Gcc = sorted(nx.connected_components(thisNetwork), key=len, reverse=True); 
+    thisNetwork = nx.Graph(thisNetwork.subgraph(Gcc[0]));
+    nodeList = thisNetwork.nodes()
     flist = []
     plist = []
     for key in goodprops.keys():
@@ -261,7 +267,7 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
             os.mkdir(finaldir)
         fig.savefig(f'{finaldir}/{key}.png',bbox_inches = 'tight')
         fvalue,pvalue = stats.f_oneway(valuesperpos[0], valuesperpos[1], valuesperpos[2], valuesperpos[3], valuesperpos[4] )
-        print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")
+        #print(f"f-value is {fvalue} and p-value is {pvalue} for {key} property")
     #Here we are going to study the distribution of words by part of speech through the topological communities
     cpertcandpos=dfplot.groupby(by=['nc5','POS']).count()['palabra']
     cpertc = dfplot.groupby(by=['nc5']).count()['palabra']
@@ -344,7 +350,7 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
         cnxnstc4 = []
         cnxnstc5 = []
         cnxnstotal = []
-        print([key for key in list_connectedtc.keys()])
+        #print([key for key in list_connectedtc.keys()])
     for node in nodeList:
         cnxnlist = []
         total_connections = len(list_connectedtc[node])
@@ -387,8 +393,7 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
 
     thick_plot = thickness[['rel_cnxnstc1','rel_cnxnstc2','rel_cnxnstc3','rel_cnxnstc4','rel_cnxnstc5']]
     asd=dict(thick_plot.transpose())
-    labels = [label for label in asd['ADJ'].index]
-    print(labels)
+    #labels = [label for label in asd['ADJ'].index]
     dict_conn_thickness ={}
     dict_def_thickness = {}
     dict_conn ={}
@@ -439,7 +444,6 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
     thick_plot = thickness_tc[['rel_cnxnstc1','rel_cnxnstc2','rel_cnxnstc3','rel_cnxnstc4','rel_cnxnstc5']]
     asd=dict(thick_plot.transpose())
     labels = [label for label in asd[1].index]
-    print(labels)
     dict_conn_thickness ={}
     dict_def_thickness = {}
     dict_conn ={}
@@ -478,6 +482,9 @@ def language_analysis(netName,lemmatized,fNeighborMean = True, fNeighborStd = Fa
 
 
 if __name__== '__main__':
-    netName = 'Korean'
-    lemmatized = True
-    language_analysis(netName, lemmatized)
+    filelist = os.listdir('./files/inflected/dictionaries/')
+    languagelist = [file.split('.')[0] for file in filelist]
+    for lemmatized in [False, True]:
+        for netName in languagelist[50]:
+            print(netName)
+            language_analysis(netName, lemmatized)

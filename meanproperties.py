@@ -18,7 +18,7 @@ import os, sys;
 #import scipy.cluster.hierarchy as spc; 
 
 # Importing homebrew libraries: 
-import helper as h; 
+import common.helper as h; 
 #import loadHelper as lh; 
 
 #importing functions
@@ -27,7 +27,7 @@ import helper as h;
 This scripts computes mean properties for all nodes in the network for every desired language
 """
 
-from utils import csv2df,json2dict,dict2json,load_network
+from common.utils import csv2df,json2dict,dict2json,load_network
 filelist = os.listdir('./files/inflected/dictionaries/')
 languagelist = [file.split('.')[0] for file in filelist if file in ['French.json','Arabic.json', 'Japanese.json']]
 CreateProperties = True
