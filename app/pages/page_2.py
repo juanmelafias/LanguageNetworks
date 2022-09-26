@@ -23,7 +23,7 @@ def run_app():
     else:
         nwords = st.text_input('Input desired number of words')
         nwords = int(nwords)
-    noc = st.radio('How many clusters would you like to visualizw:',
+    noc = st.radio('How many clusters would you like to visualize:',
         options = [2,3,4,5])
     nlang = st.radio('Would you like two show one or several languages?:',
         options = ['One','Several'])

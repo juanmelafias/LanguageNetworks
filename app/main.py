@@ -62,7 +62,7 @@ def run_app():
     extra = st.selectbox('Any other data to show while hovering',
             (col for col in cols))
     filteryes = st.radio('Would you like to filter?:',
-        options = ['Yes','No'])
+        options = ['No','Yes'])
     if filteryes=='Yes':
         filter = st.selectbox('Filter by',
             (col for col in cols))

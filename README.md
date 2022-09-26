@@ -46,6 +46,23 @@ In order to run the app in local server, run
 ```
 python -m streamlit run app/main.py
 ```
+### Df plot columns
+
+-Id_palabra: Integer that uniquely identifies a (Word, POS tag) tuple to avoid misidentifying homographs.
+-Palabra: Word form of a particular node in its respective language
+-language: Language of the network.
+-POS: Part of Speech or grammatical class of each word. Useful to filter/represent symbol.
+-ranking: position each node occupies when all words are placed in descending order by the number of times appearing in the studied corpus.
+-lemmatized: True or False depending wether the network is built on lemmatized networks or inflected ones.
+-pc1: First principal component in each language eigenspace
+-pc2: Second principal component in each language eigenspace
+-pc3: Third principal component in each language eigenspace
+-rgb1, rgb3, rgb3: Normalized principal components to fit the rgb scale such that each node can be couloured with (rgb1, rgb2, rgb3)
+-pc1is, pc2is, pc2is: First three principal components in the inflected Spanish eigenspace. Useful to compare words across languages.
+-nc2, nc3, nc4, nc5: Colour codes for 2, 3, 4 and 5 hierarchical clusters.
+-trans: Translation to English of the word. "no trans" if translation to that language is not provided by google.
+-ranking_inv: The inverse rank described above. 501-ranking. Useful to use as size of markers, as more frequent words appear bigger.
+
 ## Docker
 
 Build the image: 

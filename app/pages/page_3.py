@@ -28,8 +28,11 @@ def run_app():
     df = pd.read_csv(f'files/{iol}/languagesmean{pon}/dflangcomp.csv')
     df = df.drop(labels = ['Unnamed: 0'],axis = 1)
         
+    '''
     compari = st.radio('Would you like to show data comparing inflected and lemmatized in same eigenspace:',
     options = ['Yes','No'])
+    '''
+    compari = 'No'
 
     
     cols = [col for col in df.columns]
