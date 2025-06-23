@@ -1,0 +1,10 @@
+[user]
+    name = juanmelafias
+    email = juanmelafias@gmail.com
+
+[core]
+    editor = vim
+    autocrlf = input
+
+[init]
+    defaultBranch = main

@@ -4,7 +4,7 @@ matplotlib
 networkx
 pathlib
 scipy
-sklearn
+scikit-learn
 seaborn
 tableauserverclient 
 streamlit
