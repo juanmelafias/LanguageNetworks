@@ -384,8 +384,8 @@ def normalizeProperties(netProperties, fNormalizeToStd=True):
 	netPropertiesStd = np.std(netProperties, 1); 
 	netProperties = netProperties - np.transpose(np.repeat(np.array([netPropertiesMean]), nNodes, 0)); 
 	if (fNormalizeToStd): 
-		# Avoid division by zero by setting zero std values to 1
-		netPropertiesStd[netPropertiesStd == 0] = 1.0
+		# # Avoid division by zero by setting zero std values to 1
+		# netPropertiesStd[netPropertiesStd == 0] = 1.0
 		netProperties = np.divide(netProperties, np.transpose(np.repeat(np.array([netPropertiesStd]), nNodes, 0))); 
 
 	return netProperties; 
@@ -646,7 +646,7 @@ def plotEigenvectorProjections(referenceEigenbasis, otherEigenbases):
 	ax = fig.add_subplot(111); 
 	ax.set_aspect("equal"); 
 	# Plotting original axes: 
-plt.plot([0, 1], [0, 0], 'k'); 
+	plt.plot([0, 1], [0, 0], 'k'); 
 	plt.plot([0, 0], [0, 1], 'r'); 
 	# Plotting projected axes: 
 	for projection in eigVectsProjections: 

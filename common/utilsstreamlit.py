@@ -136,8 +136,10 @@ def plotly_graph(G,colors,palabras,trans,display_legend):
 	
 	fig = go.Figure(data=[edge_trace]+node_traces,
 				layout=go.Layout(
-					title='Network colored according to clusters',
-					titlefont_size=16,
+					title=dict(
+				text="'Network colored according to clusters'",
+				font=dict(size=16)  # Set title font size to 24px
+    		),
 					showlegend=True,
 					hovermode='closest',
 					margin=dict(b=20,l=5,r=5,t=40),
