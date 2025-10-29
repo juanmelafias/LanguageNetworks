@@ -6,9 +6,25 @@ import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 from common.utilsstreamlit import display_grid, read_plot_info
+from common.tracking import log_main
+from common.visitor_tracker import VisitorTracker
 
+from loguru import logger
 
 def run_app():
+
+    st.set_page_config(
+    page_title="Languages PCA Plotter",
+    page_icon="🗺️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+    try:
+        tracker = VisitorTracker()
+        log_main(tracker, page_name="PCA Plotter")
+    except Exception as e:
+        logger.error(f"Error initializing visitor tracker: {e}")
 
     filelist = os.listdir('./files/inflected/dictionaries/')
     languagelist = [file.split('.')[0] for file in filelist]

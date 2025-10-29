@@ -5,9 +5,25 @@ import plotly.express as px
 
 
 from common.utilsstreamlit import whole_network_plotter, read_plot_info,display_grid
+from common.tracking import log_main
+from common.visitor_tracker import VisitorTracker
+
+from loguru import logger
+
 
 
 def run_app():
+    st.set_page_config(
+    page_title="Syntax Network Plotter",
+    page_icon="🕸️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+    try:
+        tracker = VisitorTracker()
+        log_main(tracker, page_name="Syntax Network Plotter")
+    except Exception as e:
+        logger.error(f"Error initializing visitor tracker: {e}")
 
     filelist = os.listdir('./files/inflected/dictionaries/')
     languagelist = [file.split('.')[0] for file in filelist]

@@ -12,3 +12,6 @@ streamlit-aggrid
 dash
 plotly
 googletrans
+psycopg2-binary
+python-dotenv
+loguru

@@ -3,17 +3,22 @@ import json
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
+from dotenv import load_dotenv
+from urllib.parse import quote_plus
+
 
 class VisitorTracker:
     def __init__(self, db_url=None):
         """Initialize the visitor tracker with database connection info."""
-        self.db_url = db_url or os.environ.get('DATABASE_URL')
-        if not self.db_url:
-            raise ValueError("DATABASE_URL environment variable or db_url parameter is required")
+        load_dotenv()  # Load environment variables from .env file
+        self.password = os.environ.get('DATABASE_PW')
+        self.password = quote_plus(self.password)
     
     def _get_connection(self):
         """Get a database connection."""
-        return psycopg2.connect(self.db_url)
+        conn_str = f"postgresql://postgres.iledvstjxakclwymxwhc:{self.password}@aws-0-eu-central-2.pooler.supabase.com:6543/postgres?sslmode=require&gssencmode=disable" 
+
+        return psycopg2.connect(conn_str)
         
     def log_visit(self, user_data=None):
         """
