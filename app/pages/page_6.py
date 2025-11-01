@@ -104,7 +104,7 @@ def run_app():
 
             fig.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
 
-            st.caption("💡 Each bubble the properties of each node/word in the syntax network of its language projected in the Principal Component Eigenspace of inflected Spanish. Bubbles are coloured by Language, sized by Frequency, and show the original word translation when hovered over. You can zoom in and pan around the plot using your mouse.")
+            st.caption("💡 Each bubble shows the properties of each node/word in the syntax network of its language projected in the Principal Component Eigenspace of inflected Spanish. Bubbles are coloured by Language, sized by Frequency, and show the original word translation when hovered over. You can zoom in and pan around the plot using your mouse.")
 
             st.plotly_chart(fig)
 
