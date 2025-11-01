@@ -42,50 +42,28 @@ def run_app():
             nwords = int(nwords)
         except ValueError:
             nwords = 500
-    nlang = st.radio('Would you like two show words from one or several languages?:',
-        options = ['One','Several'])
-    if nlang == 'One':
-        lang = st.selectbox('Pick a language:',
-            (lang for lang in languagelist))
-        df = read_plot_info(lang,nwords,iol)
-        pc1 = 'PC1'
-        pc2 = 'PC2'
-        pc3 = 'PC3'
+    lang = st.selectbox('Choose a language:',
+        (lang for lang in languagelist))
+    df = read_plot_info(lang,nwords,iol)
+    pc1 = 'PC1'
+    pc2 = 'PC2'
+    pc3 = 'PC3'
         
-    else:
-        dflang = pd.DataFrame()
-        dflang['languages'] = pd.Series(languagelist)
-        dflangs = display_grid(dflang)
-        pc1 = 'PC1 Inflected Spanish'
-        pc2 = 'PC2 Inflected Spanish'
-        pc3 = 'PC3 Inflected Spanish'
 
-        langs = dflangs['languages'].to_list()
-        df = pd.DataFrame()
-        for lang in langs:
-            df2concat = read_plot_info(lang,nwords,iol)
-            df = pd.concat([df,df2concat],axis = 0,join = 'outer',ignore_index = True)
-
-    df['ranking_inv'] = df['ranking'].apply(lambda x: abs(501-x))
+    df['ranking_inv'] = df['ranking'].apply(lambda x: abs(nwords+1-x))
     cols = [col for col in relevant_columns]
-    color = st.selectbox('Pick a variable to represent color in the viz:',
-            (col for col in cols))
-    symbol = st.selectbox('Pick a variable to represent symbol in the viz:',
-            (col for col in cols))
-    size = st.selectbox('Pick a variable to represent size in the viz:',
-            (col for col in cols))
-    text = st.selectbox('Pick a variable to represent text in the viz:',
-            (col for col in cols))
-    extra = st.selectbox('Any other data to show while hovering',
-            (col for col in cols))
-    filteryes = st.radio('Would you like to filter?:',
-        options = ['No','Yes'])
-    if filteryes=='Yes':
-        filter = st.selectbox('Filter by',
-            (col for col in cols))
-        filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
-            (col for col in df.groupby(by=filter).count().index))
-        df = df[df[filter] == filtervalue]
+    color = "Part of Speech"
+    size = "Frequency"
+    text = 'Word'
+    extra = 'Translation'
+    # filteryes = st.radio('Would you like to filter?:',
+    #     options = ['No','Yes'])
+    # if filteryes=='Yes':
+    #     filter = st.selectbox('Filter by',
+    #         (col for col in cols))
+    #     filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
+    #         (col for col in df.groupby(by=filter).count().index))
+    #     df = df[df[filter] == filtervalue]
     dim = st.radio('Would you like to show data in 2D or 3D:',
         options = ['2D','3D'])
     if st.button('Generate plot:'):
@@ -98,13 +76,15 @@ def run_app():
         if dim == "3D":
         
             fig = px.scatter_3d(df, x=pc1, y=pc2, z=pc3,
-                                    color=color, symbol=symbol, size = size, text = text , hover_name = extra)
+                                    color=color, size = size, text = text , hover_name = extra)
             #fig.update_traces(marker=dict(color = col))
         else:
             fig = px.scatter(df, x=pc1, y=pc2,
                                     color=color,  size = size, text = text , hover_name = extra)
 
         fig.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
+        st.caption("💡 Each bubble the properties of each node/word in the syntax network of its language projected in the Principal Component Eigenspace. Bubbles are coloured by Part of Speech, sized by Frequency, and show the English translation when hovered over. You can zoom in and pan around the plot using your mouse.")
+
         st.plotly_chart(fig)
 
 

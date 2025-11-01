@@ -32,7 +32,10 @@ def run_app():
     st.title('Languages PCA plotter')
 
     iol = st.radio('Would you like to show data of inflected or lemmatized forms:',
-        options = ['inflected','lemmatized'])
+        options = ['inflected','lemmatized'],
+        help= "Inflected forms are the different grammatical forms of a word (is, are), while lemmatized forms are the base or dictionary form of a word (be)." \
+        " Networks of languages can vary drastically based on this parameter and so their mean properties. " \
+        "Choosing lemmatized forms allows for fairer cross-linguistic comparisons, specially between languages that have different degree of inflection, such as English and Hungarian.")
     pon = st.radio('Would you like to show data of primary or neighbour properties:',
         options = ['primaries','neighbours'])
     dim = st.radio('Would you like to show data on 2D or 3D:',
@@ -118,6 +121,7 @@ def run_app():
 
 
             #fig.update_traces(marker=dict(color = col))
+            st.caption("💡 Each bubble the mean network properties of each node/word in the syntax network of its language projected in their Principal Component Eigenspace. Bubbles are coloured by hierarchical clustering, sized by Frequency, and show the English translation when hovered over. You can zoom in and pan around the plot using your mouse.")
 
             st.plotly_chart(fig)
 

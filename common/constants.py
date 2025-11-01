@@ -25,3 +25,21 @@ column_mapping = {
 relevant_columns = [
     "Word", "Language", "Part of Speech", "Frequency", "Lemma", "Translation"
 ]
+
+parts_of_speech = ['CCONJ', 'SCONJ', 'ADV', 'PRON', 'AUX', 'DET', 'ADP', 'NOUN', 'PROPN', 'ADJ', 'VERB', 'NUM', 'PART']
+
+pos_mapping = {
+    'CCONJ': 'Coordinating Conjunction',
+    'SCONJ': 'Subordinating Conjunction',
+    'ADV': 'Adverb',
+    'PRON': 'Pronoun',
+    'AUX': 'Auxiliary',
+    'DET': 'Determiner',
+    'ADP': 'Adposition',
+    'NOUN': 'Noun',
+    'PROPN': 'Proper Noun',
+    'ADJ': 'Adjective',
+    'VERB': 'Verb',
+    'NUM': 'Number',
+    'PART': 'Particle'
+}

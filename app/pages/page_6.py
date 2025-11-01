@@ -3,16 +3,16 @@ import os
 import pandas as pd
 import plotly.express as px
 
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-from common.constants import column_mapping,relevant_columns
-from common.utilsstreamlit import display_grid, read_plot_info
+from common.constants import column_mapping, pos_mapping
+from common.utilsstreamlit import read_plot_info
 from common.tracking import log_main
 from common.visitor_tracker import VisitorTracker
 
 from loguru import logger
 
 column_mapping_inv = {v: k for k, v in column_mapping.items()}
+inverse_pos_mapping = {v: k for k, v in pos_mapping.items()}
 
 def run_app():
 
@@ -27,85 +27,86 @@ def run_app():
 
     st.title('Words PCA plotter')
 
+    
+    # dflangs = display_grid(dflang)
+    st.session_state.langs = st.multiselect('Pick languages to include:',
+        options = (lang for lang in languagelist)
+    )
+    pc1 = 'PC1 Inflected Spanish'
+    pc2 = 'PC2 Inflected Spanish'
+    pc3 = 'PC3 Inflected Spanish'
+
     iol = st.radio('Would you like to show data of inflected or lemmatized forms:',
         options = ['inflected','lemmatized'],
         #Explain difference between inflected and lemmatized forms
         help= "Inflected forms are the different grammatical forms of a word (is, are), while lemmatized forms are the base or dictionary form of a word (be).")
-    allorfew = st.radio('Would you like to create the network with all words or just a few?:',
-        options = ['All','Custom'],
-        help="Networks are created with the top 500 most common words. If you'd like a smaller network choose custom")
-    if allorfew == 'All':
-        nwords = 0
-    else:
-        nwords = st.text_input('Top N words to display')
-        try:
-            nwords = int(nwords)
-        except ValueError:
-            nwords = 500
-    nlang = st.radio('Would you like two show words from one or several languages?:',
-        options = ['One','Several'])
-    if nlang == 'One':
-        lang = st.selectbox('Pick a language:',
-            (lang for lang in languagelist))
-        df = read_plot_info(lang,nwords,iol)
-        pc1 = 'PC1'
-        pc2 = 'PC2'
-        pc3 = 'PC3'
-        
-    else:
-        dflang = pd.DataFrame()
-        dflang['languages'] = pd.Series(languagelist)
-        dflangs = display_grid(dflang)
-        pc1 = 'PC1 Inflected Spanish'
-        pc2 = 'PC2 Inflected Spanish'
-        pc3 = 'PC3 Inflected Spanish'
+    st.caption("💡 Words with the same part of speech share syntactic properties. This allows for fair comparisons across languages")
+    st.session_state.pos = st.multiselect('Choose parts of speech to visualize:',
+        options = (pos for pos in pos_mapping.values())
+    )
+    st.session_state.pos_mapped = [inverse_pos_mapping[pos] for pos in st.session_state.pos]
+    # allorfew = st.radio('Would you like to create the network with all words or just a few?:',
+    #     options = ['All','Custom'],
+    #     help="Networks are created with the top 500 most common words. If you'd like a smaller network choose custom")
+    # if allorfew == 'All':
+    #     nwords = 0
+    # else:
+    #     nwords = st.text_input('Top N words to display')
+    #     try:
+    #         nwords = int(nwords)
+    #     except ValueError:
+    #         nwords = 500
+    nwords = 0
 
-        langs = dflangs['languages'].to_list()
-        df = pd.DataFrame()
-        for lang in langs:
-            df2concat = read_plot_info(lang,nwords,iol)
-            df = pd.concat([df,df2concat],axis = 0,join = 'outer',ignore_index = True)
+ 
 
-    df['ranking_inv'] = df['ranking'].apply(lambda x: abs(501-x))
-    cols = [col for col in relevant_columns]
-    color = st.selectbox('Pick a variable to represent color in the viz:',
-            (col for col in cols))
-    symbol = st.selectbox('Pick a variable to represent symbol in the viz:',
-            (col for col in cols))
-    size = st.selectbox('Pick a variable to represent size in the viz:',
-            (col for col in cols))
-    text = st.selectbox('Pick a variable to represent text in the viz:',
-            (col for col in cols))
-    extra = st.selectbox('Any other data to show while hovering',
-            (col for col in cols))
-    filteryes = st.radio('Would you like to filter?:',
-        options = ['No','Yes'])
-    if filteryes=='Yes':
-        filter = st.selectbox('Filter by',
-            (col for col in cols))
-        filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
-            (col for col in df.groupby(by=filter).count().index))
-        df = df[df[filter] == filtervalue]
+        # langs = dflangs['languages'].to_list()
+
+    color = 'Language'
+    symbol = 'Part of Speech'
+    size = 'Frequency'
+    text = 'Translation'
+    extra = 'Word'
+    # filteryes = st.radio('Would you like to filter?:',
+    #     options = ['No','Yes'])
+    # if filteryes=='Yes':
+    #     filter = st.selectbox('Filter by',
+    #         (col for col in cols))
+    #     filtervalue = st.selectbox(f'Select value of {filter} to Filter by',
+    #         (col for col in df.groupby(by=filter).count().index))
+    #     df = df[df[filter] == filtervalue]
     dim = st.radio('Would you like to show data in 2D or 3D:',
         options = ['2D','3D'])
-    if st.button('Generate plot:'):
-        
-        df['nc5'] = df['nc5'].apply(lambda x: str(x))
-        df.rename(columns = column_mapping_inv, inplace = True)
-        print(df.columns)
-        
-        #col = st.color_picker('Select a plot colour')
-        if dim == "3D":
-        
-            fig = px.scatter_3d(df, x=pc1, y=pc2, z=pc3,
-                                    color=color, symbol=symbol, size = size, text = text , hover_name = extra)
-            #fig.update_traces(marker=dict(color = col))
-        else:
-            fig = px.scatter(df, x=pc1, y=pc2,
-                                    color=color,  size = size, text = text , hover_name = extra)
+    if st.session_state.langs:
+        if st.button('Generate plot:'):
 
-        fig.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
-        st.plotly_chart(fig)
+            df = pd.DataFrame()
+
+            
+            for lang in st.session_state.langs:
+                df2concat = read_plot_info(lang,nwords,iol)
+                df = pd.concat([df,df2concat],axis = 0,join = 'outer',ignore_index = True)
+            
+            df['ranking_inv'] = df['ranking'].apply(lambda x: abs(501-x))
+            df['nc5'] = df['nc5'].apply(lambda x: str(x))
+            df.rename(columns = column_mapping_inv, inplace = True)
+            df = df[df['Part of Speech'].isin(st.session_state.pos_mapped)]
+            
+            #col = st.color_picker('Select a plot colour')
+            if dim == "3D":
+            
+                fig = px.scatter_3d(df, x=pc1, y=pc2, z=pc3,
+                                        color=color, symbol=symbol, size = size, text = text , hover_name = extra)
+                #fig.update_traces(marker=dict(color = col))
+            else:
+                fig = px.scatter(df, x=pc1, y=pc2,
+                                        color=color,  size = size, text = text , hover_name = extra)
+
+            fig.update_layout(uniformtext_minsize=20, uniformtext_mode='hide')
+
+            st.caption("💡 Each bubble the properties of each node/word in the syntax network of its language projected in the Principal Component Eigenspace of inflected Spanish. Bubbles are coloured by Language, sized by Frequency, and show the original word translation when hovered over. You can zoom in and pan around the plot using your mouse.")
+
+            st.plotly_chart(fig)
 
 
 
