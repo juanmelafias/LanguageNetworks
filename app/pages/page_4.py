@@ -1,6 +1,9 @@
 import streamlit as st
 import os
 import re
+from common.visitor_tracker import VisitorTracker
+from loguru import logger
+from common.tracking import log_main
 
 st.set_page_config(
     page_title="Languages PCA Plotter",
@@ -8,7 +11,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+try:
+    tracker = VisitorTracker()
+    log_main(tracker, page_name="About")
+except Exception as e:
+        logger.error(f"Error initializing visitor tracker: {e}")
 st.title("📄 Glossary")
 
 file_path = 'shared/README_app.md'

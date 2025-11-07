@@ -22,7 +22,7 @@ def run_app():
 
     try:
         tracker = VisitorTracker()
-        log_main(tracker, page_name="PCA Plotter")
+        log_main(tracker, page_name="Languages PCA Plotter")
     except Exception as e:
         logger.error(f"Error initializing visitor tracker: {e}")
 
