@@ -36,8 +36,9 @@ def run_app():
         help= "Inflected forms are the different grammatical forms of a word (is, are), while lemmatized forms are the base or dictionary form of a word (be)." \
         " Networks of languages can vary drastically based on this parameter and so their mean properties. " \
         "Choosing lemmatized forms allows for fairer cross-linguistic comparisons, specially between languages that have different degree of inflection, such as English and Hungarian.")
-    pon = st.radio('Would you like to show data of primary or neighbour properties:',
-        options = ['primaries','neighbours'])
+    pon = st.radio('Would you like to show mean data of just primary or also neighbour properties:',
+        options = ['primaries','neighbours'],
+        help= "Mean properties of networks can be calculated using just the primary properties of each node/word (e.g. degree, clustering), or also including the mean properties of their neighbours (e.g. mean degree of neighbours).")
     dim = st.radio('Would you like to show data on 2D or 3D:',
     options = ['2D','3D'])
         
@@ -121,7 +122,7 @@ def run_app():
 
 
             #fig.update_traces(marker=dict(color = col))
-            st.caption("💡 Each bubble the mean network properties of each node/word in the syntax network of its language projected in their Principal Component Eigenspace. Bubbles are coloured by hierarchical clustering, sized by Frequency, and show the English translation when hovered over. You can zoom in and pan around the plot using your mouse.")
+            st.caption("💡 Each bubble shows the mean language properties. This means the average of each node/word in the syntax network. Language mean properties have been projected into their Principal Component Eigenspace. Bubbles are coloured by hierarchical clustering. Languages with similar syntactic networks fall into the same cluster")
 
             st.plotly_chart(fig)
 

@@ -44,6 +44,7 @@ RUN curl https://packages.microsoft.com/config/debian/10/prod.list \
 FROM library AS app
 
 COPY app /src/app
+COPY shared /src/shared
 COPY common /src/common
 COPY entrypoints/app.sh /src/
 COPY files /src/files
