@@ -65,9 +65,10 @@ def run_app():
                                         color='nc5', text = 'languages')
             else: 
                 fig = px.scatter(df, x='pc1', y='pc2',
-                                        color='nc5', hover_data = ['languages'],size = 'size')
+                                        color='nc5', hover_data = ['languages'],size = 'size', text = 'languages')
 
             #fig.update_traces(marker=dict(color = col))
+            st.caption("💡 Each bubble shows the mean language properties. This means the average of each node/word in the syntax network. Language mean properties have been projected into their Principal Component Eigenspace. Bubbles are coloured by hierarchical clustering. Languages with similar syntactic networks fall into the same cluster")
 
             st.plotly_chart(fig)
     else:
